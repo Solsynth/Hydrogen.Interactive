@@ -74,7 +74,7 @@ export default function Navbar() {
           </ul>
         </div>
         <a href="/" class="btn btn-ghost text-xl">
-          {wellKnown?.name ?? "Goatpass"}
+          {wellKnown?.name ?? "Interactive"}
         </a>
       </div>
       <div class="navbar-center hidden lg:flex">
@@ -109,7 +109,7 @@ export default function Navbar() {
             <button type="button" class="btn btn-sm btn-ghost" onClick={() => logout()}>Logout</button>
           </Match>
           <Match when={!userinfo?.isLoggedIn}>
-            <a href="/auth/login" class="btn btn-sm btn-primary">Login</a>
+            <a href="/auth" class="btn btn-sm btn-primary">Login</a>
           </Match>
         </Switch>
       </div>

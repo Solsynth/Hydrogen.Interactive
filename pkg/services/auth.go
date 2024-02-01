@@ -13,24 +13,26 @@ import (
 )
 
 type PassportUserinfo struct {
-	Sub                uint   `json:"sub"`
-	Email              string `json:"email"`
-	Picture            string `json:"picture"`
-	PreferredUsernames string `json:"preferred_usernames"`
+	Sub               string `json:"sub"`
+	Email             string `json:"email"`
+	Picture           string `json:"picture"`
+	PreferredUsername string `json:"preferred_username"`
 }
 
 func LinkAccount(userinfo PassportUserinfo) (models.Account, error) {
+	id, _ := strconv.Atoi(userinfo.Sub)
+
 	var account models.Account
 	if err := database.C.Where(&models.Account{
-		ExternalID: userinfo.Sub,
+		ExternalID: uint(id),
 	}).First(&account).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			account = models.Account{
-				Name:         userinfo.PreferredUsernames,
+				Name:         userinfo.PreferredUsername,
 				Avatar:       userinfo.Picture,
 				EmailAddress: userinfo.Email,
 				PowerLevel:   0,
-				ExternalID:   userinfo.Sub,
+				ExternalID:   uint(id),
 			}
 			return account, database.C.Save(&account).Error
 		}

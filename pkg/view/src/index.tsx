@@ -19,13 +19,8 @@ render(() => (
     <UserinfoProvider>
       <Router root={RootLayout}>
         <Route path="/" component={lazy(() => import("./pages/dashboard.tsx"))} />
-        <Route path="/security" component={lazy(() => import("./pages/security.tsx"))} />
-        <Route path="/personalise" component={lazy(() => import("./pages/personalise.tsx"))} />
-        <Route path="/auth/login" component={lazy(() => import("./pages/auth/login.tsx"))} />
-        <Route path="/auth/register" component={lazy(() => import("./pages/auth/register.tsx"))} />
-        <Route path="/auth/oauth/connect" component={lazy(() => import("./pages/auth/connect.tsx"))} />
-        <Route path="/auth/oauth/callback" component={lazy(() => import("./pages/auth/callback.tsx"))} />
-        <Route path="/users/me/confirm" component={lazy(() => import("./pages/users/confirm.tsx"))} />
+        <Route path="/auth" component={lazy(() => import("./pages/auth/callout.tsx"))} />
+        <Route path="/auth/callback" component={lazy(() => import("./pages/auth/callback.tsx"))} />
       </Router>
     </UserinfoProvider>
   </WellKnownProvider>

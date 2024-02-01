@@ -21,7 +21,7 @@ export default function RootLayout(props: any) {
   }, [ready, userinfo]);
 
   function keepGate(path: string, e?: BeforeLeaveEventArgs) {
-    const whitelist = ["/auth/login", "/auth/register", "/users/me/confirm"];
+    const whitelist = ["/auth", "/auth/callback"];
 
     if (!userinfo?.isLoggedIn && !whitelist.includes(path)) {
       if (!e?.defaultPrevented) e?.preventDefault();

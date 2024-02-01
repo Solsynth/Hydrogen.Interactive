@@ -42,11 +42,11 @@ func main() {
 	go server.Listen()
 
 	// Messages
-	log.Info().Msgf("Passport v%s is started...", interactive.AppVersion)
+	log.Info().Msgf("Interactive v%s is started...", interactive.AppVersion)
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
-	log.Info().Msgf("Passport v%s is quitting...", interactive.AppVersion)
+	log.Info().Msgf("Interactive v%s is quitting...", interactive.AppVersion)
 }

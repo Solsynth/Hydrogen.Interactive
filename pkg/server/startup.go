@@ -56,6 +56,8 @@ func NewServer() {
 
 	api := A.Group("/api").Name("API")
 	{
+		api.Get("/users/me", auth, getUserinfo)
+
 		api.Get("/auth", doLogin)
 		api.Get("/auth/callback", doPostLogin)
 		api.Post("/auth/refresh", doRefreshToken)

@@ -11,19 +11,24 @@ import (
 	"golang.org/x/oauth2"
 )
 
-var cfg = oauth2.Config{
-	RedirectURL:  fmt.Sprintf("https://%s/api/auth/callback", viper.GetString("domain")),
-	ClientID:     viper.GetString("passport.client_id"),
-	ClientSecret: viper.GetString("passport.client_secret"),
-	Scopes:       []string{"openid"},
-	Endpoint: oauth2.Endpoint{
-		AuthURL:   fmt.Sprintf("%s/auth/o/connect", viper.GetString("passport.endpoint")),
-		TokenURL:  fmt.Sprintf("%s/api/auth/token", viper.GetString("passport.endpoint")),
-		AuthStyle: oauth2.AuthStyleInParams,
-	},
+var cfg oauth2.Config
+
+func buildOauth2Config() {
+	cfg = oauth2.Config{
+		RedirectURL:  fmt.Sprintf("https://%s/auth/callback", viper.GetString("domain")),
+		ClientID:     viper.GetString("passport.client_id"),
+		ClientSecret: viper.GetString("passport.client_secret"),
+		Scopes:       []string{"openid"},
+		Endpoint: oauth2.Endpoint{
+			AuthURL:   fmt.Sprintf("%s/auth/o/connect", viper.GetString("passport.endpoint")),
+			TokenURL:  fmt.Sprintf("%s/api/auth/token", viper.GetString("passport.endpoint")),
+			AuthStyle: oauth2.AuthStyleInParams,
+		},
+	}
 }
 
 func doLogin(c *fiber.Ctx) error {
+	buildOauth2Config()
 	url := cfg.AuthCodeURL(uuid.NewString())
 
 	return c.JSON(fiber.Map{
@@ -32,6 +37,7 @@ func doLogin(c *fiber.Ctx) error {
 }
 
 func doPostLogin(c *fiber.Ctx) error {
+	buildOauth2Config()
 	code := c.Query("code")
 
 	token, err := cfg.Exchange(context.Background(), code)
