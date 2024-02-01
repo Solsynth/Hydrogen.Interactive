@@ -1,0 +1,28 @@
+debug = true
+
+name = "Goatplaza"
+maintainer = "SmartSheep Studio"
+
+bind = "0.0.0.0:8445"
+domain = "feed.smartsheep.studio"
+secret = "LtTjzAGFLshwXhN4ZD4nG5KlMv1MWcsvfv03TSZYnT1VhiAnLIZFTnHUwR0XhGgi"
+
+content = "uploads"
+
+everyone_postable = false
+
+[passport]
+client_id = "goatplaza"
+client_secret = "Z9k9AFTj^p"
+endpoint = "https://id.smartsheep.studio"
+
+[mailer]
+name = "Alphabot <alphabot@smartsheep.studio>"
+smtp_host = "smtp.exmail.qq.com"
+smtp_port = 465
+username = "alphabot@smartsheep.studio"
+password = "gz937Zxxzfcd9SeH"
+
+[database]
+dsn = "host=localhost dbname=hy_interactive port=5432 sslmode=disable"
+prefix = "interactive_"
