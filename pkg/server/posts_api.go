@@ -17,7 +17,7 @@ func listPost(c *fiber.Ctx) error {
 	offset := c.QueryInt("offset", 0)
 
 	var count int64
-	var posts []models.Post
+	var posts []*models.Post
 	if err := database.C.
 		Where(&models.Post{RealmID: nil}).
 		Model(&models.Post{}).
@@ -35,7 +35,7 @@ func listPost(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
-	postIds := lo.Map(posts, func(item models.Post, _ int) uint {
+	postIds := lo.Map(posts, func(item *models.Post, _ int) uint {
 		return item.ID
 	})
 
@@ -58,9 +58,15 @@ FROM %sposts t
                     GROUP BY post_id) d ON t.id = d.post_id
 WHERE t.id IN (?)`, prefix, prefix, prefix), postIds).Scan(&reactInfo)
 
-	for idx, info := range reactInfo {
-		posts[idx].LikeCount = info.LikeCount
-		posts[idx].DislikeCount = info.DislikeCount
+	postMap := lo.SliceToMap(posts, func(item *models.Post) (uint, *models.Post) {
+		return item.ID, item
+	})
+
+	for _, info := range reactInfo {
+		if post, ok := postMap[info.PostID]; ok {
+			post.LikeCount = info.LikeCount
+			post.DislikeCount = info.DislikeCount
+		}
 	}
 
 	return c.JSON(fiber.Map{
