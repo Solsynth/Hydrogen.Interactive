@@ -1,5 +1,5 @@
 import { getAtk, useUserinfo } from "../stores/userinfo.tsx";
-import { createSignal, For, Show } from "solid-js";
+import { createEffect, createSignal, For, Show } from "solid-js";
 
 import styles from "./feed.module.css";
 
@@ -9,6 +9,7 @@ export default function DashboardPage() {
   const [error, setError] = createSignal<string | null>(null);
   const [loading, setLoading] = createSignal(true);
   const [submitting, setSubmitting] = createSignal(false);
+  const [reacting, setReacting] = createSignal(false);
 
   const [posts, setPosts] = createSignal<any[]>([]);
   const [postCount, setPostCount] = createSignal(0);
@@ -31,6 +32,8 @@ export default function DashboardPage() {
     }
     setLoading(false);
   }
+
+  createEffect(() => readPosts(), [page()]);
 
   async function doPost(evt: SubmitEvent) {
     evt.preventDefault();
@@ -62,7 +65,20 @@ export default function DashboardPage() {
     setSubmitting(false);
   }
 
-  readPosts();
+  async function reactPost(item: any, type: string) {
+    setReacting(true);
+    const res = await fetch(`/api/posts/${item.id}/react/${type}`, {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${getAtk()}` }
+    });
+    if (res.status !== 201 && res.status !== 204) {
+      setError(await res.text());
+    } else {
+      await readPosts();
+      setError(null);
+    }
+    setReacting(false);
+  }
 
   return (
     <div class={`${styles.wrapper} container mx-auto`}>
@@ -118,57 +134,69 @@ export default function DashboardPage() {
         </form>
 
         <div id="posts">
-          <Show when={!loading()} fallback={<span class="loading loading-lg loading-infinity"></span>}>
-            <For each={posts()}>
-              {item => <div class="post-item">
+          <For each={posts()}>
+            {item => <div class="post-item">
 
-                <div class="flex bg-base-200">
-                  <div class="avatar">
-                    <div class="w-12">
-                      <Show when={item.author.avatar}
-                            fallback={<span class="text-3xl">{item.author.name.substring(0, 1)}</span>}>
-                        <img alt="avatar" src={item.author.avatar} />
-                      </Show>
-                    </div>
-                  </div>
-                  <div class="flex items-center px-5">
-                    <div>
-                      <h3 class="font-bold text-sm">{item.author.name}</h3>
-                      <p class="text-xs">{item.author.description}</p>
-                    </div>
+              <div class="flex bg-base-200">
+              <div class="avatar">
+                  <div class="w-12">
+                    <Show when={item.author.avatar}
+                          fallback={<span class="text-3xl">{item.author.name.substring(0, 1)}</span>}>
+                      <img alt="avatar" src={item.author.avatar} />
+                    </Show>
                   </div>
                 </div>
-
-                <article class="py-5 px-7">
-                  <h2 class="card-title">{item.title}</h2>
-                  <article class="prose">{item.content}</article>
-                </article>
-
-                <div class="grid grid-cols-4 border-y border-base-200">
-                  <div class="tooltip" data-tip="Daisuki">
-                    <button type="button" class="btn btn-ghost btn-block">
-                      <i class="fa-solid fa-thumbs-up"></i>
-                      <code class="font-mono">0</code>
-                    </button>
+                <div class="flex items-center px-5">
+                  <div>
+                    <h3 class="font-bold text-sm">{item.author.name}</h3>
+                    <p class="text-xs">{item.author.description}</p>
                   </div>
-                  <div class="tooltip" data-tip="Daikirai">
-                    <button type="button" class="btn btn-ghost btn-block">
-                      <i class="fa-solid fa-thumbs-down"></i>
-                      <code class="font-mono">0</code>
-                    </button>
-                  </div>
-                  <button type="button" class="btn btn-ghost">
-                    <i class="fa-solid fa-reply"></i>
-                    <span>Reply</span>
-                  </button>
-                  <button type="button" class="btn btn-ghost">
-                    <i class="fa-solid fa-retweet"></i>
-                    <span>Forward</span>
+                </div>
+              </div>
+
+              <article class="py-5 px-7">
+                <h2 class="card-title">{item.title}</h2>
+                <article class="prose">{item.content}</article>
+              </article>
+
+              <div class="grid grid-cols-4 border-y border-base-200">
+
+                <div class="tooltip" data-tip="Daisuki">
+                  <button type="button" class="btn btn-ghost btn-block" disabled={reacting()}
+                          onClick={() => reactPost(item, "like")}>
+                    <i class="fa-solid fa-thumbs-up"></i>
+                    <code class="font-mono">{item.like_count}</code>
                   </button>
                 </div>
 
-              </div>}
-            </For>
+                <div class="tooltip" data-tip="Daikirai">
+                  <button type="button" class="btn btn-ghost btn-block" disabled={reacting()}
+                          onClick={() => reactPost(item, "dislike")}>
+                    <i class="fa-solid fa-thumbs-down"></i>
+                    <code class="font-mono">{item.dislike_count}</code>
+                  </button>
+                </div>
+
+                <button type="button" class="btn btn-ghost">
+                  <i class="fa-solid fa-reply"></i>
+                  <span>Reply</span>
+                </button>
+
+                <button type="button" class="btn btn-ghost">
+                  <i class="fa-solid fa-retweet"></i>
+                  <span>Forward</span>
+                </button>
+
+              </div>
+
+            </div>}
+          </For>
+
+          <Show when={loading()}>
+            <div class="w-full border-b border-base-200 pt-5 pb-7 text-center">
+              <p class="loading loading-lg loading-infinity"></p>
+              <p>Creating fake news...</p>
+            </div>
           </Show>
         </div>
 
