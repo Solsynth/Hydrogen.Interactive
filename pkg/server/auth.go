@@ -3,7 +3,7 @@ package server
 import (
 	"code.smartsheep.studio/hydrogen/interactive/pkg/database"
 	"code.smartsheep.studio/hydrogen/interactive/pkg/models"
-	"code.smartsheep.studio/hydrogen/passport/pkg/security"
+	"code.smartsheep.studio/hydrogen/interactive/pkg/security"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/keyauth"
 	"strconv"

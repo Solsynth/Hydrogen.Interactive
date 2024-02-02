@@ -3,7 +3,6 @@ module code.smartsheep.studio/hydrogen/interactive
 go 1.21.6
 
 require (
-	code.smartsheep.studio/hydrogen/passport v0.0.0-20240201075828-dbc09bd7af8a
 	github.com/go-playground/validator/v10 v10.17.0
 	github.com/gofiber/fiber/v2 v2.52.0
 	github.com/golang-jwt/jwt/v5 v5.2.0

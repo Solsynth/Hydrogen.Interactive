@@ -8,6 +8,8 @@ import "./assets/fonts/fonts.css";
 import { lazy } from "solid-js";
 import { Route, Router } from "@solidjs/router";
 
+import "@fortawesome/fontawesome-free/css/all.css";
+
 import RootLayout from "./layouts/RootLayout.tsx";
 import { UserinfoProvider } from "./stores/userinfo.tsx";
 import { WellKnownProvider } from "./stores/wellKnown.tsx";
@@ -18,7 +20,7 @@ render(() => (
   <WellKnownProvider>
     <UserinfoProvider>
       <Router root={RootLayout}>
-        <Route path="/" component={lazy(() => import("./pages/dashboard.tsx"))} />
+        <Route path="/" component={lazy(() => import("./pages/feed.tsx"))} />
         <Route path="/auth" component={lazy(() => import("./pages/auth/callout.tsx"))} />
         <Route path="/auth/callback" component={lazy(() => import("./pages/auth/callback.tsx"))} />
       </Router>

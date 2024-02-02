@@ -11,13 +11,7 @@ interface MenuItem {
 
 export default function Navbar() {
   const nav: MenuItem[] = [
-    {
-      label: "You", children: [
-        { label: "Dashboard", href: "/" },
-        { label: "Security", href: "/security" },
-        { label: "Personalise", href: "/personalise" }
-      ]
-    }
+    { label: "Feed", href: "/" }
   ];
 
   const wellKnown = useWellKnown();

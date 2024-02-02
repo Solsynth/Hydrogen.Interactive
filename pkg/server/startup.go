@@ -61,6 +61,9 @@ func NewServer() {
 		api.Get("/auth", doLogin)
 		api.Get("/auth/callback", doPostLogin)
 		api.Post("/auth/refresh", doRefreshToken)
+
+		api.Get("/posts", listPost)
+		api.Post("/posts", auth, createPost)
 	}
 
 	A.Use("/", cache.New(cache.Config{

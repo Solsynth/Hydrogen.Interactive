@@ -8,6 +8,10 @@ import (
 func RunMigration(source *gorm.DB) error {
 	if err := source.AutoMigrate(
 		&models.Account{},
+		&models.Realm{},
+		&models.Category{},
+		&models.Tag{},
+		&models.Post{},
 	); err != nil {
 		return err
 	}

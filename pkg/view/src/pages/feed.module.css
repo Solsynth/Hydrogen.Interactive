@@ -1,0 +1,18 @@
+.publishInput {
+    outline-style: none !important;
+    outline-width: 0 !important;
+}
+
+.wrapper {
+    display: grid;
+    grid-template-columns: 1fr;
+    column-gap: 20px;
+
+    max-height: calc(100vh - 64px);
+}
+
+@media (min-width: 768px) {
+    .wrapper {
+        grid-template-columns: 1fr 2fr 1fr;
+    }
+}

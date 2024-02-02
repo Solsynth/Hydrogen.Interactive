@@ -40,7 +40,7 @@ export default function RootLayout(props: any) {
       </div>
     }>
       <Navbar />
-      <main class="h-[calc(100vh-68px)] mt-[68px]">{props.children}</main>
+      <main class="h-[calc(100vh-64px)] mt-[64px]">{props.children}</main>
     </Show>
   );
 }
