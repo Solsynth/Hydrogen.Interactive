@@ -4,11 +4,9 @@ import (
 	"code.smartsheep.studio/hydrogen/interactive/pkg/database"
 	"code.smartsheep.studio/hydrogen/interactive/pkg/models"
 	"code.smartsheep.studio/hydrogen/interactive/pkg/services"
-	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/samber/lo"
-	"github.com/spf13/viper"
 	"strings"
 )
 
@@ -17,7 +15,6 @@ func listPost(c *fiber.Ctx) error {
 	offset := c.QueryInt("offset", 0)
 
 	var count int64
-	var posts []*models.Post
 	if err := database.C.
 		Where(&models.Post{RealmID: nil}).
 		Model(&models.Post{}).
@@ -25,48 +22,9 @@ func listPost(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
-	if err := database.C.
-		Where(&models.Post{RealmID: nil}).
-		Limit(take).
-		Offset(offset).
-		Order("created_at desc").
-		Preload("Author").
-		Find(&posts).Error; err != nil {
-		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
-	}
-
-	postIds := lo.Map(posts, func(item *models.Post, _ int) uint {
-		return item.ID
-	})
-
-	var reactInfo []struct {
-		PostID       uint
-		LikeCount    int64
-		DislikeCount int64
-	}
-
-	prefix := viper.GetString("database.prefix")
-	database.C.Raw(fmt.Sprintf(`SELECT t.id                         as post_id,
-       COALESCE(l.like_count, 0)    AS like_count,
-       COALESCE(d.dislike_count, 0) AS dislike_count
-FROM %sposts t
-         LEFT JOIN (SELECT post_id, COUNT(*) AS like_count
-                    FROM %spost_likes
-                    GROUP BY post_id) l ON t.id = l.post_id
-         LEFT JOIN (SELECT post_id, COUNT(*) AS dislike_count
-                    FROM %spost_dislikes
-                    GROUP BY post_id) d ON t.id = d.post_id
-WHERE t.id IN (?)`, prefix, prefix, prefix), postIds).Scan(&reactInfo)
-
-	postMap := lo.SliceToMap(posts, func(item *models.Post) (uint, *models.Post) {
-		return item.ID, item
-	})
-
-	for _, info := range reactInfo {
-		if post, ok := postMap[info.PostID]; ok {
-			post.LikeCount = info.LikeCount
-			post.DislikeCount = info.DislikeCount
-		}
+	posts, err := services.ListPost(take, offset)
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 
 	return c.JSON(fiber.Map{
