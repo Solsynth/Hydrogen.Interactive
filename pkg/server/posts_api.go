@@ -2,6 +2,7 @@ package server
 
 import (
 	"strings"
+	"time"
 
 	"code.smartsheep.studio/hydrogen/interactive/pkg/database"
 	"code.smartsheep.studio/hydrogen/interactive/pkg/models"
@@ -16,7 +17,10 @@ func listPost(c *fiber.Ctx) error {
 	offset := c.QueryInt("offset", 0)
 	authorId := c.QueryInt("authorId", 0)
 
-	tx := database.C.Where(&models.Post{RealmID: nil}).Order("created_at desc")
+	tx := database.C.
+		Where(&models.Post{RealmID: nil}).
+		Where("published_at <= ? OR published_at IS NULL", time.Now()).
+		Order("created_at desc")
 
 	if authorId > 0 {
 		tx = tx.Where(&models.Post{AuthorID: uint(authorId)})
@@ -44,13 +48,14 @@ func createPost(c *fiber.Ctx) error {
 	user := c.Locals("principal").(models.Account)
 
 	var data struct {
-		Alias      string            `json:"alias"`
-		Title      string            `json:"title"`
-		Content    string            `json:"content" validate:"required"`
-		Tags       []models.Tag      `json:"tags"`
-		Categories []models.Category `json:"categories"`
-		RepostTo   uint              `json:"repost_to"`
-		ReplyTo    uint              `json:"reply_to"`
+		Alias       string            `json:"alias"`
+		Title       string            `json:"title"`
+		Content     string            `json:"content" validate:"required"`
+		Tags        []models.Tag      `json:"tags"`
+		Categories  []models.Category `json:"categories"`
+		PublishedAt *time.Time        `json:"published_at"`
+		RepostTo    uint              `json:"repost_to"`
+		ReplyTo     uint              `json:"reply_to"`
 	}
 
 	if err := BindAndValidate(c, &data); err != nil {
@@ -84,7 +89,58 @@ func createPost(c *fiber.Ctx) error {
 		}
 	}
 
-	post, err := services.NewPost(user, data.Alias, data.Title, data.Content, data.Categories, data.Tags, replyTo, repostTo)
+	post, err := services.NewPost(
+		user,
+		data.Alias,
+		data.Title,
+		data.Content,
+		data.Categories,
+		data.Tags,
+		data.PublishedAt,
+		replyTo,
+		repostTo,
+	)
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
+	return c.JSON(post)
+}
+
+func editPost(c *fiber.Ctx) error {
+	user := c.Locals("principal").(models.Account)
+	id, _ := c.ParamsInt("postId", 0)
+
+	var data struct {
+		Alias       string            `json:"alias" validate:"required"`
+		Title       string            `json:"title"`
+		Content     string            `json:"content" validate:"required"`
+		PublishedAt *time.Time        `json:"published_at"`
+		Tags        []models.Tag      `json:"tags"`
+		Categories  []models.Category `json:"categories"`
+	}
+
+	if err := BindAndValidate(c, &data); err != nil {
+		return err
+	}
+
+	var post models.Post
+	if err := database.C.Where(&models.Post{
+		BaseModel: models.BaseModel{ID: uint(id)},
+		AuthorID:  user.ID,
+	}).First(&post).Error; err != nil {
+		return fiber.NewError(fiber.StatusNotFound, err.Error())
+	}
+
+	post, err := services.EditPost(
+		post,
+		data.Alias,
+		data.Title,
+		data.Content,
+		data.PublishedAt,
+		data.Categories,
+		data.Tags,
+	)
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
@@ -119,4 +175,23 @@ func reactPost(c *fiber.Ctx) error {
 	default:
 		return fiber.NewError(fiber.StatusBadRequest, "unsupported reaction")
 	}
+}
+
+func deletePost(c *fiber.Ctx) error {
+	user := c.Locals("principal").(models.Account)
+	id, _ := c.ParamsInt("postId", 0)
+
+	var post models.Post
+	if err := database.C.Where(&models.Post{
+		BaseModel: models.BaseModel{ID: uint(id)},
+		AuthorID:  user.ID,
+	}).First(&post).Error; err != nil {
+		return fiber.NewError(fiber.StatusNotFound, err.Error())
+	}
+
+	if err := services.DeletePost(post); err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
+	return c.SendStatus(fiber.StatusOK)
 }

@@ -2,6 +2,7 @@ import { createMemo, createSignal, For, Show } from "solid-js";
 
 import styles from "./PostList.module.css";
 import PostItem from "./PostItem.tsx";
+import { getAtk } from "../stores/userinfo.tsx";
 
 export default function PostList(props: {
   info: { data: any[], count: number } | null,
@@ -27,6 +28,23 @@ export default function PostList(props: {
 
   readPosts();
 
+  async function deletePost(item: any) {
+    if (!confirm(`Are you sure to delete post#${item.id}?`)) return;
+
+    setLoading(true);
+    const res = await fetch(`/api/posts/${item.id}`, {
+      method: "DELETE",
+      headers: { "Authorization": `Bearer ${getAtk()}` }
+    });
+    if (res.status !== 200) {
+      props.onError(await res.text());
+    } else {
+      await readPosts();
+      props.onError(null);
+    }
+    setLoading(false);
+  }
+
   function changePage(pn: number) {
     setPage(pn);
     readPosts().then(() => {
@@ -43,6 +61,7 @@ export default function PostList(props: {
             onRepost={props.onRepost}
             onReply={props.onReply}
             onEdit={props.onEdit}
+            onDelete={deletePost}
             onReact={() => readPosts()}
             onError={props.onError}
           />}

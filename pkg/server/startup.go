@@ -68,6 +68,8 @@ func NewServer() {
 		api.Get("/posts", listPost)
 		api.Post("/posts", auth, createPost)
 		api.Post("/posts/:postId/react/:reactType", auth, reactPost)
+		api.Put("/posts/:postId", auth, editPost)
+		api.Delete("/posts/:postId", auth, deletePost)
 	}
 
 	A.Use("/", cache.New(cache.Config{

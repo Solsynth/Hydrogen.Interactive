@@ -49,6 +49,7 @@ export default function DashboardPage() {
         replying={publishMeta.replying}
         reposting={publishMeta.reposting}
         editing={publishMeta.editing}
+        onReset={() => setPublishMeta({ reposting: null, replying: null, editing: null })}
         onPost={() => readPosts()}
         onError={setError}
       />

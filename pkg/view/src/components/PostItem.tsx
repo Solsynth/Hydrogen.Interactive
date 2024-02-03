@@ -8,6 +8,7 @@ export default function PostItem(props: {
   onRepost?: (post: any) => void,
   onReply?: (post: any) => void,
   onEdit?: (post: any) => void,
+  onDelete?: (post: any) => void,
   onError: (message: string | null) => void,
   onReact: () => void
 }) {
@@ -127,6 +128,9 @@ export default function PostItem(props: {
                 <i class="fa-solid fa-ellipsis-vertical"></i>
               </div>
               <ul tabIndex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+                <Show when={userinfo?.profiles?.id === props.post.author_id}>
+                  <li><a onClick={() => props.onDelete && props.onDelete(props.post)}>Delete</a></li>
+                </Show>
                 <Show when={userinfo?.profiles?.id === props.post.author_id}>
                   <li><a onClick={() => props.onEdit && props.onEdit(props.post)}>Edit</a></li>
                 </Show>

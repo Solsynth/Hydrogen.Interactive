@@ -7,6 +7,7 @@ export default function PostPublish(props: {
   replying?: any,
   reposting?: any,
   editing?: any,
+  onReset: () => void,
   onError: (message: string | null) => void,
   onPost: () => void
 }) {
@@ -33,7 +34,37 @@ export default function PostPublish(props: {
         title: data.title,
         content: data.content,
         repost_to: props.reposting?.id,
-        reply_to: props.replying?.id,
+        reply_to: props.replying?.id
+      })
+    });
+    if (res.status !== 200) {
+      props.onError(await res.text());
+    } else {
+      form.reset();
+      props.onPost();
+      props.onError(null);
+    }
+    setSubmitting(false);
+  }
+
+  async function doEdit(evt: SubmitEvent) {
+    evt.preventDefault();
+
+    const form = evt.target as HTMLFormElement;
+    const data = Object.fromEntries(new FormData(form));
+    if (!data.content) return;
+
+    setSubmitting(true);
+    const res = await fetch(`/api/posts/${props.editing?.id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${getAtk()}`
+      },
+      body: JSON.stringify({
+        alias: data.alias ?? crypto.randomUUID().replace(/-/g, ""),
+        title: data.title,
+        content: data.content
       })
     });
     if (res.status !== 200) {
@@ -47,7 +78,7 @@ export default function PostPublish(props: {
   }
 
   return (
-    <form id="publish" onSubmit={doPost}>
+    <form id="publish" onSubmit={props.editing ? doEdit : doPost} onReset={props.onReset}>
       <div id="publish-identity" class="flex border-y border-base-200">
         <div class="avatar pl-[20px]">
           <div class="w-12">
@@ -58,7 +89,8 @@ export default function PostPublish(props: {
           </div>
         </div>
         <div class="flex flex-grow">
-          <input name="title" class={`${styles.publishInput} input w-full`}
+          <input name="title" value={props.editing?.title ?? ""}
+                 class={`${styles.publishInput} input w-full`}
                  placeholder="The describe for a long content (Optional)" />
         </div>
       </div>
@@ -83,7 +115,8 @@ export default function PostPublish(props: {
         </div>
       </Show>
 
-      <textarea name="content" class={`${styles.publishInput} textarea w-full`}
+      <textarea name="content" value={props.editing?.content ?? ""}
+                class={`${styles.publishInput} textarea w-full`}
                 placeholder="What's happend?!" />
 
       <div id="publish-actions" class="flex justify-between border-y border-base-200">
@@ -93,11 +126,16 @@ export default function PostPublish(props: {
           </button>
         </div>
 
-        <button type="submit" class="btn btn-primary" disabled={submitting()}>
-          <Show when={submitting()} fallback={"Post a post"}>
-            <span class="loading"></span>
-          </Show>
-        </button>
+        <div>
+          <button type="reset" class="btn btn-ghost w-12" disabled={submitting()}>
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+          <button type="submit" class="btn btn-primary" disabled={submitting()}>
+            <Show when={submitting()} fallback={props.editing ? "Save changes" : "Post a post"}>
+              <span class="loading"></span>
+            </Show>
+          </button>
+        </div>
       </div>
     </form>
   );

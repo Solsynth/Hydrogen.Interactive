@@ -3,6 +3,7 @@ package services
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	"code.smartsheep.studio/hydrogen/interactive/pkg/database"
 	"code.smartsheep.studio/hydrogen/interactive/pkg/models"
@@ -67,9 +68,21 @@ func NewPost(
 	alias, title, content string,
 	categories []models.Category,
 	tags []models.Tag,
+	publishedAt *time.Time,
 	replyTo, repostTo *uint,
 ) (models.Post, error) {
-	return NewPostWithRealm(user, nil, alias, title, content, categories, tags, replyTo, repostTo)
+	return NewPostWithRealm(
+		user,
+		nil,
+		alias,
+		title,
+		content,
+		categories,
+		tags,
+		publishedAt,
+		replyTo,
+		repostTo,
+	)
 }
 
 func NewPostWithRealm(
@@ -78,6 +91,7 @@ func NewPostWithRealm(
 	alias, title, content string,
 	categories []models.Category,
 	tags []models.Tag,
+	publishedAt *time.Time,
 	replyTo, repostTo *uint,
 ) (models.Post, error) {
 	var err error
@@ -100,16 +114,21 @@ func NewPostWithRealm(
 		realmId = &realm.ID
 	}
 
+	if publishedAt == nil {
+		publishedAt = lo.ToPtr(time.Now())
+	}
+
 	post = models.Post{
-		Alias:      alias,
-		Title:      title,
-		Content:    content,
-		Tags:       tags,
-		Categories: categories,
-		AuthorID:   user.ID,
-		RealmID:    realmId,
-		RepostID:   repostTo,
-		ReplyID:    replyTo,
+		Alias:       alias,
+		Title:       title,
+		Content:     content,
+		Tags:        tags,
+		Categories:  categories,
+		AuthorID:    user.ID,
+		RealmID:     realmId,
+		PublishedAt: *publishedAt,
+		RepostID:    repostTo,
+		ReplyID:     replyTo,
 	}
 
 	if err := database.C.Save(&post).Error; err != nil {
@@ -117,6 +136,41 @@ func NewPostWithRealm(
 	}
 
 	return post, nil
+}
+
+func EditPost(
+	post models.Post,
+	alias, title, content string,
+	publishedAt *time.Time,
+	categories []models.Category,
+	tags []models.Tag,
+) (models.Post, error) {
+	var err error
+	for idx, category := range categories {
+		categories[idx], err = GetCategory(category.Alias, category.Name)
+		if err != nil {
+			return post, err
+		}
+	}
+	for idx, tag := range tags {
+		tags[idx], err = GetTag(tag.Alias, tag.Name)
+		if err != nil {
+			return post, err
+		}
+	}
+
+	if publishedAt == nil {
+		publishedAt = lo.ToPtr(time.Now())
+	}
+
+	post.Alias = alias
+	post.Title = title
+	post.Content = content
+	post.PublishedAt = *publishedAt
+
+	err = database.C.Save(&post).Error
+
+	return post, err
 }
 
 func LikePost(user models.Account, post models.Post) (bool, error) {
@@ -155,4 +209,8 @@ func DislikePost(user models.Account, post models.Post) (bool, error) {
 	} else {
 		return false, database.C.Delete(&dislike).Error
 	}
+}
+
+func DeletePost(post models.Post) error {
+	return database.C.Delete(&post).Error
 }
