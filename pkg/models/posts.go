@@ -8,8 +8,8 @@ type Post struct {
 	Alias            string        `json:"alias" gorm:"uniqueIndex"`
 	Title            string        `json:"title"`
 	Content          string        `json:"content"`
-	Tags             []Tag         `gorm:"many2many:post_tags"`
-	Categories       []Category    `gorm:"many2many:post_categories"`
+	Tags             []Tag         `json:"tags" gorm:"many2many:post_tags"`
+	Categories       []Category    `json:"categories" gorm:"many2many:post_categories"`
 	LikedAccounts    []PostLike    `json:"liked_accounts"`
 	DislikedAccounts []PostDislike `json:"disliked_accounts"`
 	RepostTo         *Post         `json:"repost_to" gorm:"foreignKey:RepostID"`

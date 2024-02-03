@@ -6,6 +6,7 @@ import styles from "./PostPublish.module.css";
 export default function PostPublish(props: {
   replying?: any,
   reposting?: any,
+  editing?: any,
   onError: (message: string | null) => void,
   onPost: () => void
 }) {
@@ -30,7 +31,9 @@ export default function PostPublish(props: {
       body: JSON.stringify({
         alias: data.alias ?? crypto.randomUUID().replace(/-/g, ""),
         title: data.title,
-        content: data.content
+        content: data.content,
+        repost_to: props.reposting?.id,
+        reply_to: props.replying?.id,
       })
     });
     if (res.status !== 200) {
@@ -59,6 +62,26 @@ export default function PostPublish(props: {
                  placeholder="The describe for a long content (Optional)" />
         </div>
       </div>
+
+      <Show when={props.reposting}>
+        <div role="alert" class="px-5 py-3 bg-base-200">
+          <i class="fa-solid fa-circle-info me-3"></i>
+          You are reposting a post from <b>{props.reposting?.author?.name}</b>
+        </div>
+      </Show>
+      <Show when={props.replying}>
+        <div role="alert" class="px-5 py-3 bg-base-200">
+          <i class="fa-solid fa-circle-info me-3"></i>
+          You are replying a post from <b>{props.replying?.author?.name}</b>
+        </div>
+      </Show>
+      <Show when={props.editing}>
+        <div role="alert" class="px-5 py-3 bg-base-200">
+          <i class="fa-solid fa-circle-info me-3"></i>
+          You are editing a post published at{" "}
+          <b>{new Date(props.editing?.created_at).toLocaleString()}</b>
+        </div>
+      </Show>
 
       <textarea name="content" class={`${styles.publishInput} textarea w-full`}
                 placeholder="What's happend?!" />

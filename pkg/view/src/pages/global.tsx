@@ -2,6 +2,7 @@ import { createSignal, Show } from "solid-js";
 
 import PostList from "../components/PostList.tsx";
 import PostPublish from "../components/PostPublish.tsx";
+import { createStore } from "solid-js/store";
 
 export default function DashboardPage() {
   const [error, setError] = createSignal<string | null>(null);
@@ -23,6 +24,12 @@ export default function DashboardPage() {
     }
   }
 
+  const [publishMeta, setPublishMeta] = createStore<any>({
+    replying: null,
+    reposting: null,
+    editing: null
+  });
+
   return (
     <>
       <div id="alerts">
@@ -38,9 +45,22 @@ export default function DashboardPage() {
         </Show>
       </div>
 
-      <PostPublish onPost={() => readPosts()} onError={setError} />
+      <PostPublish
+        replying={publishMeta.replying}
+        reposting={publishMeta.reposting}
+        editing={publishMeta.editing}
+        onPost={() => readPosts()}
+        onError={setError}
+      />
 
-      <PostList info={info()} onUpdate={readPosts} onError={setError} />
+      <PostList
+        info={info()}
+        onUpdate={readPosts}
+        onError={setError}
+        onRepost={(item) => setPublishMeta({ reposting: item, replying: null, editing: null })}
+        onReply={(item) => setPublishMeta({ reposting: null, replying: item, editing: null })}
+        onEdit={(item) => setPublishMeta({ reposting: null, replying: null, editing: item })}
+      />
     </>
   );
 }

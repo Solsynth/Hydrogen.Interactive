@@ -1,10 +1,11 @@
 package services
 
 import (
-	"code.smartsheep.studio/hydrogen/interactive/pkg/database"
-	"code.smartsheep.studio/hydrogen/interactive/pkg/models"
 	"errors"
 	"fmt"
+
+	"code.smartsheep.studio/hydrogen/interactive/pkg/database"
+	"code.smartsheep.studio/hydrogen/interactive/pkg/models"
 	"github.com/samber/lo"
 	"github.com/spf13/viper"
 	"gorm.io/gorm"
@@ -16,6 +17,10 @@ func ListPost(tx *gorm.DB, take int, offset int) ([]*models.Post, error) {
 		Limit(take).
 		Offset(offset).
 		Preload("Author").
+		Preload("RepostTo").
+		Preload("ReplyTo").
+		Preload("RepostTo.Author").
+		Preload("ReplyTo.Author").
 		Find(&posts).Error; err != nil {
 		return posts, err
 	}
@@ -62,8 +67,9 @@ func NewPost(
 	alias, title, content string,
 	categories []models.Category,
 	tags []models.Tag,
+	replyTo, repostTo *uint,
 ) (models.Post, error) {
-	return NewPostWithRealm(user, nil, alias, title, content, categories, tags)
+	return NewPostWithRealm(user, nil, alias, title, content, categories, tags, replyTo, repostTo)
 }
 
 func NewPostWithRealm(
@@ -72,6 +78,7 @@ func NewPostWithRealm(
 	alias, title, content string,
 	categories []models.Category,
 	tags []models.Tag,
+	replyTo, repostTo *uint,
 ) (models.Post, error) {
 	var err error
 	var post models.Post
@@ -101,6 +108,8 @@ func NewPostWithRealm(
 		Categories: categories,
 		AuthorID:   user.ID,
 		RealmID:    realmId,
+		RepostID:   repostTo,
+		ReplyID:    replyTo,
 	}
 
 	if err := database.C.Save(&post).Error; err != nil {

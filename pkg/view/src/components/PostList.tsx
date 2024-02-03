@@ -5,13 +5,16 @@ import PostItem from "./PostItem.tsx";
 
 export default function PostList(props: {
   info: { data: any[], count: number } | null,
+  onRepost?: (post: any) => void,
+  onReply?: (post: any) => void,
+  onEdit?: (post: any) => void,
   onUpdate: (pn: number) => Promise<void>,
   onError: (message: string | null) => void
 }) {
   const [loading, setLoading] = createSignal(true);
 
-  const posts = createMemo(() => props.info?.data)
-  const postCount = createMemo<number>(() => props.info?.count ?? 0)
+  const posts = createMemo(() => props.info?.data);
+  const postCount = createMemo<number>(() => props.info?.count ?? 0);
 
   const [page, setPage] = createSignal(1);
   const pageCount = createMemo(() => Math.ceil(postCount() / 10));
@@ -35,7 +38,14 @@ export default function PostList(props: {
     <div id="post-list">
       <div id="posts">
         <For each={posts()}>
-          {item => <PostItem post={item} onReact={() => readPosts()} onError={props.onError} />}
+          {item => <PostItem
+            post={item}
+            onRepost={props.onRepost}
+            onReply={props.onReply}
+            onEdit={props.onEdit}
+            onReact={() => readPosts()}
+            onError={props.onError}
+          />}
         </For>
 
         <div class="flex justify-center">

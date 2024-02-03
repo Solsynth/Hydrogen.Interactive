@@ -1,13 +1,14 @@
 package server
 
 import (
+	"strings"
+
 	"code.smartsheep.studio/hydrogen/interactive/pkg/database"
 	"code.smartsheep.studio/hydrogen/interactive/pkg/models"
 	"code.smartsheep.studio/hydrogen/interactive/pkg/services"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/samber/lo"
-	"strings"
 )
 
 func listPost(c *fiber.Ctx) error {
@@ -37,7 +38,6 @@ func listPost(c *fiber.Ctx) error {
 		"count": count,
 		"data":  posts,
 	})
-
 }
 
 func createPost(c *fiber.Ctx) error {
@@ -49,6 +49,8 @@ func createPost(c *fiber.Ctx) error {
 		Content    string            `json:"content" validate:"required"`
 		Tags       []models.Tag      `json:"tags"`
 		Categories []models.Category `json:"categories"`
+		RepostTo   uint              `json:"repost_to"`
+		ReplyTo    uint              `json:"reply_to"`
 	}
 
 	if err := BindAndValidate(c, &data); err != nil {
@@ -57,7 +59,32 @@ func createPost(c *fiber.Ctx) error {
 		data.Alias = strings.ReplaceAll(uuid.NewString(), "-", "")
 	}
 
-	post, err := services.NewPost(user, data.Alias, data.Title, data.Content, data.Categories, data.Tags)
+	var repostTo *uint = nil
+	var replyTo *uint = nil
+	var relatedCount int64
+	if data.RepostTo > 0 {
+		if err := database.C.Where(&models.Post{
+			BaseModel: models.BaseModel{ID: data.RepostTo},
+		}).Model(&models.Post{}).Count(&relatedCount).Error; err != nil {
+			return fiber.NewError(fiber.StatusBadRequest, err.Error())
+		} else if relatedCount <= 0 {
+			return fiber.NewError(fiber.StatusNotFound, "related post was not found")
+		} else {
+			repostTo = &data.RepostTo
+		}
+	} else if data.ReplyTo > 0 {
+		if err := database.C.Where(&models.Post{
+			BaseModel: models.BaseModel{ID: data.ReplyTo},
+		}).Model(&models.Post{}).Count(&relatedCount).Error; err != nil {
+			return fiber.NewError(fiber.StatusBadRequest, err.Error())
+		} else if relatedCount <= 0 {
+			return fiber.NewError(fiber.StatusNotFound, "related post was not found")
+		} else {
+			replyTo = &data.ReplyTo
+		}
+	}
+
+	post, err := services.NewPost(user, data.Alias, data.Title, data.Content, data.Categories, data.Tags, replyTo, repostTo)
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
