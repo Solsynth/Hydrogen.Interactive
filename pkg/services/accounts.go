@@ -3,8 +3,6 @@ package services
 import (
 	"code.smartsheep.studio/hydrogen/interactive/pkg/database"
 	"code.smartsheep.studio/hydrogen/interactive/pkg/models"
-	"errors"
-	"gorm.io/gorm"
 )
 
 func FollowAccount(followerId, followingId uint) error {
@@ -26,7 +24,7 @@ func GetAccountFollowed(user models.Account, target models.Account) (models.Acco
 	var relationship models.AccountMembership
 	err := database.C.Model(&models.AccountMembership{}).
 		Where(&models.AccountMembership{FollowerID: user.ID, FollowingID: target.ID}).
-		Find(&relationship).
+		First(&relationship).
 		Error
-	return relationship, !errors.Is(err, gorm.ErrRecordNotFound)
+	return relationship, err == nil
 }

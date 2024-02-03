@@ -58,6 +58,7 @@ func NewServer() {
 	{
 		api.Get("/users/me", auth, getUserinfo)
 		api.Get("/users/:accountId", getOthersInfo)
+		api.Get("/users/:accountId/follow", auth, getAccountFollowed)
 		api.Post("/users/:accountId/follow", auth, doFollowAccount)
 
 		api.Get("/auth", doLogin)

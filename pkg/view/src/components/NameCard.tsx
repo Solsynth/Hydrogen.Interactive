@@ -1,11 +1,14 @@
-import { createSignal } from "solid-js";
+import { createSignal, Show } from "solid-js";
 
 import styles from "./NameCard.module.css";
+import { getAtk } from "../stores/userinfo.tsx";
 
 export default function NameCard(props: { accountId: number, onError: (messasge: string | null) => void }) {
   const [info, setInfo] = createSignal<any>(null);
+  const [isFollowing, setIsFollowing] = createSignal(false);
 
   const [_, setLoading] = createSignal(true);
+  const [submitting, setSubmitting] = createSignal(false);
 
   async function readInfo() {
     setLoading(true);
@@ -19,7 +22,36 @@ export default function NameCard(props: { accountId: number, onError: (messasge:
     setLoading(false);
   }
 
+  async function readIsFollowing() {
+    setLoading(true);
+    const res = await fetch(`/api/users/${props.accountId}/follow`, {
+      method: "GET",
+      headers: { Authorization: `Bearer ${getAtk()}` }
+    });
+    if (res.status === 200) {
+      const data = await res.json();
+      setIsFollowing(data["is_followed"]);
+    }
+    setLoading(false);
+  }
+
+  async function follow() {
+    setSubmitting(true);
+    const res = await fetch(`/api/users/${props.accountId}/follow`, {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${getAtk()}` }
+    });
+    if (res.status !== 201 && res.status !== 204) {
+      props.onError(await res.text());
+    } else {
+      await readIsFollowing();
+      props.onError(null);
+    }
+    setSubmitting(false);
+  }
+
   readInfo();
+  readIsFollowing();
 
   return (
     <div class="relative">
@@ -36,10 +68,17 @@ export default function NameCard(props: { accountId: number, onError: (messasge:
 
       <div id="actions" class="flex justify-end">
         <div>
-          <button type="button" class="btn btn-primary">
-            <i class="fa-solid fa-plus"></i>
-            Follow
-          </button>
+          <Show when={isFollowing()} fallback={
+            <button type="button" class="btn btn-primary" disabled={submitting()} onClick={() => follow()}>
+              <i class="fa-solid fa-plus"></i>
+              Follow
+            </button>
+          }>
+            <button type="button" class="btn btn-accent" disabled={submitting()} onClick={() => follow()}>
+              <i class="fa-solid fa-check"></i>
+              Followed
+            </button>
+          </Show>
         </div>
       </div>
 

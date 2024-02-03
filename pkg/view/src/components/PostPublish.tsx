@@ -46,7 +46,7 @@ export default function PostPublish(props: {
   return (
     <form id="publish" onSubmit={doPost}>
       <div id="publish-identity" class="flex border-y border-base-200">
-        <div class="avatar">
+        <div class="avatar pl-[20px]">
           <div class="w-12">
             <Show when={userinfo?.profiles?.avatar}
                   fallback={<span class="text-3xl">{userinfo?.displayName.substring(0, 1)}</span>}>
