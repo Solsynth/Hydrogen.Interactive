@@ -24,22 +24,24 @@ export default function PostItem(props: { post: any, onError: (message: string |
   return (
     <div class="post-item">
 
-      <div class="flex bg-base-200">
-        <div class="avatar">
-          <div class="w-12">
-            <Show when={props.post.author.avatar}
-                  fallback={<span class="text-3xl">{props.post.author.name.substring(0, 1)}</span>}>
-              <img alt="avatar" src={props.post.author.avatar} />
-            </Show>
+      <a href={`/accounts/${props.post.author.id}`}>
+        <div class="flex bg-base-200">
+          <div class="avatar pl-[20px]">
+            <div class="w-12">
+              <Show when={props.post.author.avatar}
+                    fallback={<span class="text-3xl">{props.post.author.name.substring(0, 1)}</span>}>
+                <img alt="avatar" src={props.post.author.avatar} />
+              </Show>
+            </div>
+          </div>
+          <div class="flex items-center px-5">
+            <div>
+              <h3 class="font-bold text-sm">{props.post.author.name}</h3>
+              <p class="text-xs">{props.post.author.description}</p>
+            </div>
           </div>
         </div>
-        <div class="flex items-center px-5">
-          <div>
-            <h3 class="font-bold text-sm">{props.post.author.name}</h3>
-            <p class="text-xs">{props.post.author.description}</p>
-          </div>
-        </div>
-      </div>
+      </a>
 
       <article class="py-5 px-7">
         <h2 class="card-title">{props.post.title}</h2>
@@ -48,7 +50,7 @@ export default function PostItem(props: { post: any, onError: (message: string |
 
       <div class="grid grid-cols-3 border-y border-base-200">
 
-        <div class="col-span-2 grid grid-cols-4">
+        <div class="grid grid-cols-2">
           <div class="tooltip" data-tip="Daisuki">
             <button type="button" class="btn btn-ghost btn-block" disabled={reacting()}
                     onClick={() => reactPost(props.post, "like")}>
@@ -64,7 +66,9 @@ export default function PostItem(props: { post: any, onError: (message: string |
               <code class="font-mono">{props.post.dislike_count}</code>
             </button>
           </div>
+        </div>
 
+        <div class="col-span-2 flex justify-end">
           <div class="tooltip" data-tip="Reply">
             <button type="button" class="btn btn-ghost btn-block">
               <i class="fa-solid fa-reply"></i>
@@ -76,9 +80,7 @@ export default function PostItem(props: { post: any, onError: (message: string |
               <i class="fa-solid fa-retweet"></i>
             </button>
           </div>
-        </div>
 
-        <div class="flex justify-end">
           <div class="dropdown dropdown-end">
             <div tabIndex="0" role="button" class="btn btn-ghost w-12">
               <i class="fa-solid fa-ellipsis-vertical"></i>

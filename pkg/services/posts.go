@@ -10,13 +10,11 @@ import (
 	"gorm.io/gorm"
 )
 
-func ListPost(take int, offset int) ([]*models.Post, error) {
+func ListPost(tx *gorm.DB, take int, offset int) ([]*models.Post, error) {
 	var posts []*models.Post
-	if err := database.C.
-		Where(&models.Post{RealmID: nil}).
+	if err := tx.
 		Limit(take).
 		Offset(offset).
-		Order("created_at desc").
 		Preload("Author").
 		Find(&posts).Error; err != nil {
 		return posts, err

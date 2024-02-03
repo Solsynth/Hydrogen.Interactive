@@ -1,33 +1,24 @@
 import { createMemo, createSignal, For, Show } from "solid-js";
 
 import styles from "./PostList.module.css";
-
-import PostPublish from "./PostPublish.tsx";
 import PostItem from "./PostItem.tsx";
 
-export default function PostList(props: { onError: (message: string | null) => void }) {
+export default function PostList(props: {
+  info: { data: any[], count: number } | null,
+  onUpdate: (pn: number) => Promise<void>,
+  onError: (message: string | null) => void
+}) {
   const [loading, setLoading] = createSignal(true);
 
-  const [posts, setPosts] = createSignal<any[]>([]);
-  const [postCount, setPostCount] = createSignal(0);
+  const posts = createMemo(() => props.info?.data)
+  const postCount = createMemo<number>(() => props.info?.count ?? 0)
 
   const [page, setPage] = createSignal(1);
   const pageCount = createMemo(() => Math.ceil(postCount() / 10));
 
   async function readPosts() {
     setLoading(true);
-    const res = await fetch("/api/posts?" + new URLSearchParams({
-      take: (10).toString(),
-      offset: ((page() - 1) * 10).toString()
-    }));
-    if (res.status !== 200) {
-      props.onError(await res.text());
-    } else {
-      const data = await res.json();
-      setPosts(data["data"]);
-      setPostCount(data["count"]);
-      props.onError(null);
-    }
+    await props.onUpdate(page());
     setLoading(false);
   }
 
@@ -42,8 +33,6 @@ export default function PostList(props: { onError: (message: string | null) => v
 
   return (
     <div id="post-list">
-      <PostPublish onPost={() => readPosts()} onError={props.onError} />
-
       <div id="posts">
         <For each={posts()}>
           {item => <PostItem post={item} onReact={() => readPosts()} onError={props.onError} />}

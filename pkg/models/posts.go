@@ -14,6 +14,8 @@ type Post struct {
 	DislikedAccounts []PostDislike `json:"disliked_accounts"`
 	RepostTo         *Post         `json:"repost_to" gorm:"foreignKey:RepostID"`
 	ReplyTo          *Post         `json:"reply_to" gorm:"foreignKey:ReplyID"`
+	PinnedAt         *time.Time    `json:"pinned_at"`
+	EditedAt         *time.Time    `json:"edited_at"`
 	PublishedAt      time.Time     `json:"published_at"`
 	RepostID         *uint         `json:"repost_id"`
 	ReplyID          *uint         `json:"reply_id"`

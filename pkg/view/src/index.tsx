@@ -20,7 +20,10 @@ render(() => (
   <WellKnownProvider>
     <UserinfoProvider>
       <Router root={RootLayout}>
-        <Route path="/" component={lazy(() => import("./pages/feed.tsx"))} />
+        <Route path="/" component={lazy(() => import("./pages/feed.tsx"))}>
+          <Route path="/" component={lazy(() => import("./pages/global.tsx"))} />
+          <Route path="/accounts/:accountId" component={lazy(() => import("./pages/account.tsx"))} />
+        </Route>
         <Route path="/auth" component={lazy(() => import("./pages/auth/callout.tsx"))} />
         <Route path="/auth/callback" component={lazy(() => import("./pages/auth/callback.tsx"))} />
       </Router>

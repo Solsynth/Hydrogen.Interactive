@@ -13,16 +13,22 @@ import (
 func listPost(c *fiber.Ctx) error {
 	take := c.QueryInt("take", 0)
 	offset := c.QueryInt("offset", 0)
+	authorId := c.QueryInt("authorId", 0)
+
+	tx := database.C.Where(&models.Post{RealmID: nil}).Order("created_at desc")
+
+	if authorId > 0 {
+		tx = tx.Where(&models.Post{AuthorID: uint(authorId)})
+	}
 
 	var count int64
-	if err := database.C.
-		Where(&models.Post{RealmID: nil}).
+	if err := tx.
 		Model(&models.Post{}).
 		Count(&count).Error; err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
-	posts, err := services.ListPost(take, offset)
+	posts, err := services.ListPost(tx, take, offset)
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
