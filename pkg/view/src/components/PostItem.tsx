@@ -1,4 +1,4 @@
-import { createSignal, Show } from "solid-js";
+import { createSignal, For, Show } from "solid-js";
 import { getAtk, useUserinfo } from "../stores/userinfo.tsx";
 import PostAttachments from "./PostAttachments.tsx";
 
@@ -58,6 +58,19 @@ export default function PostItem(props: {
       <div class="py-5 px-7">
         <h2 class="card-title">{props.post.title}</h2>
         <article class="prose">{props.post.content}</article>
+
+        <div class="mt-2 flex gap-2">
+          <For each={props.post.categories}>
+            {item => <a href={`/categories/${item.alias}`} class="link link-primary">
+              #{item.name}
+            </a>}
+          </For>
+          <For each={props.post.tags}>
+            {item => <a href={`/tags/${item.alias}`} class="link link-primary">
+              #{item.name}
+            </a>}
+          </For>
+        </div>
 
         <PostAttachments attachments={props.post.attachments ?? []} />
 

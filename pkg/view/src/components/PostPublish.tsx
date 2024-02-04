@@ -18,8 +18,14 @@ export default function PostPublish(props: {
   const [uploading, setUploading] = createSignal(false);
 
   const [attachments, setAttachments] = createSignal<any[]>([]);
+  const [categories, setCategories] = createSignal<{ alias: string, name: string }[]>([]);
+  const [tags, setTags] = createSignal<{ alias: string, name: string }[]>([]);
 
-  createEffect(() => setAttachments(props.editing?.attachments ?? []), [props.editing]);
+  createEffect(() => {
+    setAttachments(props.editing?.attachments ?? []);
+    setCategories(props.editing?.categories ?? []);
+    setTags(props.editing?.tags ?? []);
+  }, [props.editing]);
 
   async function doPost(evt: SubmitEvent) {
     evt.preventDefault();
@@ -40,6 +46,8 @@ export default function PostPublish(props: {
         title: data.title,
         content: data.content,
         attachments: attachments(),
+        categories: categories(),
+        tags: tags(),
         published_at: data.published_at ? new Date(data.published_at as string) : new Date(),
         repost_to: props.reposting?.id,
         reply_to: props.replying?.id
@@ -75,6 +83,8 @@ export default function PostPublish(props: {
         title: data.title,
         content: data.content,
         attachments: attachments(),
+        categories: categories(),
+        tags: tags(),
         published_at: data.published_at ? new Date(data.published_at as string) : new Date()
       })
     });
@@ -91,7 +101,8 @@ export default function PostPublish(props: {
   async function uploadAttachments(evt: SubmitEvent) {
     evt.preventDefault();
 
-    const data = new FormData(evt.target as HTMLFormElement);
+    const form = evt.target as HTMLFormElement;
+    const data = new FormData(form);
     if (!data.get("attachment")) return;
 
     setUploading(true);
@@ -106,12 +117,47 @@ export default function PostPublish(props: {
       const data = await res.json();
       setAttachments(attachments().concat([data.info]));
       props.onError(null);
+      form.reset();
     }
     setUploading(false);
   }
 
+  function addCategory(evt: SubmitEvent) {
+    evt.preventDefault();
+
+    const form = evt.target as HTMLFormElement;
+    const data = Object.fromEntries(new FormData(form));
+    if (!data.alias) data.alias = crypto.randomUUID().replace(/-/g, "");
+    if (!data.name) return;
+
+    setCategories(categories().concat([data as any]));
+    form.reset();
+  }
+
+  function removeCategory(target: any) {
+    setCategories(categories().filter(item => item.alias !== target.alias))
+  }
+
+  function addTag(evt: SubmitEvent) {
+    evt.preventDefault();
+
+    const form = evt.target as HTMLFormElement;
+    const data = Object.fromEntries(new FormData(evt.target as HTMLFormElement));
+    if (!data.alias) data.alias = crypto.randomUUID().replace(/-/g, "");
+    if (!data.name) return;
+
+    setTags(tags().concat([data as any]));
+    form.reset();
+  }
+
+  function removeTag(target: any) {
+    setTags(tags().filter(item => item.alias !== target.alias))
+  }
+
   function resetForm() {
     setAttachments([]);
+    setCategories([]);
+    setTags([]);
     props.onReset();
   }
 
@@ -174,12 +220,15 @@ export default function PostPublish(props: {
                   placeholder="What's happend?!" />
 
         <div id="publish-actions" class="flex justify-between border-y border-base-200">
-          <div class="flex">
+          <div class="flex pl-[20px]">
             <button type="button" class="btn btn-ghost w-12" onClick={() => openModel("#attachments")}>
               <i class="fa-solid fa-paperclip"></i>
             </button>
             <button type="button" class="btn btn-ghost w-12" onClick={() => openModel("#planning-publish")}>
               <i class="fa-solid fa-calendar-day"></i>
+            </button>
+            <button type="button" class="btn btn-ghost w-12" onClick={() => openModel("#categories-and-tags")}>
+              <i class="fa-solid fa-tag"></i>
             </button>
           </div>
 
@@ -215,7 +264,6 @@ export default function PostPublish(props: {
         </dialog>
       </form>
 
-
       <dialog id="attachments" class="modal">
         <div class="modal-box">
           <h3 class="font-bold text-lg mx-1">Attachments</h3>
@@ -225,7 +273,8 @@ export default function PostPublish(props: {
                 <span class="label-text">Pick a file</span>
               </div>
               <div class="join">
-                <input required type="file" name="attachment" class="join-item file-input file-input-bordered w-full" />
+                <input required type="file" name="attachment"
+                       class="join-item file-input file-input-bordered w-full" />
                 <button type="submit" class="join-item btn btn-primary" disabled={uploading()}>
                   <i class="fa-solid fa-upload"></i>
                 </button>
@@ -250,6 +299,87 @@ export default function PostPublish(props: {
 
           <div class="modal-action">
             <button type="button" class="btn" onClick={() => closeModel("#attachments")}>Close</button>
+          </div>
+        </div>
+      </dialog>
+
+      <dialog id="categories-and-tags" class="modal">
+        <div class="modal-box">
+          <h3 class="font-bold text-lg mx-1">Categories & Tags</h3>
+          <form class="w-full mt-3" onSubmit={addCategory}>
+            <label class="form-control">
+              <div class="label">
+                <span class="label-text">Add a category</span>
+              </div>
+              <div class="join">
+                <input type="text" name="alias" placeholder="Alias" class="join-item input input-bordered w-full" />
+                <input type="text" name="name" placeholder="Name" class="join-item input input-bordered w-full" />
+                <button type="submit" class="join-item btn btn-primary">
+                  <i class="fa-solid fa-plus"></i>
+                </button>
+              </div>
+              <div class="label">
+                <span class="label-text-alt">
+                  Alias is the url key of this category. Lowercase only, required length 4-24.
+                  Leave blank for auto generate.
+                </span>
+              </div>
+            </label>
+          </form>
+
+          <Show when={categories().length > 0}>
+            <h3 class="font-bold mt-3 mx-1">Category list</h3>
+            <ol class="mt-2 mx-1 text-sm">
+              <For each={categories()}>
+                {item => <li>
+                  <i class="fa-solid fa-layer-group me-2"></i>
+                  {item.name} <span class={styles.description}>#{item.alias}</span>
+                  <button class="ml-2" onClick={() => removeCategory(item)}>
+                    <i class="fa-solid fa-delete-left"></i>
+                  </button>
+                </li>}
+              </For>
+            </ol>
+          </Show>
+
+          <form class="w-full mt-3" onSubmit={addTag}>
+            <label class="form-control">
+              <div class="label">
+                <span class="label-text">Add a tag</span>
+              </div>
+              <div class="join">
+                <input type="text" name="alias" placeholder="Alias" class="join-item input input-bordered w-full" />
+                <input type="text" name="name" placeholder="Name" class="join-item input input-bordered w-full" />
+                <button type="submit" class="join-item btn btn-primary">
+                  <i class="fa-solid fa-plus"></i>
+                </button>
+              </div>
+              <div class="label">
+                <span class="label-text-alt">
+                  Alias is the url key of this tag. Lowercase only, required length 4-24.
+                  Leave blank for auto generate.
+                </span>
+              </div>
+            </label>
+          </form>
+
+          <Show when={tags().length > 0}>
+            <h3 class="font-bold mt-3 mx-1">Category list</h3>
+            <ol class="mt-2 mx-1 text-sm">
+              <For each={tags()}>
+                {item => <li>
+                  <i class="fa-solid fa-tag me-2"></i>
+                  {item.name} <span class={styles.description}>#{item.alias}</span>
+                  <button class="ml-2" onClick={() => removeTag(item)}>
+                    <i class="fa-solid fa-delete-left"></i>
+                  </button>
+                </li>}
+              </For>
+            </ol>
+          </Show>
+
+          <div class="modal-action">
+            <button type="button" class="btn" onClick={() => closeModel("#categories-and-tags")}>Close</button>
           </div>
         </div>
       </dialog>

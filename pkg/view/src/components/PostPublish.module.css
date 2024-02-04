@@ -2,3 +2,7 @@
     outline-style: none !important;
     outline-width: 0 !important;
 }
+
+.description {
+    color: var(--fallback-bc, oklch(var(--bc)/.8));
+}

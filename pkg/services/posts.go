@@ -19,12 +19,18 @@ func ListPost(tx *gorm.DB, take int, offset int) ([]*models.Post, error) {
 		Offset(offset).
 		Preload("Author").
 		Preload("Attachments").
+		Preload("Categories").
+		Preload("Tags").
 		Preload("RepostTo").
 		Preload("ReplyTo").
 		Preload("RepostTo.Author").
 		Preload("ReplyTo.Author").
 		Preload("RepostTo.Attachments").
 		Preload("ReplyTo.Attachments").
+		Preload("RepostTo.Categories").
+		Preload("ReplyTo.Categories").
+		Preload("RepostTo.Tags").
+		Preload("ReplyTo.Tags").
 		Find(&posts).Error; err != nil {
 		return posts, err
 	}
