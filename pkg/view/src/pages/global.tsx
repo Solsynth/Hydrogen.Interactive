@@ -24,6 +24,18 @@ export default function DashboardPage() {
     }
   }
 
+  function setMeta(data: any, field: string, scroll = true) {
+    const meta: { [id: string]: any } = {
+      reposting: null,
+      replying: null,
+      editing: null
+    };
+    meta[field] = data;
+    setPublishMeta(meta);
+
+    if (scroll) window.scroll({ top: 0, behavior: "smooth" });
+  }
+
   const [publishMeta, setPublishMeta] = createStore<any>({
     replying: null,
     reposting: null,
@@ -49,7 +61,7 @@ export default function DashboardPage() {
         replying={publishMeta.replying}
         reposting={publishMeta.reposting}
         editing={publishMeta.editing}
-        onReset={() => setPublishMeta({ reposting: null, replying: null, editing: null })}
+        onReset={() => setMeta(null, "none", false)}
         onPost={() => readPosts()}
         onError={setError}
       />
@@ -58,9 +70,9 @@ export default function DashboardPage() {
         info={info()}
         onUpdate={readPosts}
         onError={setError}
-        onRepost={(item) => setPublishMeta({ reposting: item, replying: null, editing: null })}
-        onReply={(item) => setPublishMeta({ reposting: null, replying: item, editing: null })}
-        onEdit={(item) => setPublishMeta({ reposting: null, replying: null, editing: item })}
+        onRepost={(item) => setMeta(item, "reposting")}
+        onReply={(item) => setMeta(item, "replying")}
+        onEdit={(item) => setMeta(item, "editing")}
       />
     </>
   );
