@@ -3,6 +3,9 @@ import { useParams } from "@solidjs/router";
 
 import PostList from "../components/PostList.tsx";
 import NameCard from "../components/NameCard.tsx";
+import PostPublish from "../components/PostPublish.tsx";
+import { createStore } from "solid-js/store";
+import { closeModel, openModel } from "../scripts/modals.ts";
 
 export default function DashboardPage() {
   const [error, setError] = createSignal<string | null>(null);
@@ -27,6 +30,25 @@ export default function DashboardPage() {
     }
   }
 
+  function setMeta(data: any, field: string, open = true) {
+    const meta: { [id: string]: any } = {
+      reposting: null,
+      replying: null,
+      editing: null
+    };
+    meta[field] = data;
+    setPublishMeta(meta);
+
+    if (open) openModel("#post-publish");
+    else closeModel("#post-publish");
+  }
+
+  const [publishMeta, setPublishMeta] = createStore<any>({
+    replying: null,
+    reposting: null,
+    editing: null
+  });
+
   return (
     <>
       <div id="alerts">
@@ -44,7 +66,28 @@ export default function DashboardPage() {
 
       <NameCard accountId={parseInt(params["accountId"])} onError={setError} />
 
-      <PostList info={info()} onUpdate={readPosts} onError={setError} />
+
+      <dialog id="post-publish" class="modal">
+        <div class="modal-box p-0 w-[540px]">
+          <PostPublish
+            reposting={publishMeta.reposting}
+            replying={publishMeta.replying}
+            editing={publishMeta.editing}
+            onReset={() => setMeta(null, "none", false)}
+            onError={setError}
+            onPost={() => readPosts()}
+          />
+        </div>
+      </dialog>
+
+      <PostList
+        info={info()}
+        onUpdate={readPosts}
+        onError={setError}
+        onRepost={(item) => setMeta(item, "reposting")}
+        onReply={(item) => setMeta(item, "replying")}
+        onEdit={(item) => setMeta(item, "editing")}
+      />
     </>
   );
 }
