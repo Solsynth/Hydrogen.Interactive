@@ -48,14 +48,15 @@ func createPost(c *fiber.Ctx) error {
 	user := c.Locals("principal").(models.Account)
 
 	var data struct {
-		Alias       string            `json:"alias"`
-		Title       string            `json:"title"`
-		Content     string            `json:"content" validate:"required"`
-		Tags        []models.Tag      `json:"tags"`
-		Categories  []models.Category `json:"categories"`
-		PublishedAt *time.Time        `json:"published_at"`
-		RepostTo    uint              `json:"repost_to"`
-		ReplyTo     uint              `json:"reply_to"`
+		Alias       string              `json:"alias"`
+		Title       string              `json:"title"`
+		Content     string              `json:"content" validate:"required"`
+		Tags        []models.Tag        `json:"tags"`
+		Categories  []models.Category   `json:"categories"`
+		Attachments []models.Attachment `json:"attachments"`
+		PublishedAt *time.Time          `json:"published_at"`
+		RepostTo    uint                `json:"repost_to"`
+		ReplyTo     uint                `json:"reply_to"`
 	}
 
 	if err := BindAndValidate(c, &data); err != nil {
@@ -94,6 +95,7 @@ func createPost(c *fiber.Ctx) error {
 		data.Alias,
 		data.Title,
 		data.Content,
+		data.Attachments,
 		data.Categories,
 		data.Tags,
 		data.PublishedAt,

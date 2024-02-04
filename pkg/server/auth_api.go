@@ -36,7 +36,7 @@ func doLogin(c *fiber.Ctx) error {
 	})
 }
 
-func doPostLogin(c *fiber.Ctx) error {
+func postLogin(c *fiber.Ctx) error {
 	buildOauth2Config()
 	code := c.Query("code")
 

@@ -18,10 +18,13 @@ func ListPost(tx *gorm.DB, take int, offset int) ([]*models.Post, error) {
 		Limit(take).
 		Offset(offset).
 		Preload("Author").
+		Preload("Attachments").
 		Preload("RepostTo").
 		Preload("ReplyTo").
 		Preload("RepostTo.Author").
 		Preload("ReplyTo.Author").
+		Preload("RepostTo.Attachments").
+		Preload("ReplyTo.Attachments").
 		Find(&posts).Error; err != nil {
 		return posts, err
 	}
@@ -66,6 +69,7 @@ WHERE t.id IN (?)`, prefix, prefix, prefix), postIds).Scan(&reactInfo)
 func NewPost(
 	user models.Account,
 	alias, title, content string,
+	attachments []models.Attachment,
 	categories []models.Category,
 	tags []models.Tag,
 	publishedAt *time.Time,
@@ -77,6 +81,7 @@ func NewPost(
 		alias,
 		title,
 		content,
+		attachments,
 		categories,
 		tags,
 		publishedAt,
@@ -89,6 +94,7 @@ func NewPostWithRealm(
 	user models.Account,
 	realm *models.Realm,
 	alias, title, content string,
+	attachments []models.Attachment,
 	categories []models.Category,
 	tags []models.Tag,
 	publishedAt *time.Time,
@@ -122,6 +128,7 @@ func NewPostWithRealm(
 		Alias:       alias,
 		Title:       title,
 		Content:     content,
+		Attachments: attachments,
 		Tags:        tags,
 		Categories:  categories,
 		AuthorID:    user.ID,

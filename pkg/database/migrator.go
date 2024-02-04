@@ -15,6 +15,7 @@ func RunMigration(source *gorm.DB) error {
 		&models.Post{},
 		&models.PostLike{},
 		&models.PostDislike{},
+		&models.Attachment{},
 	); err != nil {
 		return err
 	}

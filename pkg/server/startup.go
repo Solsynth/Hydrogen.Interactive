@@ -56,14 +56,17 @@ func NewServer() {
 
 	api := A.Group("/api").Name("API")
 	{
+		api.Get("/auth", doLogin)
+		api.Get("/auth/callback", postLogin)
+		api.Post("/auth/refresh", doRefreshToken)
+
 		api.Get("/users/me", auth, getUserinfo)
 		api.Get("/users/:accountId", getOthersInfo)
 		api.Get("/users/:accountId/follow", auth, getAccountFollowed)
 		api.Post("/users/:accountId/follow", auth, doFollowAccount)
 
-		api.Get("/auth", doLogin)
-		api.Get("/auth/callback", doPostLogin)
-		api.Post("/auth/refresh", doRefreshToken)
+		api.Get("/attachments/o/:fileId", openAttachment)
+		api.Post("/attachments", auth, uploadAttachment)
 
 		api.Get("/posts", listPost)
 		api.Post("/posts", auth, createPost)

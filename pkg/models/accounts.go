@@ -14,6 +14,7 @@ type Account struct {
 	EmailAddress  string        `json:"email_address"`
 	PowerLevel    int           `json:"power_level"`
 	Posts         []Post        `json:"posts" gorm:"foreignKey:AuthorID"`
+	Attachments   []Attachment  `json:"attachments" gorm:"foreignKey:AuthorID"`
 	LikedPosts    []PostLike    `json:"liked_posts"`
 	DislikedPosts []PostDislike `json:"disliked_posts"`
 	Realms        []Realm       `json:"realms"`

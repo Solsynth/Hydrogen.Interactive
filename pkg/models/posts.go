@@ -10,6 +10,7 @@ type Post struct {
 	Content          string        `json:"content"`
 	Tags             []Tag         `json:"tags" gorm:"many2many:post_tags"`
 	Categories       []Category    `json:"categories" gorm:"many2many:post_categories"`
+	Attachments      []Attachment  `json:"attachments"`
 	LikedAccounts    []PostLike    `json:"liked_accounts"`
 	DislikedAccounts []PostDislike `json:"disliked_accounts"`
 	RepostTo         *Post         `json:"repost_to" gorm:"foreignKey:RepostID"`

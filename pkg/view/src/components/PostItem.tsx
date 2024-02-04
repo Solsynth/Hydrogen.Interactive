@@ -1,5 +1,6 @@
 import { createSignal, Show } from "solid-js";
 import { getAtk, useUserinfo } from "../stores/userinfo.tsx";
+import PostAttachments from "./PostAttachments.tsx";
 
 export default function PostItem(props: {
   post: any,
@@ -57,6 +58,8 @@ export default function PostItem(props: {
       <div class="py-5 px-7">
         <h2 class="card-title">{props.post.title}</h2>
         <article class="prose">{props.post.content}</article>
+
+        <PostAttachments attachments={props.post.attachments ?? []} />
 
         <Show when={props.post.repost_to}>
           <p class="text-xs mt-3 mb-2">
