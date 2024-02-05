@@ -13,6 +13,7 @@ import "@fortawesome/fontawesome-free/css/all.css";
 import RootLayout from "./layouts/RootLayout.tsx";
 import Feed from "./pages/feed.tsx";
 import Global from "./pages/global.tsx";
+import PostReference from "./pages/post.tsx";
 import { UserinfoProvider } from "./stores/userinfo.tsx";
 import { WellKnownProvider } from "./stores/wellKnown.tsx";
 
@@ -24,8 +25,9 @@ render(() => (
       <Router root={RootLayout}>
         <Route path="/" component={Feed}>
           <Route path="/" component={Global} />
-          <Route path="/realms" component={lazy(() => import("./pages/realms.tsx"))} />
-          <Route path="/realms/:realmId" component={lazy(() => import("./pages/realm.tsx"))} />
+          <Route path="/posts/:postId" component={PostReference} />
+          <Route path="/realms" component={lazy(() => import("./pages/realms"))} />
+          <Route path="/realms/:realmId" component={lazy(() => import("./pages/realms/realm.tsx"))} />
           <Route path="/accounts/:accountId" component={lazy(() => import("./pages/account.tsx"))} />
         </Route>
         <Route path="/auth" component={lazy(() => import("./pages/auth/callout.tsx"))} />

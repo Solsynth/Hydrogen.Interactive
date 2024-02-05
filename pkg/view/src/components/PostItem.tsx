@@ -5,8 +5,10 @@ import { SolidMarkdown } from "solid-markdown";
 
 export default function PostItem(props: {
   post: any,
+  noClick?: boolean,
   noAuthor?: boolean,
   noControl?: boolean,
+  noRelated?: boolean,
   onRepost?: (post: any) => void,
   onReply?: (post: any) => void,
   onEdit?: (post: any) => void,
@@ -33,8 +35,8 @@ export default function PostItem(props: {
     setReacting(false);
   }
 
-  return (
-    <div class="post-item">
+  const element = (
+    <>
       <Show when={!props.noAuthor}>
         <a href={`/accounts/${props.post.author.name}`}>
           <div class="flex bg-base-200">
@@ -55,7 +57,6 @@ export default function PostItem(props: {
           </div>
         </a>
       </Show>
-
       <div class="px-7">
         <h2 class="card-title">{props.post.title}</h2>
         <article class="prose">
@@ -77,7 +78,7 @@ export default function PostItem(props: {
 
         <PostAttachments attachments={props.post.attachments ?? []} />
 
-        <Show when={props.post.repost_to}>
+        <Show when={!props.noRelated && props.post.repost_to}>
           <p class="text-xs mt-3 mb-2">
             <i class="fa-solid fa-retweet me-2"></i>
             Reposted a post
@@ -87,11 +88,10 @@ export default function PostItem(props: {
               noControl
               post={props.post.repost_to}
               onError={props.onError}
-              onReact={props.onReact}
-            />
+              onReact={props.onReact} />
           </div>
         </Show>
-        <Show when={props.post.reply_to}>
+        <Show when={!props.noRelated && props.post.reply_to}>
           <p class="text-xs mt-3 mb-2">
             <i class="fa-solid fa-reply me-2"></i>
             Replied a post
@@ -101,12 +101,10 @@ export default function PostItem(props: {
               noControl
               post={props.post.reply_to}
               onError={props.onError}
-              onReact={props.onReact}
-            />
+              onReact={props.onReact} />
           </div>
         </Show>
       </div>
-
       <Show when={!props.noControl}>
         <div class="relative">
           <Show when={!userinfo?.isLoggedIn}>
@@ -168,7 +166,20 @@ export default function PostItem(props: {
           </div>
         </div>
       </Show>
-
-    </div>
+    </>
   );
+
+  if (props.noClick) {
+    return (
+      <div class="post-item">
+        {element}
+      </div>
+    )
+  } else {
+    return (
+      <a class="post-item" href={`/posts/${props.post.id}`}>
+        {element}
+      </a>
+    );
+  }
 }

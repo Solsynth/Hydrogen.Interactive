@@ -69,6 +69,7 @@ func NewServer() {
 		api.Post("/attachments", auth, uploadAttachment)
 
 		api.Get("/posts", listPost)
+		api.Get("/posts/:postId", getPost)
 		api.Post("/posts", auth, createPost)
 		api.Post("/posts/:postId/react/:reactType", auth, reactPost)
 		api.Put("/posts/:postId", auth, editPost)

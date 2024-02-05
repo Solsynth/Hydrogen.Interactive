@@ -2,7 +2,7 @@ import Navbar from "./shared/Navbar.tsx";
 import { readProfiles, useUserinfo } from "../stores/userinfo.tsx";
 import { createEffect, createMemo, createSignal, Show } from "solid-js";
 import { readWellKnown } from "../stores/wellKnown.tsx";
-import { BeforeLeaveEventArgs, useBeforeLeave, useLocation, useNavigate, useSearchParams } from "@solidjs/router";
+import { BeforeLeaveEventArgs, useLocation, useNavigate, useSearchParams } from "@solidjs/router";
 
 export default function RootLayout(props: any) {
   const [ready, setReady] = createSignal(false);
@@ -17,20 +17,18 @@ export default function RootLayout(props: any) {
 
   createEffect(() => {
     if (ready()) {
-      keepGate(location.pathname);
+      keepGate(location.pathname + location.search);
     }
   }, [ready, userinfo]);
 
   function keepGate(path: string, e?: BeforeLeaveEventArgs) {
-    const whitelist = ["/auth", "/auth/callback"];
+    const blacklist = ["/creator"];
 
-    if (!userinfo?.isLoggedIn && !whitelist.includes(path)) {
+    if (!userinfo?.isLoggedIn && blacklist.includes(path)) {
       if (!e?.defaultPrevented) e?.preventDefault();
-      navigate(`/auth/login?redirect_uri=${path}`);
+      navigate(`/auth?redirect_uri=${path}`);
     }
   }
-
-  useBeforeLeave((e: BeforeLeaveEventArgs) => keepGate(e.to.toString().split("?")[0], e));
 
   const mainContentStyles = createMemo(() => {
     if(!searchParams["noTitle"]) {

@@ -48,6 +48,42 @@ func listPost(c *fiber.Ctx) error {
 	})
 }
 
+func getPost(c *fiber.Ctx) error {
+	id, _ := c.ParamsInt("postId", 0)
+	take := c.QueryInt("take", 0)
+	offset := c.QueryInt("offset", 0)
+
+	var post models.Post
+	if err := services.PreloadRelatedPost(database.C.Where(&models.Post{
+		BaseModel: models.BaseModel{ID: uint(id)},
+	})).First(&post).Error; err != nil {
+		return fiber.NewError(fiber.StatusNotFound, err.Error())
+	}
+
+	tx := database.C.
+		Where(&models.Post{ReplyID: &post.ID}).
+		Where("published_at <= ? OR published_at IS NULL", time.Now()).
+		Order("created_at desc")
+
+	var count int64
+	if err := tx.
+		Model(&models.Post{}).
+		Count(&count).Error; err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	}
+
+	posts, err := services.ListPost(tx, take, offset)
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
+	return c.JSON(fiber.Map{
+		"data":    post,
+		"count":   count,
+		"related": posts,
+	})
+}
+
 func createPost(c *fiber.Ctx) error {
 	user := c.Locals("principal").(models.Account)
 

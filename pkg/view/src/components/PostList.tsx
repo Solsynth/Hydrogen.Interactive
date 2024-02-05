@@ -5,6 +5,7 @@ import PostItem from "./PostItem.tsx";
 import { getAtk } from "../stores/userinfo.tsx";
 
 export default function PostList(props: {
+  noRelated?: boolean,
   info: { data: any[], count: number } | null,
   onRepost?: (post: any) => void,
   onReply?: (post: any) => void,
@@ -58,6 +59,7 @@ export default function PostList(props: {
         <For each={posts()}>
           {item => <PostItem
             post={item}
+            noRelated={props.noRelated}
             onRepost={props.onRepost}
             onReply={props.onReply}
             onEdit={props.onEdit}

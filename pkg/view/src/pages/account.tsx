@@ -7,7 +7,7 @@ import PostPublish from "../components/PostPublish.tsx";
 import { createStore } from "solid-js/store";
 import { closeModel, openModel } from "../scripts/modals.ts";
 
-export default function DashboardPage() {
+export default function AccountPage() {
   const [error, setError] = createSignal<string | null>(null);
 
   const [page, setPage] = createSignal(0);
