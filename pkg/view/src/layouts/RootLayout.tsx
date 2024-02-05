@@ -1,8 +1,8 @@
 import Navbar from "./shared/Navbar.tsx";
 import { readProfiles, useUserinfo } from "../stores/userinfo.tsx";
-import { createEffect, createSignal, Show } from "solid-js";
+import { createEffect, createMemo, createSignal, Show } from "solid-js";
 import { readWellKnown } from "../stores/wellKnown.tsx";
-import { BeforeLeaveEventArgs, useBeforeLeave, useLocation, useNavigate } from "@solidjs/router";
+import { BeforeLeaveEventArgs, useBeforeLeave, useLocation, useNavigate, useSearchParams } from "@solidjs/router";
 
 export default function RootLayout(props: any) {
   const [ready, setReady] = createSignal(false);
@@ -12,6 +12,7 @@ export default function RootLayout(props: any) {
   const navigate = useNavigate();
   const userinfo = useUserinfo();
 
+  const [searchParams] = useSearchParams();
   const location = useLocation();
 
   createEffect(() => {
@@ -31,6 +32,14 @@ export default function RootLayout(props: any) {
 
   useBeforeLeave((e: BeforeLeaveEventArgs) => keepGate(e.to.toString().split("?")[0], e));
 
+  const mainContentStyles = createMemo(() => {
+    if(!searchParams["noTitle"]) {
+      return "h-[calc(100vh-64px)] mt-[64px]"
+    } else {
+      return "h-[100vh]"
+    }
+  })
+
   return (
     <Show when={ready()} fallback={
       <div class="h-screen w-screen flex justify-center items-center">
@@ -39,8 +48,11 @@ export default function RootLayout(props: any) {
         </div>
       </div>
     }>
-      <Navbar />
-      <main class="h-[calc(100vh-64px)] mt-[64px]">{props.children}</main>
+      <Show when={!searchParams["noTitle"]}>
+        <Navbar />
+      </Show>
+
+      <main class={mainContentStyles()}>{props.children}</main>
     </Show>
   );
 }
