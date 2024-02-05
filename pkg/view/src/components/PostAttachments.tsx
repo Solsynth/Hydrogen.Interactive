@@ -14,7 +14,7 @@ export default function PostAttachments(props: { attachments: any[] }) {
   }
 
   function getUrl(item: any): string {
-    return `/api/attachments/o/${item.file_id}`;
+    return item.external_url ?? `/api/attachments/o/${item.file_id}`;
   }
 
   createEffect(() => {
@@ -36,8 +36,8 @@ export default function PostAttachments(props: { attachments: any[] }) {
               <i class="fa-solid fa-circle-question text-3xl"></i>
               <p class="mt-3">{item().filename}</p>
 
-              <div class="flex gap-3 w-full">
-                <p class="text-sm">{item().filesize} Bytes</p>
+              <div class="flex gap-2 w-full">
+                <p class="text-sm">{item().filesize <= 0 ? "Unknown" : item().filesize} Bytes</p>
                 <p class="text-sm">{item().mimetype}</p>
               </div>
 

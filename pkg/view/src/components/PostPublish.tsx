@@ -1,4 +1,4 @@
-import { createEffect, createSignal, For, Show } from "solid-js";
+import { createEffect, createSignal, For, Match, Show, Switch } from "solid-js";
 import { getAtk, useUserinfo } from "../stores/userinfo.tsx";
 
 import styles from "./PostPublish.module.css";
@@ -21,6 +21,8 @@ export default function PostPublish(props: {
   const [attachments, setAttachments] = createSignal<any[]>([]);
   const [categories, setCategories] = createSignal<{ alias: string, name: string }[]>([]);
   const [tags, setTags] = createSignal<{ alias: string, name: string }[]>([]);
+
+  const [attachmentMode, setAttachmentMode] = createSignal(0);
 
   createEffect(() => {
     setAttachments(props.editing?.attachments ?? []);
@@ -101,7 +103,7 @@ export default function PostPublish(props: {
     setSubmitting(false);
   }
 
-  async function uploadAttachments(evt: SubmitEvent) {
+  async function uploadAttachment(evt: SubmitEvent) {
     evt.preventDefault();
 
     const form = evt.target as HTMLFormElement;
@@ -125,6 +127,19 @@ export default function PostPublish(props: {
     setUploading(false);
   }
 
+  function addAttachment(evt: SubmitEvent) {
+    evt.preventDefault();
+
+    const form = evt.target as HTMLFormElement;
+    const data = Object.fromEntries(new FormData(form));
+
+    setAttachments(attachments().concat([{
+      ...data,
+      author_id: userinfo?.profiles?.id,
+    }]));
+    form.reset();
+  }
+
   function addCategory(evt: SubmitEvent) {
     evt.preventDefault();
 
@@ -138,7 +153,7 @@ export default function PostPublish(props: {
   }
 
   function removeCategory(target: any) {
-    setCategories(categories().filter(item => item.alias !== target.alias))
+    setCategories(categories().filter(item => item.alias !== target.alias));
   }
 
   function addTag(evt: SubmitEvent) {
@@ -154,7 +169,7 @@ export default function PostPublish(props: {
   }
 
   function removeTag(target: any) {
-    setTags(tags().filter(item => item.alias !== target.alias))
+    setTags(tags().filter(item => item.alias !== target.alias));
   }
 
   function resetForm() {
@@ -270,23 +285,60 @@ export default function PostPublish(props: {
       <dialog id="attachments" class="modal">
         <div class="modal-box">
           <h3 class="font-bold text-lg mx-1">Attachments</h3>
-          <form class="w-full mt-3" onSubmit={uploadAttachments}>
-            <label class="form-control">
-              <div class="label">
-                <span class="label-text">Pick a file</span>
-              </div>
-              <div class="join">
-                <input required type="file" name="attachment"
-                       class="join-item file-input file-input-bordered w-full" />
-                <button type="submit" class="join-item btn btn-primary" disabled={uploading()}>
-                  <i class="fa-solid fa-upload"></i>
-                </button>
-              </div>
-              <div class="label">
-                <span class="label-text-alt">Click upload to add this file into list</span>
-              </div>
-            </label>
-          </form>
+
+          <div role="tablist" class="tabs tabs-boxed mt-3">
+            <input type="radio" name="attachment" role="tab" class="tab" aria-label="File picker"
+                   checked={attachmentMode() === 0} onClick={() => setAttachmentMode(0)} />
+            <input type="radio" name="attachment" role="tab" class="tab" aria-label="External link"
+                   checked={attachmentMode() === 1} onClick={() => setAttachmentMode(1)} />
+          </div>
+
+          <Switch>
+            <Match when={attachmentMode() === 0}>
+              <form class="w-full mt-2" onSubmit={uploadAttachment}>
+                <label class="form-control">
+                  <div class="label">
+                    <span class="label-text">Pick a file</span>
+                  </div>
+                  <div class="join">
+                    <input required type="file" name="attachment"
+                           class="join-item file-input file-input-bordered w-full" />
+                    <button type="submit" class="join-item btn btn-primary" disabled={uploading()}>
+                      <i class="fa-solid fa-upload"></i>
+                    </button>
+                  </div>
+                  <div class="label">
+                    <span class="label-text-alt">Click upload to add this file into list</span>
+                  </div>
+                </label>
+              </form>
+            </Match>
+            <Match when={attachmentMode() === 1}>
+              <form class="w-full mt-2" onSubmit={addAttachment}>
+                <label class="form-control">
+                  <div class="label">
+                    <span class="label-text">Attach an external file</span>
+                  </div>
+                  <div class="join">
+                    <input required type="text" name="mimetype" class="join-item input input-bordered w-full"
+                           placeholder="Mimetype" />
+                    <input required type="text" name="filename" class="join-item input input-bordered w-full"
+                           placeholder="Name" />
+                  </div>
+                  <div class="join">
+                    <input required type="text" name="external_url" class="join-item input input-bordered w-full"
+                           placeholder="External URL" />
+                    <button type="submit" class="join-item btn btn-primary">
+                      <i class="fa-solid fa-plus"></i>
+                    </button>
+                  </div>
+                  <div class="label">
+                    <span class="label-text-alt">Click add button to add it into list</span>
+                  </div>
+                </label>
+              </form>
+            </Match>
+          </Switch>
 
           <Show when={attachments().length > 0}>
             <h3 class="font-bold mt-3 mx-1">Attachment list</h3>
