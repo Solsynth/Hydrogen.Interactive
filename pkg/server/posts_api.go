@@ -15,15 +15,19 @@ import (
 func listPost(c *fiber.Ctx) error {
 	take := c.QueryInt("take", 0)
 	offset := c.QueryInt("offset", 0)
-	authorId := c.QueryInt("authorId", 0)
+	authorId := c.Query("authorId")
 
 	tx := database.C.
 		Where("realm_id IS NULL").
 		Where("published_at <= ? OR published_at IS NULL", time.Now()).
 		Order("created_at desc")
 
-	if authorId > 0 {
-		tx = tx.Where(&models.Post{AuthorID: uint(authorId)})
+	var author models.Account
+	if len(authorId) > 0 {
+		if err := database.C.Where(&models.Account{Name: authorId}).Error; err != nil {
+			return fiber.NewError(fiber.StatusNotFound, err.Error())
+		}
+		tx = tx.Where(&models.Post{AuthorID: author.ID})
 	}
 
 	var count int64
