@@ -105,53 +105,62 @@ export default function PostItem(props: {
       </div>
 
       <Show when={!props.noControl}>
-        <div class="grid grid-cols-3 border-y border-base-200">
-          <div class="grid grid-cols-2">
-            <div class="tooltip" data-tip="Daisuki">
-              <button type="button" class="btn btn-ghost btn-block" disabled={reacting()}
-                      onClick={() => reactPost(props.post, "like")}>
-                <i class="fa-solid fa-thumbs-up"></i>
-                <code class="font-mono">{props.post.like_count}</code>
-              </button>
+        <div class="relative">
+          <Show when={!userinfo?.isLoggedIn}>
+            <div
+              class="px-7 py-2.5 h-12 w-full opacity-0 transition-opacity hover:opacity-100 bg-base-100 border-t border-base-200 z-[1] absolute top-0 left-0">
+              <b>Login!</b> To access entire platform.
             </div>
+          </Show>
 
-            <div class="tooltip" data-tip="Daikirai">
-              <button type="button" class="btn btn-ghost btn-block" disabled={reacting()}
-                      onClick={() => reactPost(props.post, "dislike")}>
-                <i class="fa-solid fa-thumbs-down"></i>
-                <code class="font-mono">{props.post.dislike_count}</code>
-              </button>
-            </div>
-          </div>
-
-          <div class="col-span-2 flex justify-end">
-            <div class="tooltip" data-tip="Reply">
-              <button type="button" class="btn btn-ghost btn-block"
-                      onClick={() => props.onReply && props.onReply(props.post)}>
-                <i class="fa-solid fa-reply"></i>
-              </button>
-            </div>
-
-            <div class="tooltip" data-tip="Repost">
-              <button type="button" class="btn btn-ghost btn-block"
-                      onClick={() => props.onRepost && props.onRepost(props.post)}>
-                <i class="fa-solid fa-retweet"></i>
-              </button>
-            </div>
-
-            <div class="dropdown dropdown-end">
-              <div tabIndex="0" role="button" class="btn btn-ghost w-12">
-                <i class="fa-solid fa-ellipsis-vertical"></i>
+          <div class="grid grid-cols-3 border-y border-base-200">
+            <div class="grid grid-cols-2">
+              <div class="tooltip" data-tip="Daisuki">
+                <button type="button" class="btn btn-ghost btn-block" disabled={reacting()}
+                        onClick={() => reactPost(props.post, "like")}>
+                  <i class="fa-solid fa-thumbs-up"></i>
+                  <code class="font-mono">{props.post.like_count}</code>
+                </button>
               </div>
-              <ul tabIndex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
-                <Show when={userinfo?.profiles?.id === props.post.author_id}>
-                  <li><a onClick={() => props.onDelete && props.onDelete(props.post)}>Delete</a></li>
-                </Show>
-                <Show when={userinfo?.profiles?.id === props.post.author_id}>
-                  <li><a onClick={() => props.onEdit && props.onEdit(props.post)}>Edit</a></li>
-                </Show>
-                <li><a>Report</a></li>
-              </ul>
+
+              <div class="tooltip" data-tip="Daikirai">
+                <button type="button" class="btn btn-ghost btn-block" disabled={reacting()}
+                        onClick={() => reactPost(props.post, "dislike")}>
+                  <i class="fa-solid fa-thumbs-down"></i>
+                  <code class="font-mono">{props.post.dislike_count}</code>
+                </button>
+              </div>
+            </div>
+
+            <div class="col-span-2 flex justify-end">
+              <div class="tooltip" data-tip="Reply">
+                <button type="button" class="btn btn-ghost btn-block"
+                        onClick={() => props.onReply && props.onReply(props.post)}>
+                  <i class="fa-solid fa-reply"></i>
+                </button>
+              </div>
+
+              <div class="tooltip" data-tip="Repost">
+                <button type="button" class="btn btn-ghost btn-block"
+                        onClick={() => props.onRepost && props.onRepost(props.post)}>
+                  <i class="fa-solid fa-retweet"></i>
+                </button>
+              </div>
+
+              <div class="dropdown dropdown-end">
+                <div tabIndex="0" role="button" class="btn btn-ghost w-12">
+                  <i class="fa-solid fa-ellipsis-vertical"></i>
+                </div>
+                <ul tabIndex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+                  <Show when={userinfo?.profiles?.id === props.post.author_id}>
+                    <li><a onClick={() => props.onDelete && props.onDelete(props.post)}>Delete</a></li>
+                  </Show>
+                  <Show when={userinfo?.profiles?.id === props.post.author_id}>
+                    <li><a onClick={() => props.onEdit && props.onEdit(props.post)}>Edit</a></li>
+                  </Show>
+                  <li><a>Report</a></li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>

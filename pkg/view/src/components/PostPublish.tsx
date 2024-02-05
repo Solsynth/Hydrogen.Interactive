@@ -15,6 +15,17 @@ export default function PostPublish(props: {
 }) {
   const userinfo = useUserinfo();
 
+  if (!userinfo?.isLoggedIn) {
+    return (
+      <div class="py-9 flex justify-center items-center">
+        <div class="text-center">
+          <h2 class="text-lg font-bold">Login!</h2>
+          <p>Or keep silent.</p>
+        </div>
+      </div>
+    );
+  }
+
   const [submitting, setSubmitting] = createSignal(false);
   const [uploading, setUploading] = createSignal(false);
 
@@ -61,8 +72,8 @@ export default function PostPublish(props: {
       props.onError(await res.text());
     } else {
       form.reset();
-      props.onPost();
       props.onError(null);
+      setTimeout(() => props.onPost(), 250);
     }
     setSubmitting(false);
   }
@@ -97,8 +108,8 @@ export default function PostPublish(props: {
       props.onError(await res.text());
     } else {
       form.reset();
-      props.onPost();
       props.onError(null);
+      setTimeout(() => props.onPost(), 250);
     }
     setSubmitting(false);
   }
@@ -135,7 +146,7 @@ export default function PostPublish(props: {
 
     setAttachments(attachments().concat([{
       ...data,
-      author_id: userinfo?.profiles?.id,
+      author_id: userinfo?.profiles?.id
     }]));
     form.reset();
   }
