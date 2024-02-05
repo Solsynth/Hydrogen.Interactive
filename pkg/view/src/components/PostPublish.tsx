@@ -205,7 +205,7 @@ export default function PostPublish(props: {
           <div class="flex flex-grow">
             <input name="title" value={props.editing?.title ?? ""}
                    class={`${styles.publishInput} input w-full`}
-                   placeholder="The describe for a long content (Optional)" />
+                   placeholder="The describe for a long content" />
           </div>
         </div>
 
@@ -244,9 +244,9 @@ export default function PostPublish(props: {
           </div>
         </Show>
 
-        <textarea name="content" value={props.editing?.content ?? ""}
+        <textarea required name="content" value={props.editing?.content ?? ""}
                   class={`${styles.publishInput} textarea w-full`}
-                  placeholder="What's happend?!" />
+                  placeholder="What's happened?! (Support markdown)" />
 
         <div id="publish-actions" class="flex justify-between border-y border-base-200">
           <div class="flex pl-[20px]">
