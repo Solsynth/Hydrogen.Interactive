@@ -14,6 +14,7 @@ import (
 
 type PassportUserinfo struct {
 	Sub               string `json:"sub"`
+	Name              string `json:"name"`
 	Email             string `json:"email"`
 	Picture           string `json:"picture"`
 	PreferredUsername string `json:"preferred_username"`
@@ -28,7 +29,8 @@ func LinkAccount(userinfo PassportUserinfo) (models.Account, error) {
 	}).First(&account).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			account = models.Account{
-				Name:         userinfo.PreferredUsername,
+				Name:         userinfo.Name,
+				Nick:         userinfo.PreferredUsername,
 				Avatar:       userinfo.Picture,
 				EmailAddress: userinfo.Email,
 				PowerLevel:   0,
@@ -39,7 +41,14 @@ func LinkAccount(userinfo PassportUserinfo) (models.Account, error) {
 		return account, err
 	}
 
-	return account, nil
+	account.Name = userinfo.Name
+	account.Nick = userinfo.PreferredUsername
+	account.Avatar = userinfo.Picture
+	account.EmailAddress = userinfo.Email
+
+	err := database.C.Save(&account).Error
+
+	return account, err
 }
 
 func GetToken(account models.Account) (string, string, error) {

@@ -184,7 +184,7 @@ export default function PostPublish(props: {
           <div role="alert" class="bg-base-200 flex justify-between">
             <div class="px-5 py-3">
               <i class="fa-solid fa-circle-info me-3"></i>
-              You are reposting a post from <b>{props.reposting?.author?.name}</b>
+              You are reposting a post from <b>{props.reposting?.author?.nick}</b>
             </div>
             <button type="reset" class="btn btn-ghost w-12" disabled={submitting()}>
               <i class="fa-solid fa-xmark"></i>
@@ -195,7 +195,7 @@ export default function PostPublish(props: {
           <div role="alert" class="bg-base-200 flex justify-between">
             <div class="px-5 py-3">
               <i class="fa-solid fa-circle-info me-3"></i>
-              You are replying a post from <b>{props.replying?.author?.name}</b>
+              You are replying a post from <b>{props.replying?.author?.nick}</b>
             </div>
             <button type="reset" class="btn btn-ghost w-12" disabled={submitting()}>
               <i class="fa-solid fa-xmark"></i>

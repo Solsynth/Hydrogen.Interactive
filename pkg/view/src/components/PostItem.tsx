@@ -35,7 +35,7 @@ export default function PostItem(props: {
   return (
     <div class="post-item">
       <Show when={!props.noAuthor}>
-        <a href={`/accounts/${props.post.author.id}`}>
+        <a href={`/accounts/${props.post.author.name}`}>
           <div class="flex bg-base-200">
             <div class="avatar pl-[20px]">
               <div class="w-12">
@@ -47,7 +47,7 @@ export default function PostItem(props: {
             </div>
             <div class="flex items-center px-5">
               <div>
-                <h3 class="font-bold text-sm">{props.post.author.name}</h3>
+                <h3 class="font-bold text-sm">{props.post.author.nick}</h3>
                 <p class="text-xs">{props.post.author.description}</p>
               </div>
             </div>
@@ -61,12 +61,12 @@ export default function PostItem(props: {
 
         <div class="mt-2 flex gap-2">
           <For each={props.post.categories}>
-            {item => <a href={`/categories/${item.alias}`} class="link link-primary">
+            {item => <a class="link link-primary">
               #{item.name}
             </a>}
           </For>
           <For each={props.post.tags}>
-            {item => <a href={`/tags/${item.alias}`} class="link link-primary">
+            {item => <a class="link link-primary">
               #{item.name}
             </a>}
           </For>

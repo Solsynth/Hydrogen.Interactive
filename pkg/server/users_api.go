@@ -21,11 +21,11 @@ func getUserinfo(c *fiber.Ctx) error {
 }
 
 func getOthersInfo(c *fiber.Ctx) error {
-	accountId, _ := c.ParamsInt("accountId", 0)
+	accountId := c.Params("accountId")
 
 	var data models.Account
 	if err := database.C.
-		Where(&models.Account{BaseModel: models.BaseModel{ID: uint(accountId)}}).
+		Where(&models.Account{Name: accountId}).
 		First(&data).Error; err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}

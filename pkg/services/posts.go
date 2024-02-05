@@ -12,11 +12,8 @@ import (
 	"gorm.io/gorm"
 )
 
-func ListPost(tx *gorm.DB, take int, offset int) ([]*models.Post, error) {
-	var posts []*models.Post
-	if err := tx.
-		Limit(take).
-		Offset(offset).
+func PreloadRelatedPost(tx *gorm.DB) *gorm.DB {
+	return tx.
 		Preload("Author").
 		Preload("Attachments").
 		Preload("Categories").
@@ -30,7 +27,14 @@ func ListPost(tx *gorm.DB, take int, offset int) ([]*models.Post, error) {
 		Preload("RepostTo.Categories").
 		Preload("ReplyTo.Categories").
 		Preload("RepostTo.Tags").
-		Preload("ReplyTo.Tags").
+		Preload("ReplyTo.Tags")
+}
+
+func ListPost(tx *gorm.DB, take int, offset int) ([]*models.Post, error) {
+	var posts []*models.Post
+	if err := PreloadRelatedPost(tx).
+		Limit(take).
+		Offset(offset).
 		Find(&posts).Error; err != nil {
 		return posts, err
 	}

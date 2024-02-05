@@ -9,6 +9,7 @@ type Account struct {
 	BaseModel
 
 	Name          string        `json:"name"`
+	Nick          string        `json:"nick"`
 	Avatar        string        `json:"avatar"`
 	Description   string        `json:"description"`
 	EmailAddress  string        `json:"email_address"`

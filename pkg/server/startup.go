@@ -73,6 +73,12 @@ func NewServer() {
 		api.Post("/posts/:postId/react/:reactType", auth, reactPost)
 		api.Put("/posts/:postId", auth, editPost)
 		api.Delete("/posts/:postId", auth, deletePost)
+
+		api.Get("/realms", auth, listRealms)
+		api.Get("/realms/:realmId/posts", listPostInRealm)
+		api.Post("/realms", auth, createRealm)
+		api.Put("/realms/:realmId", auth, editRealm)
+		api.Delete("/realms/:realmId", auth, deleteRealm)
 	}
 
 	A.Use("/", cache.New(cache.Config{
