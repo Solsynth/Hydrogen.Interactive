@@ -5,7 +5,16 @@ import (
 	"code.smartsheep.studio/hydrogen/interactive/pkg/models"
 )
 
-func ListRealms(user models.Account) ([]models.Realm, error) {
+func ListRealm() ([]models.Realm, error) {
+	var realms []models.Realm
+	if err := database.C.Find(&realms).Error; err != nil {
+		return realms, err
+	}
+
+	return realms, nil
+}
+
+func ListRealmWithUser(user models.Account) ([]models.Realm, error) {
 	var realms []models.Realm
 	if err := database.C.Where(&models.Realm{AccountID: user.ID}).Find(&realms).Error; err != nil {
 		return realms, err

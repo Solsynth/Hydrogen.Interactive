@@ -3,7 +3,7 @@ import { createSignal, Show } from "solid-js";
 import styles from "./NameCard.module.css";
 import { getAtk } from "../stores/userinfo.tsx";
 
-export default function NameCard(props: { accountId: number, onError: (messasge: string | null) => void }) {
+export default function NameCard(props: { accountId: string, onError: (messasge: string | null) => void }) {
   const [info, setInfo] = createSignal<any>(null);
   const [isFollowing, setIsFollowing] = createSignal(false);
 

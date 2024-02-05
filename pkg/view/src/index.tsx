@@ -22,6 +22,8 @@ render(() => (
       <Router root={RootLayout}>
         <Route path="/" component={lazy(() => import("./pages/feed.tsx"))}>
           <Route path="/" component={lazy(() => import("./pages/global.tsx"))} />
+          <Route path="/realms" component={lazy(() => import("./pages/realms.tsx"))} />
+          <Route path="/realms/:realmId" component={lazy(() => import("./pages/realm.tsx"))} />
           <Route path="/accounts/:accountId" component={lazy(() => import("./pages/account.tsx"))} />
         </Route>
         <Route path="/auth" component={lazy(() => import("./pages/auth/callout.tsx"))} />

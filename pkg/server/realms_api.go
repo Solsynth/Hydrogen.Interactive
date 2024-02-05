@@ -9,10 +9,32 @@ import (
 	"time"
 )
 
-func listRealms(c *fiber.Ctx) error {
+func getRealm(c *fiber.Ctx) error {
+	id, _ := c.ParamsInt("realmId", 0)
+
+	var realm models.Realm
+	if err := database.C.Where(&models.Realm{
+		BaseModel: models.BaseModel{ID: uint(id)},
+	}).First(&realm).Error; err != nil {
+		return fiber.NewError(fiber.StatusNotFound, err.Error())
+	}
+
+	return c.JSON(realm)
+}
+
+func listRealm(c *fiber.Ctx) error {
+	realms, err := services.ListRealm()
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
+	return c.JSON(realms)
+}
+
+func listOwnedRealm(c *fiber.Ctx) error {
 	user := c.Locals("principal").(models.Account)
 
-	realms, err := services.ListRealms(user)
+	realms, err := services.ListRealmWithUser(user)
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}

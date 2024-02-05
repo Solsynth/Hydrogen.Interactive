@@ -18,7 +18,7 @@ func listPost(c *fiber.Ctx) error {
 	authorId := c.QueryInt("authorId", 0)
 
 	tx := database.C.
-		Where(&models.Post{RealmID: nil}).
+		Where("realm_id IS NULL").
 		Where("published_at <= ? OR published_at IS NULL", time.Now()).
 		Order("created_at desc")
 
@@ -55,6 +55,7 @@ func createPost(c *fiber.Ctx) error {
 		Categories  []models.Category   `json:"categories"`
 		Attachments []models.Attachment `json:"attachments"`
 		PublishedAt *time.Time          `json:"published_at"`
+		RealmID     *uint               `json:"realm_id"`
 		RepostTo    uint                `json:"repost_to"`
 		ReplyTo     uint                `json:"reply_to"`
 	}
@@ -90,8 +91,18 @@ func createPost(c *fiber.Ctx) error {
 		}
 	}
 
+	var realm *models.Realm
+	if data.RealmID != nil {
+		if err := database.C.Where(&models.Realm{
+			BaseModel: models.BaseModel{ID: *data.RealmID},
+		}).First(&realm).Error; err != nil {
+			return fiber.NewError(fiber.StatusBadRequest, err.Error())
+		}
+	}
+
 	post, err := services.NewPost(
 		user,
+		realm,
 		data.Alias,
 		data.Title,
 		data.Content,

@@ -1,26 +1,37 @@
 import { createSignal, Show } from "solid-js";
+import { createStore } from "solid-js/store";
 import { useParams } from "@solidjs/router";
 
 import PostList from "../components/PostList.tsx";
-import NameCard from "../components/NameCard.tsx";
 import PostPublish from "../components/PostPublish.tsx";
-import { createStore } from "solid-js/store";
-import { closeModel, openModel } from "../scripts/modals.ts";
 
-export default function DashboardPage() {
+import styles from "./realm.module.css";
+
+export default function RealmPage() {
   const [error, setError] = createSignal<string | null>(null);
 
+  const [realm, setRealm] = createSignal<any>(null);
   const [page, setPage] = createSignal(0);
   const [info, setInfo] = createSignal<any>(null);
 
   const params = useParams();
 
+  async function readRealm() {
+    const res = await fetch(`/api/realms/${params["realmId"]}`);
+    if (res.status !== 200) {
+      setError(await res.text());
+    } else {
+      setRealm(await res.json());
+    }
+  }
+
+  readRealm();
+
   async function readPosts(pn?: number) {
     if (pn) setPage(pn);
-    const res = await fetch("/api/posts?" + new URLSearchParams({
+    const res = await fetch(`/api/realms/${params["realmId"]}/posts?` + new URLSearchParams({
       take: (10).toString(),
-      offset: ((page() - 1) * 10).toString(),
-      authorId: params["accountId"]
+      offset: ((page() - 1) * 10).toString()
     }));
     if (res.status !== 200) {
       setError(await res.text());
@@ -30,7 +41,7 @@ export default function DashboardPage() {
     }
   }
 
-  function setMeta(data: any, field: string, open = true) {
+  function setMeta(data: any, field: string, scroll = true) {
     const meta: { [id: string]: any } = {
       reposting: null,
       replying: null,
@@ -39,8 +50,7 @@ export default function DashboardPage() {
     meta[field] = data;
     setPublishMeta(meta);
 
-    if (open) openModel("#post-publish");
-    else closeModel("#post-publish");
+    if (scroll) window.scroll({ top: 0, behavior: "smooth" });
   }
 
   const [publishMeta, setPublishMeta] = createStore<any>({
@@ -64,21 +74,24 @@ export default function DashboardPage() {
         </Show>
       </div>
 
-      <NameCard accountId={params["accountId"]} onError={setError} />
+      <div class="px-7 pt-7 pb-5">
+        <h2 class="text-2xl font-bold">{realm()?.name}</h2>
+        <p>{realm()?.description}</p>
 
-
-      <dialog id="post-publish" class="modal">
-        <div class="modal-box p-0 w-[540px]">
-          <PostPublish
-            reposting={publishMeta.reposting}
-            replying={publishMeta.replying}
-            editing={publishMeta.editing}
-            onReset={() => setMeta(null, "none", false)}
-            onError={setError}
-            onPost={() => readPosts()}
-          />
+        <div class={`${styles.description} text-sm mt-3`}>
+          <p>Realm #{realm()?.id}</p>
         </div>
-      </dialog>
+      </div>
+
+      <PostPublish
+        realmId={parseInt(params["realmId"])}
+        replying={publishMeta.replying}
+        reposting={publishMeta.reposting}
+        editing={publishMeta.editing}
+        onReset={() => setMeta(null, "none", false)}
+        onPost={() => readPosts()}
+        onError={setError}
+      />
 
       <PostList
         info={info()}

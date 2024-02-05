@@ -78,30 +78,6 @@ WHERE t.id IN (?)`, prefix, prefix, prefix), postIds).Scan(&reactInfo)
 
 func NewPost(
 	user models.Account,
-	alias, title, content string,
-	attachments []models.Attachment,
-	categories []models.Category,
-	tags []models.Tag,
-	publishedAt *time.Time,
-	replyTo, repostTo *uint,
-) (models.Post, error) {
-	return NewPostWithRealm(
-		user,
-		nil,
-		alias,
-		title,
-		content,
-		attachments,
-		categories,
-		tags,
-		publishedAt,
-		replyTo,
-		repostTo,
-	)
-}
-
-func NewPostWithRealm(
-	user models.Account,
 	realm *models.Realm,
 	alias, title, content string,
 	attachments []models.Attachment,

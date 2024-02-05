@@ -8,6 +8,7 @@ export default function PostPublish(props: {
   replying?: any,
   reposting?: any,
   editing?: any,
+  realmId?: number,
   onReset: () => void,
   onError: (message: string | null) => void,
   onPost: () => void
@@ -48,6 +49,7 @@ export default function PostPublish(props: {
         attachments: attachments(),
         categories: categories(),
         tags: tags(),
+        realm_id: props.realmId,
         published_at: data.published_at ? new Date(data.published_at as string) : new Date(),
         repost_to: props.reposting?.id,
         reply_to: props.replying?.id
@@ -85,6 +87,7 @@ export default function PostPublish(props: {
         attachments: attachments(),
         categories: categories(),
         tags: tags(),
+        realm_id: props.realmId,
         published_at: data.published_at ? new Date(data.published_at as string) : new Date()
       })
     });
