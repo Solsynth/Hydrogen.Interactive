@@ -1,6 +1,7 @@
 import { createSignal, For, Show } from "solid-js";
 import { getAtk, useUserinfo } from "../stores/userinfo.tsx";
 import PostAttachments from "./PostAttachments.tsx";
+import { SolidMarkdown } from "solid-markdown";
 
 export default function PostItem(props: {
   post: any,
@@ -55,18 +56,20 @@ export default function PostItem(props: {
         </a>
       </Show>
 
-      <div class="py-5 px-7">
+      <div class="px-7">
         <h2 class="card-title">{props.post.title}</h2>
-        <article class="prose">{props.post.content}</article>
+        <article class="prose">
+          <SolidMarkdown children={props.post.content} />
+        </article>
 
         <div class="mt-2 flex gap-2">
           <For each={props.post.categories}>
-            {item => <a class="link link-primary">
+            {item => <a class="link link-primary pb-5">
               #{item.name}
             </a>}
           </For>
           <For each={props.post.tags}>
-            {item => <a class="link link-primary">
+            {item => <a class="link link-primary pb-5">
               #{item.name}
             </a>}
           </For>
