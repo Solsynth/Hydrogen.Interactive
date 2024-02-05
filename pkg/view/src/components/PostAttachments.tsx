@@ -101,7 +101,7 @@ export default function PostAttachments(props: { attachments: any[] }) {
   }
 
   function getUrl(item: any): string {
-    return item.external_url ?? `/api/attachments/o/${item.file_id}`;
+    return item.external_url ? item.external_url : `/api/attachments/o/${item.file_id}`;
   }
 
   createEffect(() => {
