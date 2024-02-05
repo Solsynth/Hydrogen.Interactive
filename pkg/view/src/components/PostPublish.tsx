@@ -73,7 +73,7 @@ export default function PostPublish(props: {
     } else {
       form.reset();
       props.onError(null);
-      setTimeout(() => props.onPost(), 250);
+      props.onPost();
     }
     setSubmitting(false);
   }
@@ -109,7 +109,7 @@ export default function PostPublish(props: {
     } else {
       form.reset();
       props.onError(null);
-      setTimeout(() => props.onPost(), 250);
+      props.onPost();
     }
     setSubmitting(false);
   }
@@ -192,7 +192,7 @@ export default function PostPublish(props: {
 
   return (
     <>
-      <form id="publish" onSubmit={props.editing ? doEdit : doPost} onReset={() => resetForm()}>
+      <form id="publish" onSubmit={(evt) => (props.editing ? doEdit : doPost)(evt)} onReset={() => resetForm()}>
         <div id="publish-identity" class="flex border-y border-base-200">
           <div class="avatar pl-[20px]">
             <div class="w-12">
