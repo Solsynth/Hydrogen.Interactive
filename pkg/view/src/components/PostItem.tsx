@@ -82,7 +82,7 @@ export default function PostItem(props: {
             <i class="fa-solid fa-retweet me-2"></i>
             Reposted a post
           </p>
-          <div class="border border-base-200">
+          <div class="border border-base-200 mb-5">
             <PostItem
               noControl
               post={props.post.repost_to}
@@ -96,7 +96,7 @@ export default function PostItem(props: {
             <i class="fa-solid fa-reply me-2"></i>
             Replied a post
           </p>
-          <div class="border border-base-200">
+          <div class="border border-base-200 mb-5">
             <PostItem
               noControl
               post={props.post.reply_to}

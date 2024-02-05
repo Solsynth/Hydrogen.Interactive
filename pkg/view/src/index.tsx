@@ -11,6 +11,8 @@ import { Route, Router } from "@solidjs/router";
 import "@fortawesome/fontawesome-free/css/all.css";
 
 import RootLayout from "./layouts/RootLayout.tsx";
+import Feed from "./pages/feed.tsx";
+import Global from "./pages/global.tsx";
 import { UserinfoProvider } from "./stores/userinfo.tsx";
 import { WellKnownProvider } from "./stores/wellKnown.tsx";
 
@@ -20,8 +22,8 @@ render(() => (
   <WellKnownProvider>
     <UserinfoProvider>
       <Router root={RootLayout}>
-        <Route path="/" component={lazy(() => import("./pages/feed.tsx"))}>
-          <Route path="/" component={lazy(() => import("./pages/global.tsx"))} />
+        <Route path="/" component={Feed}>
+          <Route path="/" component={Global} />
           <Route path="/realms" component={lazy(() => import("./pages/realms.tsx"))} />
           <Route path="/realms/:realmId" component={lazy(() => import("./pages/realm.tsx"))} />
           <Route path="/accounts/:accountId" component={lazy(() => import("./pages/account.tsx"))} />
