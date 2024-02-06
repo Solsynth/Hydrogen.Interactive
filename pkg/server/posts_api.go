@@ -53,14 +53,16 @@ func getPost(c *fiber.Ctx) error {
 	take := c.QueryInt("take", 0)
 	offset := c.QueryInt("offset", 0)
 
-	var post models.Post
-	if err := services.PreloadRelatedPost(database.C.Where(&models.Post{
+	tx := database.C.Where(&models.Post{
 		BaseModel: models.BaseModel{ID: uint(id)},
-	})).First(&post).Error; err != nil {
+	})
+
+	post, err := services.GetPost(tx)
+	if err != nil {
 		return fiber.NewError(fiber.StatusNotFound, err.Error())
 	}
 
-	tx := database.C.
+	tx = database.C.
 		Where(&models.Post{ReplyID: &post.ID}).
 		Where("published_at <= ? OR published_at IS NULL", time.Now()).
 		Order("created_at desc")

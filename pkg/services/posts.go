@@ -30,6 +30,38 @@ func PreloadRelatedPost(tx *gorm.DB) *gorm.DB {
 		Preload("ReplyTo.Tags")
 }
 
+func GetPost(tx *gorm.DB) (*models.Post, error) {
+	var post *models.Post
+	if err := PreloadRelatedPost(tx).
+		First(&post).Error; err != nil {
+		return post, err
+	}
+
+	var reactInfo struct {
+		PostID       uint
+		LikeCount    int64
+		DislikeCount int64
+	}
+
+	prefix := viper.GetString("database.prefix")
+	database.C.Raw(fmt.Sprintf(`SELECT t.id                         as post_id,
+       COALESCE(l.like_count, 0)    AS like_count,
+       COALESCE(d.dislike_count, 0) AS dislike_count
+FROM %sposts t
+         LEFT JOIN (SELECT post_id, COUNT(*) AS like_count
+                    FROM %spost_likes
+                    GROUP BY post_id) l ON t.id = l.post_id
+         LEFT JOIN (SELECT post_id, COUNT(*) AS dislike_count
+                    FROM %spost_dislikes
+                    GROUP BY post_id) d ON t.id = d.post_id
+WHERE t.id = ?`, prefix, prefix, prefix), post.ID).Scan(&reactInfo)
+
+	post.LikeCount = reactInfo.LikeCount
+	post.DislikeCount = reactInfo.DislikeCount
+
+	return post, nil
+}
+
 func ListPost(tx *gorm.DB, take int, offset int) ([]*models.Post, error) {
 	var posts []*models.Post
 	if err := PreloadRelatedPost(tx).
