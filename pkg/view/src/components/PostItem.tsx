@@ -76,7 +76,11 @@ export default function PostItem(props: {
           </For>
         </div>
 
-        <PostAttachments attachments={props.post.attachments ?? []} />
+        <Show when={props.post.attachments?.length > 0}>
+          <div class="pb-5">
+            <PostAttachments attachments={props.post.attachments ?? []} />
+          </div>
+        </Show>
 
         <Show when={!props.noRelated && props.post.repost_to}>
           <p class="text-xs mt-3 mb-2">
@@ -174,7 +178,7 @@ export default function PostItem(props: {
       <div class="post-item">
         {element}
       </div>
-    )
+    );
   } else {
     return (
       <a class="post-item" href={`/posts/${props.post.id}`}>
