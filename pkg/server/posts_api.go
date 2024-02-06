@@ -12,42 +12,6 @@ import (
 	"github.com/samber/lo"
 )
 
-func listPost(c *fiber.Ctx) error {
-	take := c.QueryInt("take", 0)
-	offset := c.QueryInt("offset", 0)
-	authorId := c.Query("authorId")
-
-	tx := database.C.
-		Where("realm_id IS NULL").
-		Where("published_at <= ? OR published_at IS NULL", time.Now()).
-		Order("created_at desc")
-
-	var author models.Account
-	if len(authorId) > 0 {
-		if err := database.C.Where(&models.Account{Name: authorId}).Error; err != nil {
-			return fiber.NewError(fiber.StatusNotFound, err.Error())
-		}
-		tx = tx.Where(&models.Post{AuthorID: author.ID})
-	}
-
-	var count int64
-	if err := tx.
-		Model(&models.Post{}).
-		Count(&count).Error; err != nil {
-		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
-	}
-
-	posts, err := services.ListPost(tx, take, offset)
-	if err != nil {
-		return fiber.NewError(fiber.StatusBadRequest, err.Error())
-	}
-
-	return c.JSON(fiber.Map{
-		"count": count,
-		"data":  posts,
-	})
-}
-
 func getPost(c *fiber.Ctx) error {
 	id, _ := c.ParamsInt("postId", 0)
 	take := c.QueryInt("take", 0)
@@ -83,6 +47,42 @@ func getPost(c *fiber.Ctx) error {
 		"data":    post,
 		"count":   count,
 		"related": posts,
+	})
+}
+
+func listPost(c *fiber.Ctx) error {
+	take := c.QueryInt("take", 0)
+	offset := c.QueryInt("offset", 0)
+	authorId := c.Query("authorId")
+
+	tx := database.C.
+		Where("realm_id IS NULL").
+		Where("published_at <= ? OR published_at IS NULL", time.Now()).
+		Order("created_at desc")
+
+	var author models.Account
+	if len(authorId) > 0 {
+		if err := database.C.Where(&models.Account{Name: authorId}).First(&author).Error; err != nil {
+			return fiber.NewError(fiber.StatusNotFound, err.Error())
+		}
+		tx = tx.Where(&models.Post{AuthorID: author.ID})
+	}
+
+	var count int64
+	if err := tx.
+		Model(&models.Post{}).
+		Count(&count).Error; err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	}
+
+	posts, err := services.ListPost(tx, take, offset)
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
+	return c.JSON(fiber.Map{
+		"count": count,
+		"data":  posts,
 	})
 }
 
