@@ -26,17 +26,21 @@ export default function RootLayout(props: any) {
 
     if (!userinfo?.isLoggedIn && blacklist.includes(path)) {
       if (!e?.defaultPrevented) e?.preventDefault();
-      navigate(`/auth?redirect_uri=${path}`);
+      if (location.query["embedded"]) {
+        navigate(`/auth?redirect_uri=${path}&embedded=${location.query["embedded"]}`);
+      } else {
+        navigate(`/auth?redirect_uri=${path}`);
+      }
     }
   }
 
   const mainContentStyles = createMemo(() => {
-    if(!searchParams["noTitle"]) {
-      return "h-[calc(100vh-64px)] mt-[64px]"
+    if (!searchParams["noTitle"]) {
+      return "h-[calc(100vh-64px)] mt-[64px]";
     } else {
-      return "h-[100vh]"
+      return "h-[100vh]";
     }
-  })
+  });
 
   return (
     <Show when={ready()} fallback={
