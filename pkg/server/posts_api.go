@@ -53,7 +53,6 @@ func getPost(c *fiber.Ctx) error {
 func listPost(c *fiber.Ctx) error {
 	take := c.QueryInt("take", 0)
 	offset := c.QueryInt("offset", 0)
-	authorId := c.Query("authorId")
 
 	tx := database.C.
 		Where("realm_id IS NULL").
@@ -61,11 +60,19 @@ func listPost(c *fiber.Ctx) error {
 		Order("created_at desc")
 
 	var author models.Account
-	if len(authorId) > 0 {
-		if err := database.C.Where(&models.Account{Name: authorId}).First(&author).Error; err != nil {
+	if len(c.Query("authorId")) > 0 {
+		if err := database.C.Where(&models.Account{Name: c.Query("authorId")}).First(&author).Error; err != nil {
 			return fiber.NewError(fiber.StatusNotFound, err.Error())
 		}
 		tx = tx.Where(&models.Post{AuthorID: author.ID})
+	}
+
+	if len(c.Query("category")) > 0 {
+		tx = services.FilterPostWithCategory(tx, c.Query("category"))
+	}
+
+	if len(c.Query("tag")) > 0 {
+		tx = services.FilterPostWithTag(tx, c.Query("tag"))
 	}
 
 	var count int64

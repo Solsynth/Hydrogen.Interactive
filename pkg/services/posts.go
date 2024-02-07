@@ -30,6 +30,20 @@ func PreloadRelatedPost(tx *gorm.DB) *gorm.DB {
 		Preload("ReplyTo.Tags")
 }
 
+func FilterPostWithCategory(tx *gorm.DB, alias string) *gorm.DB {
+	prefix := viper.GetString("database.prefix")
+	return tx.Joins(fmt.Sprintf("JOIN %spost_categories ON %sposts.id = %spost_categories.post_id", prefix, prefix, prefix)).
+		Joins(fmt.Sprintf("JOIN %scategories ON %scategories.id = %spost_categories.category_id", prefix, prefix, prefix)).
+		Where(fmt.Sprintf("%scategories.alias = ?", prefix), alias)
+}
+
+func FilterPostWithTag(tx *gorm.DB, alias string) *gorm.DB {
+	prefix := viper.GetString("database.prefix")
+	return tx.Joins(fmt.Sprintf("JOIN %spost_tags ON %sposts.id = %spost_tags.post_id", prefix, prefix, prefix)).
+		Joins(fmt.Sprintf("JOIN %stags ON %stags.id = %spost_tags.tag_id", prefix, prefix, prefix)).
+		Where(fmt.Sprintf("%stags.alias = ?", prefix), alias)
+}
+
 func GetPost(tx *gorm.DB) (*models.Post, error) {
 	var post *models.Post
 	if err := PreloadRelatedPost(tx).

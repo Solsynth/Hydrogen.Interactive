@@ -10,7 +10,7 @@ export default function PostList(props: {
   onRepost?: (post: any) => void,
   onReply?: (post: any) => void,
   onEdit?: (post: any) => void,
-  onUpdate: (pn: number) => Promise<void>,
+  onUpdate: (pn: number, filter?: any) => Promise<void>,
   onError: (message: string | null) => void
 }) {
   const [loading, setLoading] = createSignal(true);
@@ -21,9 +21,9 @@ export default function PostList(props: {
   const [page, setPage] = createSignal(1);
   const pageCount = createMemo(() => Math.ceil(postCount() / 10));
 
-  async function readPosts() {
+  async function readPosts(filter?: any) {
     setLoading(true);
-    await props.onUpdate(page());
+    await props.onUpdate(page(), filter);
     setLoading(false);
   }
 

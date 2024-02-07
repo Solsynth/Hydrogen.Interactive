@@ -26,6 +26,7 @@ render(() => (
         <Route path="/" component={Feed}>
           <Route path="/" component={Global} />
           <Route path="/posts/:postId" component={PostReference} />
+          <Route path="/search" component={lazy(() => import("./pages/search.tsx"))} />
           <Route path="/realms" component={lazy(() => import("./pages/realms"))} />
           <Route path="/realms/:realmId" component={lazy(() => import("./pages/realms/realm.tsx"))} />
           <Route path="/accounts/:accountId" component={lazy(() => import("./pages/account.tsx"))} />

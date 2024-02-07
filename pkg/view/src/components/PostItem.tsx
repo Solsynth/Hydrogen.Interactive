@@ -13,6 +13,7 @@ export default function PostItem(props: {
   onReply?: (post: any) => void,
   onEdit?: (post: any) => void,
   onDelete?: (post: any) => void,
+  onSearch?: (filter: any) => void,
   onError: (message: string | null) => void,
   onReact: () => void
 }) {
@@ -72,16 +73,22 @@ export default function PostItem(props: {
           </a>
         </Show>
 
-        <div class="mt-2 flex gap-2">
+        <div class="mt-2 mb-5 flex gap-2">
           <For each={props.post.categories}>
-            {item => <a class="link link-primary pb-5">
-              #{item.name}
-            </a>}
+            {item =>
+              <a href={`/search?category=${item.alias}`} class="badge badge-primary">
+                <i class="fa-solid fa-layer-group me-1.5"></i>
+                {item.name}
+              </a>
+            }
           </For>
           <For each={props.post.tags}>
-            {item => <a class="link link-primary pb-5">
-              #{item.name}
-            </a>}
+            {item =>
+              <a href={`/search?tag=${item.alias}`} class="badge badge-accent">
+                <i class="fa-regular fa-tag me-1.5"></i>
+                {item.name}
+              </a>
+            }
           </For>
         </div>
 
