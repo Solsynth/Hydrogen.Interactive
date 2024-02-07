@@ -17,16 +17,16 @@ export default function RootLayout(props: any) {
 
   createEffect(() => {
     if (ready()) {
-      keepGate(location.pathname + location.search);
+      keepGate(location.pathname + location.search, searchParams["embedded"] != null);
     }
   }, [ready, userinfo]);
 
-  function keepGate(path: string, e?: BeforeLeaveEventArgs) {
+  function keepGate(path: string, embedded: boolean, e?: BeforeLeaveEventArgs) {
     const blacklist = ["/creator"];
 
     if (!userinfo?.isLoggedIn && blacklist.includes(path)) {
       if (!e?.defaultPrevented) e?.preventDefault();
-      if (location.query["embedded"]) {
+      if (embedded) {
         navigate(`/auth?redirect_uri=${path}&embedded=${location.query["embedded"]}`);
       } else {
         navigate(`/auth?redirect_uri=${path}`);
