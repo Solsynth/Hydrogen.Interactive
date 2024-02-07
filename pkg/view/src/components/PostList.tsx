@@ -57,16 +57,18 @@ export default function PostList(props: {
     <div id="post-list">
       <div id="posts">
         <For each={posts()}>
-          {item => <PostItem
-            post={item}
-            noRelated={props.noRelated}
-            onRepost={props.onRepost}
-            onReply={props.onReply}
-            onEdit={props.onEdit}
-            onDelete={deletePost}
-            onReact={() => readPosts()}
-            onError={props.onError}
-          />}
+          {item =>
+            <PostItem
+              post={item}
+              noRelated={props.noRelated}
+              onRepost={props.onRepost}
+              onReply={props.onReply}
+              onEdit={props.onEdit}
+              onDelete={deletePost}
+              onReact={() => readPosts()}
+              onError={props.onError}
+            />
+          }
         </For>
 
         <div class="flex justify-center">

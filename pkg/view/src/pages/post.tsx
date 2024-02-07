@@ -5,6 +5,7 @@ import { closeModel, openModel } from "../scripts/modals.ts";
 import PostPublish from "../components/PostPublish.tsx";
 import PostList from "../components/PostList.tsx";
 import PostItem from "../components/PostItem.tsx";
+import { getAtk } from "../stores/userinfo.tsx";
 
 export default function PostPage() {
   const [error, setError] = createSignal<string | null>(null);
@@ -36,6 +37,21 @@ export default function PostPage() {
   }
 
   readPost();
+
+  async function deletePost(item: any) {
+    if (!confirm(`Are you sure to delete post#${item.id}?`)) return;
+
+    const res = await fetch(`/api/posts/${item.id}`, {
+      method: "DELETE",
+      headers: { "Authorization": `Bearer ${getAtk()}` }
+    });
+    if (res.status !== 200) {
+      setError(await res.text());
+    } else {
+      back();
+      setError(null);
+    }
+  }
 
   function setMeta(data: any, field: string, open = true) {
     const meta: { [id: string]: any } = {
@@ -112,6 +128,7 @@ export default function PostPage() {
           post={info()}
           onError={setError}
           onReact={readPost}
+          onDelete={deletePost}
           onRepost={(item) => setMeta(item, "reposting")}
           onReply={(item) => setMeta(item, "replying")}
           onEdit={(item) => setMeta(item, "editing")}

@@ -35,8 +35,14 @@ export default function PostItem(props: {
     setReacting(false);
   }
 
-  const element = (
-    <>
+  const content = (
+    <article class="prose">
+      <SolidMarkdown children={props.post.content} />
+    </article>
+  );
+
+  return (
+    <div class="post-item">
       <Show when={!props.noAuthor}>
         <a href={`/accounts/${props.post.author.name}`}>
           <div class="flex bg-base-200">
@@ -59,9 +65,12 @@ export default function PostItem(props: {
       </Show>
       <div class="px-7">
         <h2 class="card-title">{props.post.title}</h2>
-        <article class="prose">
-          <SolidMarkdown children={props.post.content} />
-        </article>
+
+        <Show when={!props.noClick} fallback={content}>
+          <a href={`/posts/${props.post.id}`}>
+            {content}
+          </a>
+        </Show>
 
         <div class="mt-2 flex gap-2">
           <For each={props.post.categories}>
@@ -92,7 +101,8 @@ export default function PostItem(props: {
               noControl
               post={props.post.repost_to}
               onError={props.onError}
-              onReact={props.onReact} />
+              onReact={props.onReact}
+            />
           </div>
         </Show>
         <Show when={!props.noRelated && props.post.reply_to}>
@@ -105,7 +115,8 @@ export default function PostItem(props: {
               noControl
               post={props.post.reply_to}
               onError={props.onError}
-              onReact={props.onReact} />
+              onReact={props.onReact}
+            />
           </div>
         </Show>
       </div>
@@ -170,20 +181,6 @@ export default function PostItem(props: {
           </div>
         </div>
       </Show>
-    </>
+    </div>
   );
-
-  if (props.noClick) {
-    return (
-      <div class="post-item">
-        {element}
-      </div>
-    );
-  } else {
-    return (
-      <a class="post-item" href={`/posts/${props.post.id}`}>
-        {element}
-      </a>
-    );
-  }
 }
