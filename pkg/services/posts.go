@@ -3,6 +3,8 @@ package services
 import (
 	"errors"
 	"fmt"
+	"github.com/gofiber/fiber/v2"
+	"github.com/rs/zerolog/log"
 	"time"
 
 	"code.smartsheep.studio/hydrogen/interactive/pkg/database"
@@ -172,6 +174,26 @@ func NewPost(
 
 	if err := database.C.Save(&post).Error; err != nil {
 		return post, err
+	}
+
+	if post.ReplyID != nil {
+		var op models.Post
+		if err := database.C.Where(&models.Post{
+			BaseModel: models.BaseModel{ID: *post.ReplyID},
+		}).Preload("Author").First(&op).Error; err == nil {
+			if op.Author.ID != user.ID {
+				postUrl := fmt.Sprintf("https://%s/posts/%d", viper.GetString("domain"), post.ID)
+				err := NotifyAccount(
+					op.Author,
+					fmt.Sprintf("%s replied you", user.Name),
+					fmt.Sprintf("%s replied your post. Check it out!", user.Name),
+					fiber.Map{"label": "Related post", "url": postUrl},
+				)
+				if err != nil {
+					log.Error().Err(err).Msg("An error occurred when notifying user...")
+				}
+			}
+		}
 	}
 
 	return post, nil
