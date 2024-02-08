@@ -5,7 +5,7 @@ export default function DashboardPage(props: any) {
     <div class={`${styles.wrapper} container mx-auto`}>
       <div id="trending" class="card shadow-xl h-fit"></div>
 
-      <div id="content max-w-screen" class="card shadow-xl">
+      <div id="content max-w-[100vw]" class="card shadow-xl">
         {props.children}
       </div>
 
