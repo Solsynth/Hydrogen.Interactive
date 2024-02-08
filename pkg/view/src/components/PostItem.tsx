@@ -43,7 +43,7 @@ export default function PostItem(props: {
   );
 
   return (
-    <div class="post-item">
+    <div class="post-item max-w-screen">
       <Show when={!props.noAuthor}>
         <a href={`/accounts/${props.post.author.name}`}>
           <div class="flex bg-base-200">
