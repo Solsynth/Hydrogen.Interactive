@@ -54,7 +54,7 @@ export default function RootLayout(props: any) {
         <Navbar />
       </Show>
 
-      <main class={mainContentStyles()}>{props.children}</main>
+      <main class={`${mainContentStyles()} scrollbar-hidden`}>{props.children}</main>
     </Show>
   );
 }

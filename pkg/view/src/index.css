@@ -14,3 +14,12 @@ html, body {
 .medium-zoom-overlay {
     z-index: 10;
 }
+
+.scrollbar-hidden {
+    scrollbar-width: none;
+}
+
+.scrollbar-hidden::-webkit-scrollbar {
+    display: none;
+    width: 0;
+}
