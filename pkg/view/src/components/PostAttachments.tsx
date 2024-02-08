@@ -3,13 +3,9 @@ import mediumZoom from "medium-zoom";
 
 import styles from "./PostAttachments.module.css";
 
-// @ts-ignore
-import APlayer from "aplayer";
 import Artplayer from "artplayer";
 import HlsJs from "hls.js";
 import FlvJs from "flv.js";
-
-import "aplayer/dist/APlayer.min.css";
 
 function Video({ url, ...rest }: any) {
   let container: any;
@@ -21,24 +17,24 @@ function Video({ url, ...rest }: any) {
       hls.loadSource(url);
       hls.attachMedia(video);
       art.hls = hls;
-      art.on('destroy', () => hls.destroy());
-    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      art.on("destroy", () => hls.destroy());
+    } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
       video.src = url;
     } else {
-      art.notice.show = 'Unsupported playback format: m3u8';
+      art.notice.show = "Unsupported playback format: m3u8";
     }
   }
 
   function playFlv(video: HTMLVideoElement, url: string, art: Artplayer) {
     if (FlvJs.isSupported()) {
       if (art.flv) art.flv.destroy();
-      const flv = FlvJs.createPlayer({ type: 'flv', url });
+      const flv = FlvJs.createPlayer({ type: "flv", url });
       flv.attachMediaElement(video);
       flv.load();
       art.flv = flv;
-      art.on('destroy', () => flv.destroy());
+      art.on("destroy", () => flv.destroy());
     } else {
-      art.notice.show = 'Unsupported playback format: flv';
+      art.notice.show = "Unsupported playback format: flv";
     }
   }
 
@@ -54,14 +50,11 @@ function Video({ url, ...rest }: any) {
       subtitleOffset: true,
       fullscreen: true,
       fullscreenWeb: true,
-      screenshot: true,
-      autoPlayback: true,
-      airplay: true,
       theme: "#49509e",
       customType: {
         m3u8: playM3u8,
-        flv: playFlv,
-      },
+        flv: playFlv
+      }
     });
   });
 
@@ -71,21 +64,12 @@ function Video({ url, ...rest }: any) {
 }
 
 function Audio({ url, caption, ...rest }: any) {
-  let container: any;
-
-  createEffect(() => {
-    new APlayer({
-      container: container as HTMLDivElement,
-      audio: [{
-        name: caption,
-        url: url,
-        theme: "#49509e"
-      }]
-    });
-  });
 
   return (
-    <div ref={container} {...rest}></div>
+    <figure {...rest}>
+      <figcaption>{caption}</figcaption>
+      <audio controls src={url} />
+    </figure>
   );
 }
 
@@ -129,7 +113,7 @@ export default function PostAttachments(props: { attachments: any[] }) {
               </div>
 
               <div class="mt-5">
-              <a class="link" href={getUrl(item())} target="_blank">Open in browser</a>
+                <a class="link" href={getUrl(item())} target="_blank">Open in browser</a>
               </div>
             </div>
           </div>
@@ -140,7 +124,8 @@ export default function PostAttachments(props: { attachments: any[] }) {
             </figure>
           </Match>
           <Match when={getRenderType(item()) === "audio"}>
-            <Audio class="w-full" url={getUrl(item())} caption={item().filename} />
+            <Audio class="p-5 flex flex-col items-center justify-center gap-2 w-full" url={getUrl(item())}
+                   caption={item().filename} />
           </Match>
           <Match when={getRenderType(item()) === "video"}>
             <Video class="h-[360px] w-full" url={getUrl(item())} caption={item().filename} />

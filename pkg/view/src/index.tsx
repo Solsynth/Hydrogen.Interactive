@@ -11,7 +11,7 @@ import { Route, Router } from "@solidjs/router";
 import "@fortawesome/fontawesome-free/css/all.css";
 
 import RootLayout from "./layouts/RootLayout.tsx";
-import Feed from "./pages/feed.tsx";
+import Feed from "./pages/view.tsx";
 import Global from "./pages/global.tsx";
 import PostReference from "./pages/post.tsx";
 import { UserinfoProvider } from "./stores/userinfo.tsx";

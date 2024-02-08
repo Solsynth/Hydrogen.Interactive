@@ -1,7 +1,8 @@
 import { createSignal, For, Show } from "solid-js";
 import { getAtk, useUserinfo } from "../stores/userinfo.tsx";
 import PostAttachments from "./PostAttachments.tsx";
-import { SolidMarkdown } from "solid-markdown";
+import * as marked from "marked";
+import DOMPurify from "dompurify";
 
 export default function PostItem(props: {
   post: any,
@@ -37,9 +38,7 @@ export default function PostItem(props: {
   }
 
   const content = (
-    <article class="prose">
-      <SolidMarkdown children={props.post.content} />
-    </article>
+    <article class="prose" innerHTML={DOMPurify.sanitize(marked.parse(props.post.content) as string)} />
   );
 
   return (
@@ -64,7 +63,7 @@ export default function PostItem(props: {
           </div>
         </a>
       </Show>
-      <div class="px-7">
+      <div class="px-7 py-5">
         <h2 class="card-title">{props.post.title}</h2>
 
         <Show when={!props.noClick} fallback={content}>
@@ -73,7 +72,7 @@ export default function PostItem(props: {
           </a>
         </Show>
 
-        <div class="mt-2 mb-5 flex gap-2">
+        <div class="mt-2 flex gap-2">
           <For each={props.post.categories}>
             {item =>
               <a href={`/search?category=${item.alias}`} class="badge badge-primary">
@@ -93,7 +92,7 @@ export default function PostItem(props: {
         </div>
 
         <Show when={props.post.attachments?.length > 0}>
-          <div class="pb-5">
+          <div>
             <PostAttachments attachments={props.post.attachments ?? []} />
           </div>
         </Show>

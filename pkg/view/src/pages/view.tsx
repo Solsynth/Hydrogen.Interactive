@@ -1,4 +1,4 @@
-import styles from "./feed.module.css";
+import styles from "./view.module.css";
 
 export default function DashboardPage(props: any) {
   return (
