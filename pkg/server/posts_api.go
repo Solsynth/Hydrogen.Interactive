@@ -54,10 +54,17 @@ func listPost(c *fiber.Ctx) error {
 	take := c.QueryInt("take", 0)
 	offset := c.QueryInt("offset", 0)
 
+	realmId := c.QueryInt("realmId", 0)
+
 	tx := database.C.
-		Where("realm_id IS NULL").
 		Where("published_at <= ? OR published_at IS NULL", time.Now()).
 		Order("created_at desc")
+
+	if realmId > 0 {
+		tx = tx.Where(&models.Post{RealmID: lo.ToPtr(uint(realmId))})
+	} else {
+		tx = tx.Where("realm_id IS NULL")
+	}
 
 	var author models.Account
 	if len(c.Query("authorId")) > 0 {

@@ -5,8 +5,6 @@ import (
 	"code.smartsheep.studio/hydrogen/interactive/pkg/models"
 	"code.smartsheep.studio/hydrogen/interactive/pkg/services"
 	"github.com/gofiber/fiber/v2"
-	"github.com/samber/lo"
-	"time"
 )
 
 func getRealm(c *fiber.Ctx) error {
@@ -40,40 +38,6 @@ func listOwnedRealm(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(realms)
-}
-
-func listPostInRealm(c *fiber.Ctx) error {
-	take := c.QueryInt("take", 0)
-	offset := c.QueryInt("offset", 0)
-	authorId := c.QueryInt("authorId", 0)
-
-	realmId, _ := c.ParamsInt("realmId", 0)
-
-	tx := database.C.
-		Where(&models.Post{RealmID: lo.ToPtr(uint(realmId))}).
-		Where("published_at <= ? OR published_at IS NULL", time.Now()).
-		Order("created_at desc")
-
-	if authorId > 0 {
-		tx = tx.Where(&models.Post{AuthorID: uint(authorId)})
-	}
-
-	var count int64
-	if err := tx.
-		Model(&models.Post{}).
-		Count(&count).Error; err != nil {
-		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
-	}
-
-	posts, err := services.ListPost(tx, take, offset)
-	if err != nil {
-		return fiber.NewError(fiber.StatusBadRequest, err.Error())
-	}
-
-	return c.JSON(fiber.Map{
-		"count": count,
-		"data":  posts,
-	})
 }
 
 func createRealm(c *fiber.Ctx) error {
