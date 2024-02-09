@@ -23,11 +23,15 @@ func ListRealmWithUser(user models.Account) ([]models.Realm, error) {
 	return realms, nil
 }
 
-func NewRealm(user models.Account, name, description string) (models.Realm, error) {
+func NewRealm(user models.Account, name, description string, isPublic bool) (models.Realm, error) {
 	realm := models.Realm{
 		Name:        name,
 		Description: description,
 		AccountID:   user.ID,
+		IsPublic:    isPublic,
+		Members: []models.RealmMember{
+			{AccountID: user.ID},
+		},
 	}
 
 	err := database.C.Save(&realm).Error
@@ -35,9 +39,21 @@ func NewRealm(user models.Account, name, description string) (models.Realm, erro
 	return realm, err
 }
 
-func EditRealm(realm models.Realm, name, description string) (models.Realm, error) {
+func InviteRealmMember(user models.Account, target models.Realm) error {
+	member := models.RealmMember{
+		RealmID:   target.ID,
+		AccountID: user.ID,
+	}
+
+	err := database.C.Save(&member).Error
+
+	return err
+}
+
+func EditRealm(realm models.Realm, name, description string, isPublic bool) (models.Realm, error) {
 	realm.Name = name
 	realm.Description = description
+	realm.IsPublic = isPublic
 
 	err := database.C.Save(&realm).Error
 

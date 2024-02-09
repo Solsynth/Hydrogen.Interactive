@@ -49,18 +49,53 @@ func createRealm(c *fiber.Ctx) error {
 	var data struct {
 		Name        string `json:"name" validate:"required"`
 		Description string `json:"description"`
+		IsPublic    bool   `json:"is_public"`
 	}
 
 	if err := BindAndValidate(c, &data); err != nil {
 		return err
 	}
 
-	realm, err := services.NewRealm(user, data.Name, data.Description)
+	realm, err := services.NewRealm(user, data.Name, data.Description, data.IsPublic)
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 
 	return c.JSON(realm)
+}
+
+func inviteRealm(c *fiber.Ctx) error {
+	user := c.Locals("principal").(models.Account)
+	realmId, _ := c.ParamsInt("realmId", 0)
+
+	var data struct {
+		AccountID uint `json:"account_id" validate:"required"`
+	}
+
+	if err := BindAndValidate(c, &data); err != nil {
+		return err
+	}
+
+	var realm models.Realm
+	if err := database.C.Where(&models.Realm{
+		BaseModel: models.BaseModel{ID: uint(realmId)},
+		AccountID: user.ID,
+	}).First(&realm).Error; err != nil {
+		return fiber.NewError(fiber.StatusNotFound, err.Error())
+	}
+
+	var account models.Account
+	if err := database.C.Where(&models.Account{
+		BaseModel: models.BaseModel{ID: uint(realmId)},
+	}).First(&account).Error; err != nil {
+		return fiber.NewError(fiber.StatusNotFound, err.Error())
+	}
+
+	if err := services.InviteRealmMember(account, realm); err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	} else {
+		return c.SendStatus(fiber.StatusOK)
+	}
 }
 
 func editRealm(c *fiber.Ctx) error {
@@ -70,6 +105,7 @@ func editRealm(c *fiber.Ctx) error {
 	var data struct {
 		Name        string `json:"name" validate:"required"`
 		Description string `json:"description"`
+		IsPublic    bool   `json:"is_public"`
 	}
 
 	if err := BindAndValidate(c, &data); err != nil {
@@ -84,7 +120,7 @@ func editRealm(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusNotFound, err.Error())
 	}
 
-	realm, err := services.EditRealm(realm, data.Name, data.Description)
+	realm, err := services.EditRealm(realm, data.Name, data.Description, data.IsPublic)
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}

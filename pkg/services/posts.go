@@ -151,6 +151,15 @@ func NewPost(
 
 	var realmId *uint
 	if realm != nil {
+		if !realm.IsPublic {
+			var member models.RealmMember
+			if err := database.C.Where(&models.RealmMember{
+				RealmID:   *realmId,
+				AccountID: user.ID,
+			}).First(&member).Error; err != nil {
+				return post, fmt.Errorf("you aren't a part of that realm")
+			}
+		}
 		realmId = &realm.ID
 	}
 
