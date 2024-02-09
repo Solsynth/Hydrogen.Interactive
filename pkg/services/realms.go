@@ -50,6 +50,19 @@ func InviteRealmMember(user models.Account, target models.Realm) error {
 	return err
 }
 
+func KickRealmMember(user models.Account, target models.Realm) error {
+	var member models.RealmMember
+
+	if err := database.C.Where(&models.RealmMember{
+		RealmID:   target.ID,
+		AccountID: user.ID,
+	}).First(&member).Error; err != nil {
+		return err
+	}
+
+	return database.C.Delete(&member).Error
+}
+
 func EditRealm(realm models.Realm, name, description string, isPublic bool) (models.Realm, error) {
 	realm.Name = name
 	realm.Description = description

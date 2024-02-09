@@ -10,6 +10,7 @@ func RunMigration(source *gorm.DB) error {
 		&models.Account{},
 		&models.AccountMembership{},
 		&models.Realm{},
+		&models.RealmMember{},
 		&models.Category{},
 		&models.Tag{},
 		&models.Post{},
