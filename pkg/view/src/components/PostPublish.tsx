@@ -62,7 +62,7 @@ export default function PostPublish(props: {
         attachments: attachments(),
         categories: categories(),
         tags: tags(),
-        realm_id: props.realmId,
+        realm_id: data.publish_in_realm ? props.realmId : undefined,
         published_at: data.published_at ? new Date(data.published_at as string) : new Date(),
         repost_to: props.reposting?.id,
         reply_to: props.replying?.id
@@ -241,6 +241,17 @@ export default function PostPublish(props: {
             <button type="reset" class="btn btn-ghost w-12" disabled={submitting()}>
               <i class="fa-solid fa-xmark"></i>
             </button>
+          </div>
+        </Show>
+
+        <Show when={props.realmId && !props.editing}>
+          <div class="border-b border-base-200 px-5 h-[48px] flex items-center">
+            <div class="form-control flex-grow">
+              <label class="label cursor-pointer">
+                <span class="label-text">Publish in this realm</span>
+                <input name="publish_in_realm" type="checkbox" checked class="checkbox checkbox-primary" />
+              </label>
+            </div>
           </div>
         </Show>
 
