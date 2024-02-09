@@ -10,6 +10,7 @@ export default function PostItem(props: {
   noAuthor?: boolean,
   noControl?: boolean,
   noRelated?: boolean,
+  noContent?: boolean,
   onRepost?: (post: any) => void,
   onReply?: (post: any) => void,
   onEdit?: (post: any) => void,
@@ -63,69 +64,72 @@ export default function PostItem(props: {
           </div>
         </a>
       </Show>
-      <div class="px-7 py-5">
-        <h2 class="card-title">{props.post.title}</h2>
 
-        <Show when={!props.noClick} fallback={content}>
-          <a href={`/posts/${props.post.id}`}>
-            {content}
-          </a>
-        </Show>
+      <Show when={!props.noContent}>
+        <div class="px-7 py-5">
+          <h2 class="card-title">{props.post.title}</h2>
+          <Show when={!props.noClick} fallback={content}>
+            <a href={`/posts/${props.post.id}`}>
+              {content}
+            </a>
+          </Show>
 
-        <div class="mt-2 flex gap-2">
-          <For each={props.post.categories}>
-            {item =>
-              <a href={`/search?category=${item.alias}`} class="badge badge-primary">
-                <i class="fa-solid fa-layer-group me-1.5"></i>
-                {item.name}
-              </a>
-            }
-          </For>
-          <For each={props.post.tags}>
-            {item =>
-              <a href={`/search?tag=${item.alias}`} class="badge badge-accent">
-                <i class="fa-regular fa-tag me-1.5"></i>
-                {item.name}
-              </a>
-            }
-          </For>
+          <div class="mt-2 flex gap-2">
+            <For each={props.post.categories}>
+              {item =>
+                <a href={`/search?category=${item.alias}`} class="badge badge-primary">
+                  <i class="fa-solid fa-layer-group me-1.5"></i>
+                  {item.name}
+                </a>
+              }
+            </For>
+            <For each={props.post.tags}>
+              {item =>
+                <a href={`/search?tag=${item.alias}`} class="badge badge-accent">
+                  <i class="fa-regular fa-tag me-1.5"></i>
+                  {item.name}
+                </a>
+              }
+            </For>
+          </div>
+
+          <Show when={props.post.attachments?.length > 0}>
+            <div>
+              <PostAttachments attachments={props.post.attachments ?? []} />
+            </div>
+          </Show>
+
+          <Show when={!props.noRelated && props.post.repost_to}>
+            <p class="text-xs mt-3 mb-2">
+              <i class="fa-solid fa-retweet me-2"></i>
+              Reposted a post
+            </p>
+            <div class="border border-base-200 mb-5">
+              <PostItem
+                noControl
+                post={props.post.repost_to}
+                onError={props.onError}
+                onReact={props.onReact}
+              />
+            </div>
+          </Show>
+          <Show when={!props.noRelated && props.post.reply_to}>
+            <p class="text-xs mt-3 mb-2">
+              <i class="fa-solid fa-reply me-2"></i>
+              Replied a post
+            </p>
+            <div class="border border-base-200 mb-5">
+              <PostItem
+                noControl
+                post={props.post.reply_to}
+                onError={props.onError}
+                onReact={props.onReact}
+              />
+            </div>
+          </Show>
         </div>
+      </Show>
 
-        <Show when={props.post.attachments?.length > 0}>
-          <div>
-            <PostAttachments attachments={props.post.attachments ?? []} />
-          </div>
-        </Show>
-
-        <Show when={!props.noRelated && props.post.repost_to}>
-          <p class="text-xs mt-3 mb-2">
-            <i class="fa-solid fa-retweet me-2"></i>
-            Reposted a post
-          </p>
-          <div class="border border-base-200 mb-5">
-            <PostItem
-              noControl
-              post={props.post.repost_to}
-              onError={props.onError}
-              onReact={props.onReact}
-            />
-          </div>
-        </Show>
-        <Show when={!props.noRelated && props.post.reply_to}>
-          <p class="text-xs mt-3 mb-2">
-            <i class="fa-solid fa-reply me-2"></i>
-            Replied a post
-          </p>
-          <div class="border border-base-200 mb-5">
-            <PostItem
-              noControl
-              post={props.post.reply_to}
-              onError={props.onError}
-              onReact={props.onReact}
-            />
-          </div>
-        </Show>
-      </div>
       <Show when={!props.noControl}>
         <div class="relative">
           <Show when={!userinfo?.isLoggedIn}>

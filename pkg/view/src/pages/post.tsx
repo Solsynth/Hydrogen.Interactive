@@ -1,5 +1,5 @@
 import { createSignal, Show } from "solid-js";
-import { useNavigate, useParams } from "@solidjs/router";
+import { useNavigate, useParams, useSearchParams } from "@solidjs/router";
 import { createStore } from "solid-js/store";
 import { closeModel, openModel } from "../scripts/modals.ts";
 import PostPublish from "../components/PostPublish.tsx";
@@ -16,6 +16,8 @@ export default function PostPage() {
 
   const params = useParams();
   const navigate = useNavigate();
+
+  const [searchParams] = useSearchParams();
 
   async function readPost(pn?: number) {
     if (pn) setPage(pn);
@@ -96,11 +98,17 @@ export default function PostPage() {
       </div>
 
       <div class="flex pt-1">
-        <button class="btn btn-ghost ml-[20px] w-12 h-12" onClick={() => back()}>
-          <i class="fa-solid fa-angle-left"></i>
-        </button>
+        <Show when={searchParams["embedded"]} fallback={
+          <button class="btn btn-ghost ml-[20px] w-12 h-12" onClick={() => back()}>
+            <i class="fa-solid fa-angle-left"></i>
+          </button>
+        }>
+          <div class="w-12 h-12 ml-[20px] flex justify-center items-center">
+            <i class="fa-solid fa-comments mb-1"></i>
+          </div>
+        </Show>
         <div class="px-5 flex items-center">
-          <p>Post #{info()?.id}</p>
+          <p>{searchParams["title"] ?? "Post details"}</p>
         </div>
       </div>
 
@@ -129,6 +137,9 @@ export default function PostPage() {
           onError={setError}
           onReact={readPost}
           onDelete={deletePost}
+          noAuthor={searchParams["noAuthor"] != null}
+          noContent={searchParams["noContent"] != null}
+          noControl={searchParams["noControl"] != null}
           onRepost={(item) => setMeta(item, "reposting")}
           onReply={(item) => setMeta(item, "replying")}
           onEdit={(item) => setMeta(item, "editing")}

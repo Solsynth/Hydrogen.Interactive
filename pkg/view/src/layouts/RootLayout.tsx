@@ -35,7 +35,7 @@ export default function RootLayout(props: any) {
   }
 
   const mainContentStyles = createMemo(() => {
-    if (!searchParams["noTitle"]) {
+    if (!searchParams["embedded"]) {
       return "h-[calc(100vh-64px)] mt-[64px]";
     } else {
       return "h-[100vh]";
@@ -50,7 +50,7 @@ export default function RootLayout(props: any) {
         </div>
       </div>
     }>
-      <Show when={!searchParams["noTitle"]}>
+      <Show when={!searchParams["embedded"]}>
         <Navbar />
       </Show>
 
