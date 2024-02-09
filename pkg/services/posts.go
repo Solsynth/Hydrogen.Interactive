@@ -214,6 +214,7 @@ func EditPost(
 	publishedAt *time.Time,
 	categories []models.Category,
 	tags []models.Tag,
+	attachments []models.Attachment,
 ) (models.Post, error) {
 	var err error
 	for idx, category := range categories {
@@ -237,6 +238,9 @@ func EditPost(
 	post.Title = title
 	post.Content = content
 	post.PublishedAt = *publishedAt
+	post.Tags = tags
+	post.Categories = categories
+	post.Attachments = attachments
 
 	err = database.C.Save(&post).Error
 

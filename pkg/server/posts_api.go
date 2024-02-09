@@ -181,12 +181,13 @@ func editPost(c *fiber.Ctx) error {
 	id, _ := c.ParamsInt("postId", 0)
 
 	var data struct {
-		Alias       string            `json:"alias" validate:"required"`
-		Title       string            `json:"title"`
-		Content     string            `json:"content" validate:"required"`
-		PublishedAt *time.Time        `json:"published_at"`
-		Tags        []models.Tag      `json:"tags"`
-		Categories  []models.Category `json:"categories"`
+		Alias       string              `json:"alias" validate:"required"`
+		Title       string              `json:"title"`
+		Content     string              `json:"content" validate:"required"`
+		PublishedAt *time.Time          `json:"published_at"`
+		Tags        []models.Tag        `json:"tags"`
+		Categories  []models.Category   `json:"categories"`
+		Attachments []models.Attachment `json:"attachments"`
 	}
 
 	if err := BindAndValidate(c, &data); err != nil {
@@ -209,6 +210,7 @@ func editPost(c *fiber.Ctx) error {
 		data.PublishedAt,
 		data.Categories,
 		data.Tags,
+		data.Attachments,
 	)
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
