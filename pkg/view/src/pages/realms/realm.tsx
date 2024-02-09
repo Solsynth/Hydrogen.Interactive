@@ -203,7 +203,7 @@ export default function RealmPage() {
 
       <dialog id="edit-realm" class="modal">
         <div class="modal-box">
-          <h2 class="card-title px-1">Create a realm</h2>
+          <h2 class="card-title px-1">Edit your realm</h2>
           <form class="mt-2" onSubmit={editRealm}>
             <label class="form-control w-full">
               <div class="label">
