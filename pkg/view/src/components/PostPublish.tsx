@@ -261,6 +261,9 @@ export default function PostPublish(props: {
 
         <div id="publish-actions" class="flex justify-between border-y border-base-200">
           <div class="flex pl-[20px]">
+            <button type="button" class="btn btn-ghost w-12" onClick={() => openModel("#alias")}>
+              <i class="fa-solid fa-link"></i>
+            </button>
             <button type="button" class="btn btn-ghost w-12" onClick={() => openModel("#attachments")}>
               <i class="fa-solid fa-paperclip"></i>
             </button>
@@ -280,6 +283,26 @@ export default function PostPublish(props: {
             </button>
           </div>
         </div>
+
+        <dialog id="alias" class="modal">
+          <div class="modal-box">
+            <h3 class="font-bold text-lg mx-1">Permalink</h3>
+            <label class="form-control w-full mt-3">
+              <div class="label">
+                <span class="label-text">Alias</span>
+              </div>
+              <input name="alias" type="text" placeholder="Type here" class="input input-bordered w-full" />
+              <div class="label">
+              <span class="label-text-alt">
+               Leave blank to generate a random string.
+              </span>
+              </div>
+            </label>
+            <div class="modal-action">
+              <button type="button" class="btn" onClick={() => closeModel("#alias")}>Close</button>
+            </div>
+          </div>
+        </dialog>
 
         <dialog id="planning-publish" class="modal">
           <div class="modal-box">
@@ -323,7 +346,7 @@ export default function PostPublish(props: {
                     <span class="label-text">Pick a file</span>
                   </div>
                   <div class="join">
-                    <input required type="file" name="attachment"
+                  <input required type="file" name="attachment"
                            class="join-item file-input file-input-bordered w-full" />
                     <button type="submit" class="join-item btn btn-primary" disabled={uploading()}>
                       <i class="fa-solid fa-upload"></i>

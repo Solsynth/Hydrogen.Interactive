@@ -69,7 +69,7 @@ export default function PostItem(props: {
         <div class="px-7 py-5">
           <h2 class="card-title">{props.post.title}</h2>
           <Show when={!props.noClick} fallback={content}>
-            <a href={`/posts/${props.post.id}`}>
+            <a href={`/posts/${props.post.alias}`}>
               {content}
             </a>
           </Show>

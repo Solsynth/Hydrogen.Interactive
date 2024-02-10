@@ -13,12 +13,12 @@ import (
 )
 
 func getPost(c *fiber.Ctx) error {
-	id, _ := c.ParamsInt("postId", 0)
+	id := c.Params("postId")
 	take := c.QueryInt("take", 0)
 	offset := c.QueryInt("offset", 0)
 
 	tx := database.C.Where(&models.Post{
-		BaseModel: models.BaseModel{ID: uint(id)},
+		Alias: id,
 	})
 
 	post, err := services.GetPost(tx)
