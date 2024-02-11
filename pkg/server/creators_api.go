@@ -64,8 +64,6 @@ func listOwnPost(c *fiber.Ctx) error {
 
 	if realmId > 0 {
 		tx = tx.Where(&models.Post{RealmID: lo.ToPtr(uint(realmId))})
-	} else {
-		tx = tx.Where("realm_id IS NULL")
 	}
 
 	if len(c.Query("category")) > 0 {
