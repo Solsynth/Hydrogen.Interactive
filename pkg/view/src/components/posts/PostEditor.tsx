@@ -50,6 +50,7 @@ export default function PostEditor(props: {
     setAttachments(props.editing?.attachments ?? []);
     setCategories(props.editing?.categories ?? []);
     setTags(props.editing?.tags ?? []);
+    editor()?.setValue(props.editing?.content);
   }, [props.editing]);
 
   async function listRealm() {
@@ -146,6 +147,7 @@ export default function PostEditor(props: {
 
       <div class="border-y border-base-200">
         <PostEditActions
+          editing={props.editing}
           onInputAlias={setAlias}
           onInputPublish={setPublishedAt}
           onInputAttachments={setAttachments}
@@ -156,20 +158,30 @@ export default function PostEditor(props: {
       </div>
 
       <div class="pt-3 pb-7 px-7">
-        <label class="form-control w-full">
-          <div class="label">
-            <span class="label-text">Publish region</span>
-          </div>
-          <select name="realm" class="select select-bordered" disabled={props.editing}>
-            <option value={0} selected>Global</option>
-            <For each={realmList()}>
-              {item => <option value={item.id}>{item.name}</option>}
-            </For>
-          </select>
-          <div class="label">
-            <span class="label-text-alt">Will show realms you joined or created.</span>
-          </div>
-        </label>
+        <Show when={!props.editing} fallback={
+          <label class="form-control w-full mb-3">
+            <div class="label">
+              <span class="label-text">Publish region</span>
+            </div>
+            <input readonly type="text" class="input input-bordered"
+                   value={`You published this post in realm #${props.editing?.realm_id ?? "global"}`} />
+          </label>
+        }>
+          <label class="form-control w-full">
+            <div class="label">
+              <span class="label-text">Publish region</span>
+            </div>
+            <select name="realm" class="select select-bordered">
+              <option value={0} selected>Global</option>
+              <For each={realmList()}>
+                {item => <option value={item.id}>{item.name}</option>}
+              </For>
+            </select>
+            <div class="label">
+              <span class="label-text-alt">Will show realms you joined or created.</span>
+            </div>
+          </label>
+        </Show>
 
         <label class="form-control w-full">
           <div class="label">

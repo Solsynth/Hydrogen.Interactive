@@ -190,6 +190,7 @@ export default function PostPublish(props: {
 
         <div id="publish-actions" class="flex justify-between border-y border-base-200">
           <PostEditActions
+            editing={props.editing}
             onInputAlias={setAlias}
             onInputPublish={setPublishedAt}
             onInputAttachments={setAttachments}

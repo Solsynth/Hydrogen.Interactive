@@ -15,7 +15,7 @@ export default function PublishPost() {
       headers: { "Authorization": `Bearer ${getAtk()}` }
     });
     if (res.status === 200) {
-      setPost(await res.json());
+      setPost((await res.json())["data"]);
     } else {
       setError(await res.text());
     }
@@ -30,7 +30,7 @@ export default function PublishPost() {
           <i class="fa-solid fa-angle-left"></i>
         </a>
         <div class="px-5 flex items-center">
-          <p>Publish a new post</p>
+          <p>Edit「{post()?.title ? post()?.title : "Untitled"}」</p>
         </div>
       </div>
 
