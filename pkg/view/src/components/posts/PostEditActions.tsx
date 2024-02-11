@@ -13,7 +13,7 @@ export default function PostEditActions(props: {
   onInputTags: (tags: any[]) => void,
   onError: (message: string | null) => void,
 }) {
-  const userinfo = useUserinfo()
+  const userinfo = useUserinfo();
 
   const [uploading, setUploading] = createSignal(false);
 
@@ -57,8 +57,15 @@ export default function PostEditActions(props: {
       ...data,
       author_id: userinfo?.profiles?.id
     }]));
-    props.onInputCategories(categories())
+    props.onInputAttachments(attachments());
     form.reset();
+  }
+
+  function removeAttachment(idx: number) {
+    const data = attachments().slice();
+    data.splice(idx, 1);
+    setAttachments(data);
+    props.onInputAttachments(attachments());
   }
 
   function addCategory(evt: SubmitEvent) {
@@ -70,12 +77,15 @@ export default function PostEditActions(props: {
     if (!data.name) return;
 
     setCategories(categories().concat([data as any]));
-    props.onInputCategories(categories())
+    props.onInputCategories(categories());
     form.reset();
   }
 
-  function removeCategory(target: any) {
-    setCategories(categories().filter(item => item.alias !== target.alias));
+  function removeCategory(idx: number) {
+    const data = categories().slice();
+    data.splice(idx, 1);
+    setCategories(data);
+    props.onInputCategories(categories());
   }
 
   function addTag(evt: SubmitEvent) {
@@ -87,13 +97,15 @@ export default function PostEditActions(props: {
     if (!data.name) return;
 
     setTags(tags().concat([data as any]));
-    props.onInputTags(tags())
+    props.onInputTags(tags());
     form.reset();
   }
 
-  function removeTag(target: any) {
-    setTags(tags().filter(item => item.alias !== target.alias));
-    props.onInputTags(tags())
+  function removeTag(idx: number) {
+    const data = tags().slice();
+    data.splice(idx, 1);
+    setTags(data);
+    props.onInputTags(tags());
   }
 
   return (
@@ -227,9 +239,12 @@ export default function PostEditActions(props: {
             <h3 class="font-bold mt-3 mx-1">Attachment list</h3>
             <ol class="mt-2 mx-1 text-sm">
               <For each={attachments()}>
-                {item => <li>
+                {(item, idx) => <li>
                   <i class="fa-regular fa-file me-2"></i>
                   {item.filename}
+                  <button class="ml-2" onClick={() => removeAttachment(idx())}>
+                    <i class="fa-solid fa-delete-left"></i>
+                  </button>
                 </li>}
               </For>
             </ol>
@@ -269,10 +284,10 @@ export default function PostEditActions(props: {
             <h3 class="font-bold mt-3 mx-1">Category list</h3>
             <ol class="mt-2 mx-1 text-sm">
               <For each={categories()}>
-                {item => <li>
+                {(item, idx) => <li>
                   <i class="fa-solid fa-layer-group me-2"></i>
                   {item.name} <span class={styles.description}>#{item.alias}</span>
-                  <button class="ml-2" onClick={() => removeCategory(item)}>
+                  <button class="ml-2" onClick={() => removeCategory(idx())}>
                     <i class="fa-solid fa-delete-left"></i>
                   </button>
                 </li>}
@@ -305,10 +320,10 @@ export default function PostEditActions(props: {
             <h3 class="font-bold mt-3 mx-1">Category list</h3>
             <ol class="mt-2 mx-1 text-sm">
               <For each={tags()}>
-                {item => <li>
+                {(item, idx) => <li>
                   <i class="fa-solid fa-tag me-2"></i>
                   {item.name} <span class={styles.description}>#{item.alias}</span>
-                  <button class="ml-2" onClick={() => removeTag(item)}>
+                  <button class="ml-2" onClick={() => removeTag(idx())}>
                     <i class="fa-solid fa-delete-left"></i>
                   </button>
                 </li>}
