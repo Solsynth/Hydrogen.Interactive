@@ -76,8 +76,12 @@ func NewServer() {
 		api.Put("/posts/:postId", auth, editPost)
 		api.Delete("/posts/:postId", auth, deletePost)
 
+		api.Get("/creators/posts", auth, listOwnPost)
+		api.Get("/creators/posts/:postId", auth, getOwnPost)
+
 		api.Get("/realms", listRealm)
 		api.Get("/realms/me", auth, listOwnedRealm)
+		api.Get("/realms/me/available", auth, listAvailableRealm)
 		api.Get("/realms/:realmId", getRealm)
 		api.Post("/realms", auth, createRealm)
 		api.Post("/realms/:realmId/invite", auth, inviteRealm)

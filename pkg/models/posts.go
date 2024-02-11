@@ -5,6 +5,7 @@ import "time"
 type Post struct {
 	BaseModel
 
+	// TODO Introduce thumbnail
 	Alias            string        `json:"alias" gorm:"uniqueIndex"`
 	Title            string        `json:"title"`
 	Content          string        `json:"content"`

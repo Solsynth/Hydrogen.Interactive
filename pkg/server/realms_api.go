@@ -40,6 +40,17 @@ func listOwnedRealm(c *fiber.Ctx) error {
 	return c.JSON(realms)
 }
 
+func listAvailableRealm(c *fiber.Ctx) error {
+	user := c.Locals("principal").(models.Account)
+
+	realms, err := services.ListRealmIsAvailable(user)
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
+	return c.JSON(realms)
+}
+
 func createRealm(c *fiber.Ctx) error {
 	user := c.Locals("principal").(models.Account)
 	if user.PowerLevel < 10 {

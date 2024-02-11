@@ -19,7 +19,7 @@ func getPost(c *fiber.Ctx) error {
 
 	tx := database.C.Where(&models.Post{
 		Alias: id,
-	})
+	}).Where("published_at <= ? OR published_at IS NULL", time.Now())
 
 	post, err := services.GetPost(tx)
 	if err != nil {

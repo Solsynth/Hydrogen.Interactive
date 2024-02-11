@@ -1,8 +1,8 @@
 import { useNavigate, useSearchParams } from "@solidjs/router";
 import { createSignal, Show } from "solid-js";
 import { createStore } from "solid-js/store";
-import PostPublish from "../components/PostPublish.tsx";
-import PostList from "../components/PostList.tsx";
+import PostPublish from "../components/posts/PostPublish.tsx";
+import PostList from "../components/posts/PostList.tsx";
 import { closeModel, openModel } from "../scripts/modals.ts";
 
 export default function SearchPage() {

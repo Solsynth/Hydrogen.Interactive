@@ -1,9 +1,9 @@
 import { createSignal, Show } from "solid-js";
 import { useParams } from "@solidjs/router";
 
-import PostList from "../components/PostList.tsx";
+import PostList from "../components/posts/PostList.tsx";
 import NameCard from "../components/NameCard.tsx";
-import PostPublish from "../components/PostPublish.tsx";
+import PostPublish from "../components/posts/PostPublish.tsx";
 import { createStore } from "solid-js/store";
 import { closeModel, openModel } from "../scripts/modals.ts";
 
@@ -65,7 +65,6 @@ export default function AccountPage() {
       </div>
 
       <NameCard accountId={params["accountId"]} onError={setError} />
-
 
       <dialog id="post-publish" class="modal">
         <div class="modal-box p-0 w-[540px]">

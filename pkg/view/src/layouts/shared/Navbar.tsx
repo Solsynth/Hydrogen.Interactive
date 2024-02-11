@@ -11,6 +11,7 @@ interface MenuItem {
 
 export default function Navbar() {
   const nav: MenuItem[] = [
+    { label: "Creators", href: "/creators" },
     { label: "Feed", href: "/" },
     { label: "Realms", href: "/realms" }
   ];

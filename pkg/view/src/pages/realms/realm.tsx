@@ -2,8 +2,8 @@ import { createSignal, Show } from "solid-js";
 import { createStore } from "solid-js/store";
 import { useNavigate, useParams } from "@solidjs/router";
 
-import PostList from "../../components/PostList.tsx";
-import PostPublish from "../../components/PostPublish.tsx";
+import PostList from "../../components/posts/PostList.tsx";
+import PostPublish from "../../components/posts/PostPublish.tsx";
 
 import styles from "./realm.module.css";
 import { getAtk, useUserinfo } from "../../stores/userinfo.tsx";

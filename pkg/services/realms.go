@@ -3,6 +3,7 @@ package services
 import (
 	"code.smartsheep.studio/hydrogen/interactive/pkg/database"
 	"code.smartsheep.studio/hydrogen/interactive/pkg/models"
+	"github.com/samber/lo"
 )
 
 func ListRealm() ([]models.Realm, error) {
@@ -17,6 +18,28 @@ func ListRealm() ([]models.Realm, error) {
 func ListRealmWithUser(user models.Account) ([]models.Realm, error) {
 	var realms []models.Realm
 	if err := database.C.Where(&models.Realm{AccountID: user.ID}).Find(&realms).Error; err != nil {
+		return realms, err
+	}
+
+	return realms, nil
+}
+
+func ListRealmIsAvailable(user models.Account) ([]models.Realm, error) {
+	var realms []models.Realm
+	var members []models.RealmMember
+	if err := database.C.Where(&models.RealmMember{
+		AccountID: user.ID,
+	}).Find(&members).Error; err != nil {
+		return realms, err
+	}
+
+	idx := lo.Map(members, func(item models.RealmMember, index int) uint {
+		return item.RealmID
+	})
+
+	if err := database.C.Where(&models.Realm{
+		IsPublic: true,
+	}).Or("id IN ?", idx).Find(&realms).Error; err != nil {
 		return realms, err
 	}
 

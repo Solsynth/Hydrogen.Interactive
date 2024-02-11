@@ -2,9 +2,9 @@ import { createSignal, Show } from "solid-js";
 import { useNavigate, useParams, useSearchParams } from "@solidjs/router";
 import { createStore } from "solid-js/store";
 import { closeModel, openModel } from "../scripts/modals.ts";
-import PostPublish from "../components/PostPublish.tsx";
-import PostList from "../components/PostList.tsx";
-import PostItem from "../components/PostItem.tsx";
+import PostPublish from "../components/posts/PostPublish.tsx";
+import PostList from "../components/posts/PostList.tsx";
+import PostItem from "../components/posts/PostItem.tsx";
 import { getAtk } from "../stores/userinfo.tsx";
 
 export default function PostPage() {

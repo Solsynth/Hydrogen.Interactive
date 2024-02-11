@@ -22,7 +22,7 @@ export default function RootLayout(props: any) {
   }, [ready, userinfo]);
 
   function keepGate(path: string, embedded: boolean, e?: BeforeLeaveEventArgs) {
-    const blacklist = ["/creator"];
+    const blacklist = ["/creators"];
 
     if (!userinfo?.isLoggedIn && blacklist.includes(path)) {
       if (!e?.defaultPrevented) e?.preventDefault();

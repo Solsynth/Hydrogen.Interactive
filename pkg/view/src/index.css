@@ -23,3 +23,17 @@ html, body {
     display: none;
     width: 0;
 }
+
+.cherry, .cherry-toolbar, .cherry-editor, .cherry-previewer, .cherry-drag {
+    box-shadow: none !important;
+}
+
+.cherry-drag {
+    width: 2px !important;
+}
+
+@media (prefers-color-scheme: dark) {
+    .cherry-drag {
+        background: oklch(var(--b2)) !important;
+    }
+}

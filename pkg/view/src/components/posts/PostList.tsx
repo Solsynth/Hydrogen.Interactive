@@ -2,7 +2,8 @@ import { createMemo, createSignal, For, Show } from "solid-js";
 
 import styles from "./PostList.module.css";
 import PostItem from "./PostItem.tsx";
-import { getAtk } from "../stores/userinfo.tsx";
+import LoadingAnimation from "../LoadingAnimation.tsx";
+import { getAtk } from "../../stores/userinfo.tsx";
 
 export default function PostList(props: {
   noRelated?: boolean,
@@ -86,10 +87,7 @@ export default function PostList(props: {
         </div>
 
         <Show when={loading()}>
-          <div class="w-full border-b border-base-200 pt-5 pb-7 text-center">
-            <p class="loading loading-lg loading-infinity"></p>
-            <p>Creating fake news...</p>
-          </div>
+          <LoadingAnimation />
         </Show>
       </div>
     </div>

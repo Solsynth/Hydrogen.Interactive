@@ -1,7 +1,7 @@
 import { createSignal, Show } from "solid-js";
 
-import PostList from "../components/PostList.tsx";
-import PostPublish from "../components/PostPublish.tsx";
+import PostList from "../components/posts/PostList.tsx";
+import PostPublish from "../components/posts/PostPublish.tsx";
 import { createStore } from "solid-js/store";
 
 export default function DashboardPage() {
