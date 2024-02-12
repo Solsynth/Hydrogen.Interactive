@@ -41,6 +41,7 @@ export default function PostEditActions(props: {
     } else {
       const data = await res.json();
       setAttachments(attachments().concat([data.info]));
+      props.onInputAttachments(attachments());
       props.onError(null);
       form.reset();
     }
