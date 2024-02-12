@@ -209,6 +209,27 @@ func NewPost(
 		}
 	}
 
+	go func() {
+		var subscribers []models.AccountMembership
+		if err := database.C.Where(&models.AccountMembership{
+			FollowingID: user.ID,
+		}).Preload("Follower").Find(&subscribers).Error; err != nil {
+			return
+		}
+
+		accounts := lo.Map(subscribers, func(item models.AccountMembership, index int) models.Account {
+			return item.Follower
+		})
+
+		for _, account := range accounts {
+			_ = NotifyAccount(
+				account,
+				fmt.Sprintf("%s just posted a post", user.Name),
+				"Account you followed post a brand new post. Check it out!",
+			)
+		}
+	}()
+
 	return post, nil
 }
 

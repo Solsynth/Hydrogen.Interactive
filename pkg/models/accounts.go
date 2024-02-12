@@ -27,6 +27,8 @@ type AccountMembership struct {
 	ID          uint      `json:"id" gorm:"primaryKey"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
+	Follower    Account   `json:"follower"`
+	Following   Account   `json:"following"`
 	FollowerID  uint
 	FollowingID uint
 }
