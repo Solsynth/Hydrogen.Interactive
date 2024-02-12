@@ -195,7 +195,7 @@ func NewPost(
 			BaseModel: models.BaseModel{ID: *post.ReplyID},
 		}).Preload("Author").First(&op).Error; err == nil {
 			if op.Author.ID != user.ID {
-				postUrl := fmt.Sprintf("https://%s/posts/%d", viper.GetString("domain"), post.ID)
+				postUrl := fmt.Sprintf("https://%s/posts/%s", viper.GetString("domain"), post.Alias)
 				err := NotifyAccount(
 					op.Author,
 					fmt.Sprintf("%s replied you", user.Name),
@@ -222,11 +222,16 @@ func NewPost(
 		})
 
 		for _, account := range accounts {
-			_ = NotifyAccount(
+			postUrl := fmt.Sprintf("https://%s/posts/%s", viper.GetString("domain"), post.Alias)
+			err := NotifyAccount(
 				account,
 				fmt.Sprintf("%s just posted a post", user.Name),
 				"Account you followed post a brand new post. Check it out!",
+				fiber.Map{"label": "Related post", "url": postUrl},
 			)
+			if err != nil {
+				log.Error().Err(err).Msg("An error occurred when notifying user...")
+			}
 		}
 	}()
 
