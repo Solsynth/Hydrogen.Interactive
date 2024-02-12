@@ -79,6 +79,10 @@ WHERE t.id = ?`, prefix, prefix, prefix), post.ID).Scan(&reactInfo)
 }
 
 func ListPost(tx *gorm.DB, take int, offset int) ([]*models.Post, error) {
+	if take > 20 {
+		take = 20
+	}
+
 	var posts []*models.Post
 	if err := PreloadRelatedPost(tx).
 		Limit(take).
