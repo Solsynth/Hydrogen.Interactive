@@ -1,4 +1,4 @@
-debug = true
+debug = false
 
 name = "Goatplaza"
 maintainer = "SmartSheep Studio"
@@ -8,8 +8,6 @@ domain = "feed.smartsheep.studio"
 secret = "LtTjzAGFLshwXhN4ZD4nG5KlMv1MWcsvfv03TSZYnT1VhiAnLIZFTnHUwR0XhGgi"
 
 content = "uploads"
-
-everyone_postable = false
 
 [passport]
 client_id = "goatplaza"

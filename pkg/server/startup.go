@@ -1,6 +1,10 @@
 package server
 
 import (
+	"net/http"
+	"strings"
+	"time"
+
 	"code.smartsheep.studio/hydrogen/interactive/pkg/view"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cache"
@@ -11,9 +15,6 @@ import (
 	jsoniter "github.com/json-iterator/go"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
-	"net/http"
-	"strings"
-	"time"
 )
 
 var A *fiber.App
@@ -75,6 +76,11 @@ func NewServer() {
 		api.Post("/posts/:postId/react/:reactType", auth, reactPost)
 		api.Put("/posts/:postId", auth, editPost)
 		api.Delete("/posts/:postId", auth, deletePost)
+
+		api.Get("/categories", listCategroies)
+		api.Post("/categories", auth, newCategory)
+		api.Put("/categories/:categoryId", auth, editCategory)
+		api.Delete("/categories/:categoryId", auth, deleteCategory)
 
 		api.Get("/creators/posts", auth, listOwnPost)
 		api.Get("/creators/posts/:postId", auth, getOwnPost)

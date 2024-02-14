@@ -3,9 +3,10 @@ package services
 import (
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog/log"
-	"time"
 
 	"code.smartsheep.studio/hydrogen/interactive/pkg/database"
 	"code.smartsheep.studio/hydrogen/interactive/pkg/models"
@@ -141,13 +142,13 @@ func NewPost(
 	var err error
 	var post models.Post
 	for idx, category := range categories {
-		categories[idx], err = GetCategory(category.Alias, category.Name)
+		categories[idx], err = GetCategory(category.Alias)
 		if err != nil {
 			return post, err
 		}
 	}
 	for idx, tag := range tags {
-		tags[idx], err = GetTag(tag.Alias, tag.Name)
+		tags[idx], err = GetTagOrCreate(tag.Alias, tag.Name)
 		if err != nil {
 			return post, err
 		}
@@ -248,13 +249,13 @@ func EditPost(
 ) (models.Post, error) {
 	var err error
 	for idx, category := range categories {
-		categories[idx], err = GetCategory(category.Alias, category.Name)
+		categories[idx], err = GetCategory(category.Alias)
 		if err != nil {
 			return post, err
 		}
 	}
 	for idx, tag := range tags {
-		tags[idx], err = GetTag(tag.Alias, tag.Name)
+		tags[idx], err = GetTagOrCreate(tag.Alias, tag.Name)
 		if err != nil {
 			return post, err
 		}

@@ -5,23 +5,33 @@ import { getAtk, useUserinfo } from "../../stores/userinfo.tsx";
 import styles from "./PostPublish.module.css";
 
 export default function PostEditActions(props: {
-  editing?: any,
-  onInputAlias: (value: string) => void,
-  onInputPublish: (value: string) => void,
-  onInputAttachments: (value: any[]) => void,
-  onInputCategories: (categories: any[]) => void,
-  onInputTags: (tags: any[]) => void,
-  onError: (message: string | null) => void,
+  editing?: any;
+  onInputAlias: (value: string) => void;
+  onInputPublish: (value: string) => void;
+  onInputAttachments: (value: any[]) => void;
+  onInputCategories: (categories: any[]) => void;
+  onInputTags: (tags: any[]) => void;
+  onError: (message: string | null) => void;
 }) {
   const userinfo = useUserinfo();
 
   const [uploading, setUploading] = createSignal(false);
 
   const [attachments, setAttachments] = createSignal<any[]>(props.editing?.attachments ?? []);
-  const [categories, setCategories] = createSignal<{ alias: string, name: string }[]>(props.editing?.categories ?? []);
-  const [tags, setTags] = createSignal<{ alias: string, name: string }[]>(props.editing?.tags ?? []);
+  const [categories, setCategories] = createSignal<{ alias: string; name: string }[]>(props.editing?.categories ?? []);
+  const [tags, setTags] = createSignal<{ alias: string; name: string }[]>(props.editing?.tags ?? []);
 
+  const [availableCategories, setAvailableCategories] = createSignal<any[]>([]);
   const [attachmentMode, setAttachmentMode] = createSignal(0);
+
+  async function readCategories() {
+    const res = await fetch("/api/categories");
+    if (res.status === 200) {
+      setAvailableCategories(await res.json());
+    }
+  }
+
+  readCategories();
 
   async function uploadAttachment(evt: SubmitEvent) {
     evt.preventDefault();
@@ -33,8 +43,8 @@ export default function PostEditActions(props: {
     setUploading(true);
     const res = await fetch("/api/attachments", {
       method: "POST",
-      headers: { "Authorization": `Bearer ${getAtk()}` },
-      body: data
+      headers: { Authorization: `Bearer ${getAtk()}` },
+      body: data,
     });
     if (res.status !== 200) {
       props.onError(await res.text());
@@ -54,10 +64,14 @@ export default function PostEditActions(props: {
     const form = evt.target as HTMLFormElement;
     const data = Object.fromEntries(new FormData(form));
 
-    setAttachments(attachments().concat([{
-      ...data,
-      author_id: userinfo?.profiles?.id
-    }]));
+    setAttachments(
+      attachments().concat([
+        {
+          ...data,
+          author_id: userinfo?.profiles?.id,
+        },
+      ]),
+    );
     props.onInputAttachments(attachments());
     form.reset();
   }
@@ -74,10 +88,11 @@ export default function PostEditActions(props: {
 
     const form = evt.target as HTMLFormElement;
     const data = Object.fromEntries(new FormData(form));
-    if (!data.alias) data.alias = crypto.randomUUID().replace(/-/g, "");
-    if (!data.name) return;
+    if (!data.category) return;
 
-    setCategories(categories().concat([data as any]));
+    const item = availableCategories().find((item) => item.alias === data.category);
+
+    setCategories(categories().concat([item]));
     props.onInputCategories(categories());
     form.reset();
   }
@@ -134,19 +149,21 @@ export default function PostEditActions(props: {
               <span class="label-text">Alias</span>
             </div>
             <input
-              name="alias" type="text" placeholder="Type here"
+              name="alias"
+              type="text"
+              placeholder="Type here"
               class="input input-bordered w-full"
               value={props.editing?.alias ?? ""}
               onInput={(evt) => props.onInputAlias(evt.target.value)}
             />
             <div class="label">
-              <span class="label-text-alt">
-               Leave blank to generate a random string.
-              </span>
+              <span class="label-text-alt">Leave blank to generate a random string.</span>
             </div>
           </label>
           <div class="modal-action">
-            <button type="button" class="btn" onClick={() => closeModel("#alias")}>Close</button>
+            <button type="button" class="btn" onClick={() => closeModel("#alias")}>
+              Close
+            </button>
           </div>
         </div>
       </dialog>
@@ -159,7 +176,8 @@ export default function PostEditActions(props: {
               <span class="label-text">Published At</span>
             </div>
             <input
-              name="published_at" type="datetime-local"
+              name="published_at"
+              type="datetime-local"
               placeholder="Pick a date"
               class="input input-bordered w-full"
               value={props.editing?.published_at ?? ""}
@@ -167,13 +185,14 @@ export default function PostEditActions(props: {
             />
             <div class="label">
               <span class="label-text-alt">
-                Before this time, your post will not be visible for everyone.
-                You can modify this plan on Creator Hub.
+                Before this time, your post will not be visible for everyone. You can modify this plan on Creator Hub.
               </span>
             </div>
           </label>
           <div class="modal-action">
-            <button type="button" class="btn" onClick={() => closeModel("#planning-publish")}>Close</button>
+            <button type="button" class="btn" onClick={() => closeModel("#planning-publish")}>
+              Close
+            </button>
           </div>
         </div>
       </dialog>
@@ -183,10 +202,24 @@ export default function PostEditActions(props: {
           <h3 class="font-bold text-lg mx-1">Attachments</h3>
 
           <div role="tablist" class="tabs tabs-boxed mt-3">
-            <input type="radio" name="attachment" role="tab" class="tab" aria-label="File picker"
-                   checked={attachmentMode() === 0} onClick={() => setAttachmentMode(0)} />
-            <input type="radio" name="attachment" role="tab" class="tab" aria-label="External link"
-                   checked={attachmentMode() === 1} onClick={() => setAttachmentMode(1)} />
+            <input
+              type="radio"
+              name="attachment"
+              role="tab"
+              class="tab"
+              aria-label="File picker"
+              checked={attachmentMode() === 0}
+              onClick={() => setAttachmentMode(0)}
+            />
+            <input
+              type="radio"
+              name="attachment"
+              role="tab"
+              class="tab"
+              aria-label="External link"
+              checked={attachmentMode() === 1}
+              onClick={() => setAttachmentMode(1)}
+            />
           </div>
 
           <Switch>
@@ -197,8 +230,12 @@ export default function PostEditActions(props: {
                     <span class="label-text">Pick a file</span>
                   </div>
                   <div class="join">
-                    <input required type="file" name="attachment"
-                           class="join-item file-input file-input-bordered w-full" />
+                    <input
+                      required
+                      type="file"
+                      name="attachment"
+                      class="join-item file-input file-input-bordered w-full"
+                    />
                     <button type="submit" class="join-item btn btn-primary" disabled={uploading()}>
                       <i class="fa-solid fa-upload"></i>
                     </button>
@@ -216,14 +253,29 @@ export default function PostEditActions(props: {
                     <span class="label-text">Attach an external file</span>
                   </div>
                   <div class="join">
-                    <input required type="text" name="mimetype" class="join-item input input-bordered w-full"
-                           placeholder="Mimetype" />
-                    <input required type="text" name="filename" class="join-item input input-bordered w-full"
-                           placeholder="Name" />
+                    <input
+                      required
+                      type="text"
+                      name="mimetype"
+                      class="join-item input input-bordered w-full"
+                      placeholder="Mimetype"
+                    />
+                    <input
+                      required
+                      type="text"
+                      name="filename"
+                      class="join-item input input-bordered w-full"
+                      placeholder="Name"
+                    />
                   </div>
                   <div class="join">
-                    <input required type="text" name="external_url" class="join-item input input-bordered w-full"
-                           placeholder="External URL" />
+                    <input
+                      required
+                      type="text"
+                      name="external_url"
+                      class="join-item input input-bordered w-full"
+                      placeholder="External URL"
+                    />
                     <button type="submit" class="join-item btn btn-primary">
                       <i class="fa-solid fa-plus"></i>
                     </button>
@@ -240,19 +292,23 @@ export default function PostEditActions(props: {
             <h3 class="font-bold mt-3 mx-1">Attachment list</h3>
             <ol class="mt-2 mx-1 text-sm">
               <For each={attachments()}>
-                {(item, idx) => <li>
-                  <i class="fa-regular fa-file me-2"></i>
-                  {item.filename}
-                  <button class="ml-2" onClick={() => removeAttachment(idx())}>
-                    <i class="fa-solid fa-delete-left"></i>
-                  </button>
-                </li>}
+                {(item, idx) => (
+                  <li>
+                    <i class="fa-regular fa-file me-2"></i>
+                    {item.filename}
+                    <button class="ml-2" onClick={() => removeAttachment(idx())}>
+                      <i class="fa-solid fa-delete-left"></i>
+                    </button>
+                  </li>
+                )}
               </For>
             </ol>
           </Show>
 
           <div class="modal-action">
-            <button type="button" class="btn" onClick={() => closeModel("#attachments")}>Close</button>
+            <button type="button" class="btn" onClick={() => closeModel("#attachments")}>
+              Close
+            </button>
           </div>
         </div>
       </dialog>
@@ -266,17 +322,12 @@ export default function PostEditActions(props: {
                 <span class="label-text">Add a category</span>
               </div>
               <div class="join">
-                <input type="text" name="alias" placeholder="Alias" class="join-item input input-bordered w-full" />
-                <input type="text" name="name" placeholder="Name" class="join-item input input-bordered w-full" />
+                <select name="category" class="join-item select select-bordered w-full">
+                  <For each={availableCategories()}>{(item) => <option value={item.alias}>{item.name}</option>}</For>
+                </select>
                 <button type="submit" class="join-item btn btn-primary">
                   <i class="fa-solid fa-plus"></i>
                 </button>
-              </div>
-              <div class="label">
-                <span class="label-text-alt">
-                  Alias is the url key of this category. Lowercase only, required length 4-24.
-                  Leave blank for auto generate.
-                </span>
               </div>
             </label>
           </form>
@@ -285,13 +336,15 @@ export default function PostEditActions(props: {
             <h3 class="font-bold mt-3 mx-1">Category list</h3>
             <ol class="mt-2 mx-1 text-sm">
               <For each={categories()}>
-                {(item, idx) => <li>
-                  <i class="fa-solid fa-layer-group me-2"></i>
-                  {item.name} <span class={styles.description}>#{item.alias}</span>
-                  <button class="ml-2" onClick={() => removeCategory(idx())}>
-                    <i class="fa-solid fa-delete-left"></i>
-                  </button>
-                </li>}
+                {(item, idx) => (
+                  <li>
+                    <i class="fa-solid fa-layer-group me-2"></i>
+                    {item.name} <span class={styles.description}>#{item.alias}</span>
+                    <button class="ml-2" onClick={() => removeCategory(idx())}>
+                      <i class="fa-solid fa-delete-left"></i>
+                    </button>
+                  </li>
+                )}
               </For>
             </ol>
           </Show>
@@ -310,8 +363,7 @@ export default function PostEditActions(props: {
               </div>
               <div class="label">
                 <span class="label-text-alt">
-                  Alias is the url key of this tag. Lowercase only, required length 4-24.
-                  Leave blank for auto generate.
+                  Alias is the url key of this tag. Lowercase only, required length 4-24. Leave blank for auto generate.
                 </span>
               </div>
             </label>
@@ -321,19 +373,23 @@ export default function PostEditActions(props: {
             <h3 class="font-bold mt-3 mx-1">Category list</h3>
             <ol class="mt-2 mx-1 text-sm">
               <For each={tags()}>
-                {(item, idx) => <li>
-                  <i class="fa-solid fa-tag me-2"></i>
-                  {item.name} <span class={styles.description}>#{item.alias}</span>
-                  <button class="ml-2" onClick={() => removeTag(idx())}>
-                    <i class="fa-solid fa-delete-left"></i>
-                  </button>
-                </li>}
+                {(item, idx) => (
+                  <li>
+                    <i class="fa-solid fa-tag me-2"></i>
+                    {item.name} <span class={styles.description}>#{item.alias}</span>
+                    <button class="ml-2" onClick={() => removeTag(idx())}>
+                      <i class="fa-solid fa-delete-left"></i>
+                    </button>
+                  </li>
+                )}
               </For>
             </ol>
           </Show>
 
           <div class="modal-action">
-            <button type="button" class="btn" onClick={() => closeModel("#categories-and-tags")}>Close</button>
+            <button type="button" class="btn" onClick={() => closeModel("#categories-and-tags")}>
+              Close
+            </button>
           </div>
         </div>
       </dialog>
