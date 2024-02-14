@@ -77,9 +77,12 @@ func listPost(c *fiber.Ctx) error {
 	if len(c.Query("category")) > 0 {
 		tx = services.FilterPostWithCategory(tx, c.Query("category"))
 	}
-
 	if len(c.Query("tag")) > 0 {
 		tx = services.FilterPostWithTag(tx, c.Query("tag"))
+	}
+
+	if !c.QueryBool("reply", true) {
+		tx = tx.Where("reply_id IS NULL")
 	}
 
 	var count int64
