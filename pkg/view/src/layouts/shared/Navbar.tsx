@@ -1,4 +1,4 @@
-import { For, Match, Show, Switch } from "solid-js";
+import { For, Match, Switch } from "solid-js";
 import { clearUserinfo, useUserinfo } from "../../stores/userinfo.tsx";
 import { useNavigate } from "@solidjs/router";
 import { useWellKnown } from "../../stores/wellKnown.tsx";
