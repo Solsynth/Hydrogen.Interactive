@@ -8,7 +8,7 @@ export default function CreatorView(props: any) {
 
   const scrollContentStyles = createMemo(() => {
     if (!searchParams["embedded"]) {
-      return "max-md:mb-[64px] md:mt-[64px]";
+      return "max-md:mb-[64px]";
     } else {
       return "h-[100vh]";
     }
