@@ -36,20 +36,23 @@ export default function RootLayout(props: any) {
 
   const mainContentStyles = createMemo(() => {
     if (!searchParams["embedded"]) {
-      return "h-[calc(100vh-64px)] mt-[64px]";
+      return "h-[calc(100vh-64px)] max-md:mb-[64px] md:mt-[64px]";
     } else {
       return "h-[100vh]";
     }
   });
 
   return (
-    <Show when={ready()} fallback={
-      <div class="h-screen w-screen flex justify-center items-center">
-        <div>
-          <span class="loading loading-lg loading-infinity"></span>
+    <Show
+      when={ready()}
+      fallback={
+        <div class="h-screen w-screen flex justify-center items-center">
+          <div>
+            <span class="loading loading-lg loading-infinity"></span>
+          </div>
         </div>
-      </div>
-    }>
+      }
+    >
       <Show when={!searchParams["embedded"]}>
         <Navbar />
       </Show>

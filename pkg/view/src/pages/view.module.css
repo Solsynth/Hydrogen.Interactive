@@ -1,13 +1,11 @@
 .wrapper {
-    display: grid;
-    grid-template-columns: 1fr;
-    column-gap: 20px;
-
-    max-height: calc(100vh - 64px);
+  display: grid;
+  grid-template-columns: 1fr;
+  column-gap: 20px;
 }
 
 @media (min-width: 1024px) {
-    .wrapper {
-        grid-template-columns: 1fr 2fr 1fr;
-    }
+  .wrapper {
+    grid-template-columns: 1fr 2fr 1fr;
+  }
 }
