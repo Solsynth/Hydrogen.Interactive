@@ -27,4 +27,6 @@ type Post struct {
 	// Dynamic Calculating Values
 	LikeCount    int64 `json:"like_count" gorm:"-"`
 	DislikeCount int64 `json:"dislike_count" gorm:"-"`
+	ReplyCount   int64 `json:"reply_count" gorm:"-"`
+	RepostCount  int64 `json:"repost_count" gorm:"-"`
 }

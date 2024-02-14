@@ -49,21 +49,25 @@ func FilterPostWithTag(tx *gorm.DB, alias string) *gorm.DB {
 
 func GetPost(tx *gorm.DB) (*models.Post, error) {
 	var post *models.Post
-	if err := PreloadRelatedPost(tx).
-		First(&post).Error; err != nil {
+	if err := PreloadRelatedPost(tx).First(&post).Error; err != nil {
 		return post, err
 	}
 
 	var reactInfo struct {
-		PostID       uint
-		LikeCount    int64
-		DislikeCount int64
+		PostID       uint  `json:"post_id"`
+		LikeCount    int64 `json:"like_count"`
+		DislikeCount int64 `json:"dislike_count"`
+		ReplyCount   int64 `json:"reply_count"`
+		RepostCount  int64 `json:"repost_count"`
 	}
 
 	prefix := viper.GetString("database.prefix")
-	database.C.Raw(fmt.Sprintf(`SELECT t.id                         as post_id,
+	database.C.Raw(fmt.Sprintf(`
+SELECT t.id                         as post_id,
        COALESCE(l.like_count, 0)    AS like_count,
-       COALESCE(d.dislike_count, 0) AS dislike_count
+       COALESCE(d.dislike_count, 0) AS dislike_count,
+       COALESCE(r.reply_count, 0)    AS reply_count,
+       COALESCE(rp.repost_count, 0)  AS repost_count
 FROM %sposts t
          LEFT JOIN (SELECT post_id, COUNT(*) AS like_count
                     FROM %spost_likes
@@ -71,10 +75,20 @@ FROM %sposts t
          LEFT JOIN (SELECT post_id, COUNT(*) AS dislike_count
                     FROM %spost_dislikes
                     GROUP BY post_id) d ON t.id = d.post_id
-WHERE t.id = ?`, prefix, prefix, prefix), post.ID).Scan(&reactInfo)
+         LEFT JOIN (SELECT reply_id, COUNT(*) AS reply_count
+                    FROM %sposts
+                    WHERE reply_id IS NOT NULL
+                    GROUP BY reply_id) r ON t.id = r.reply_id
+         LEFT JOIN (SELECT repost_id, COUNT(*) AS repost_count
+                    FROM %sposts
+                    WHERE repost_id IS NOT NULL
+                    GROUP BY repost_id) rp ON t.id = rp.repost_id
+WHERE t.id = ?`, prefix, prefix, prefix, prefix, prefix), post.ID).Scan(&reactInfo)
 
 	post.LikeCount = reactInfo.LikeCount
 	post.DislikeCount = reactInfo.DislikeCount
+	post.ReplyCount = reactInfo.ReplyCount
+	post.RepostCount = reactInfo.RepostCount
 
 	return post, nil
 }
@@ -97,15 +111,20 @@ func ListPost(tx *gorm.DB, take int, offset int) ([]*models.Post, error) {
 	})
 
 	var reactInfo []struct {
-		PostID       uint
-		LikeCount    int64
-		DislikeCount int64
+		PostID       uint  `json:"post_id"`
+		LikeCount    int64 `json:"like_count"`
+		DislikeCount int64 `json:"dislike_count"`
+		ReplyCount   int64 `json:"reply_count"`
+		RepostCount  int64 `json:"repost_count"`
 	}
 
 	prefix := viper.GetString("database.prefix")
-	database.C.Raw(fmt.Sprintf(`SELECT t.id                         as post_id,
+	database.C.Raw(fmt.Sprintf(`
+SELECT t.id                         as post_id,
        COALESCE(l.like_count, 0)    AS like_count,
-       COALESCE(d.dislike_count, 0) AS dislike_count
+       COALESCE(d.dislike_count, 0) AS dislike_count,
+       COALESCE(r.reply_count, 0)    AS reply_count,
+       COALESCE(rp.repost_count, 0)  AS repost_count
 FROM %sposts t
          LEFT JOIN (SELECT post_id, COUNT(*) AS like_count
                     FROM %spost_likes
@@ -113,7 +132,15 @@ FROM %sposts t
          LEFT JOIN (SELECT post_id, COUNT(*) AS dislike_count
                     FROM %spost_dislikes
                     GROUP BY post_id) d ON t.id = d.post_id
-WHERE t.id IN (?)`, prefix, prefix, prefix), postIds).Scan(&reactInfo)
+         LEFT JOIN (SELECT reply_id, COUNT(*) AS reply_count
+                    FROM %sposts
+                    WHERE reply_id IS NOT NULL
+                    GROUP BY reply_id) r ON t.id = r.reply_id
+         LEFT JOIN (SELECT repost_id, COUNT(*) AS repost_count
+                    FROM %sposts
+                    WHERE repost_id IS NOT NULL
+                    GROUP BY repost_id) rp ON t.id = rp.repost_id
+WHERE t.id IN ?`, prefix, prefix, prefix, prefix, prefix), postIds).Scan(&reactInfo)
 
 	postMap := lo.SliceToMap(posts, func(item *models.Post) (uint, *models.Post) {
 		return item.ID, item
@@ -123,6 +150,8 @@ WHERE t.id IN (?)`, prefix, prefix, prefix), postIds).Scan(&reactInfo)
 		if post, ok := postMap[info.PostID]; ok {
 			post.LikeCount = info.LikeCount
 			post.DislikeCount = info.DislikeCount
+			post.ReplyCount = info.ReplyCount
+			post.RepostCount = info.RepostCount
 		}
 	}
 

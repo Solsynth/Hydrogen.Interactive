@@ -158,9 +158,10 @@ export default function PostItem(props: {
                 <div class="tooltip" data-tip="Reply">
                   <button
                     type="button"
-                    class="btn btn-ghost btn-block"
+                    class="indicator btn btn-ghost btn-block"
                     onClick={() => props.onReply && props.onReply(props.post)}
                   >
+                    <span class="indicator-item badge badge-sm badge-primary">{props.post.reply_count}</span>
                     <i class="fa-solid fa-reply"></i>
                   </button>
                 </div>
@@ -168,9 +169,10 @@ export default function PostItem(props: {
                 <div class="tooltip" data-tip="Repost">
                   <button
                     type="button"
-                    class="btn btn-ghost btn-block"
+                    class="indicator btn btn-ghost btn-block"
                     onClick={() => props.onRepost && props.onRepost(props.post)}
                   >
+                    <span class="indicator-item badge badge-sm badge-secondary">{props.post.repost_count}</span>
                     <i class="fa-solid fa-retweet"></i>
                   </button>
                 </div>
@@ -182,10 +184,16 @@ export default function PostItem(props: {
                 </div>
                 <ul tabIndex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
                   <li class="md:hidden">
-                    <a onClick={() => props.onReply && props.onReply(props.post)}>Reply</a>
+                    <a class="flex justify-between" onClick={() => props.onReply && props.onReply(props.post)}>
+                      <span>Reply</span>
+                      <span class="badge badge-primary">{props.post.reply_count}</span>
+                    </a>
                   </li>
                   <li class="md:hidden">
-                    <a onClick={() => props.onRepost && props.onRepost(props.post)}>Repost</a>
+                    <a class="flex justify-between" onClick={() => props.onRepost && props.onRepost(props.post)}>
+                      <span>Repost</span>
+                      <span class="badge badge-secondary">{props.post.repost_count}</span>
+                    </a>
                   </li>
                   <Show when={userinfo?.profiles?.id === props.post.author_id}>
                     <li>
