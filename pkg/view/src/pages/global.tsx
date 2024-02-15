@@ -1,8 +1,9 @@
-import { createSignal, Show } from "solid-js";
+import { createEffect, createSignal, Show } from "solid-js";
+import { createStore } from "solid-js/store";
+import { useSearchParams } from "@solidjs/router";
 
 import PostList from "../components/posts/PostList.tsx";
 import PostPublish from "../components/posts/PostPublish.tsx";
-import { createStore } from "solid-js/store";
 
 export default function DashboardPage() {
   const [error, setError] = createSignal<string | null>(null);
@@ -10,13 +11,19 @@ export default function DashboardPage() {
   const [page, setPage] = createSignal(0);
   const [info, setInfo] = createSignal<any>(null);
 
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  createEffect(() => {
+    setPage(parseInt(searchParams["page"] ?? "1"));
+  }, [searchParams]);
+
   async function readPosts(pn?: number) {
-    if (pn) setPage(pn);
+    if (pn) setSearchParams({ page: pn });
     const res = await fetch(
       "/api/posts?" +
         new URLSearchParams({
-          take: (10).toString(),
-          offset: ((page() - 1) * 10).toString(),
+          take: searchParams["take"] ? searchParams["take"] : (10).toString(),
+          offset: searchParams["offset"] ? searchParams["offset"] : ((page() - 1) * 10).toString(),
           reply: false.toString(),
         }),
     );
