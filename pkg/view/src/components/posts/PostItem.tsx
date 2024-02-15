@@ -84,7 +84,7 @@ export default function PostItem(props: {
             <For each={props.post.tags}>
               {(item) => (
                 <a href={`/search?tag=${item.alias}`} class="badge badge-accent">
-                  <i class="fa-regular fa-tag me-1.5"></i>
+                  <i class="fa-solid fa-tag me-1.5"></i>
                   {item.name}
                 </a>
               )}
