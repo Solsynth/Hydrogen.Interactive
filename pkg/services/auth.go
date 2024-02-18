@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-type PassportUserinfo struct {
+type IdentityUserinfo struct {
 	Sub               string `json:"sub"`
 	Name              string `json:"name"`
 	Email             string `json:"email"`
@@ -20,7 +20,7 @@ type PassportUserinfo struct {
 	PreferredUsername string `json:"preferred_username"`
 }
 
-func LinkAccount(userinfo PassportUserinfo) (models.Account, error) {
+func LinkAccount(userinfo IdentityUserinfo) (models.Account, error) {
 	id, _ := strconv.Atoi(userinfo.Sub)
 
 	var account models.Account

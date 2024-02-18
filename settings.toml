@@ -9,7 +9,7 @@ secret = "LtTjzAGFLshwXhN4ZD4nG5KlMv1MWcsvfv03TSZYnT1VhiAnLIZFTnHUwR0XhGgi"
 
 content = "uploads"
 
-[passport]
+[identity]
 client_id = "goatplaza"
 client_secret = "Z9k9AFTj^p"
 endpoint = "https://id.smartsheep.studio"

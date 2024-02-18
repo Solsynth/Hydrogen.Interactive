@@ -2,7 +2,7 @@ package models
 
 import "time"
 
-// Account profiles basically fetched from Hydrogen.Passport
+// Account profiles basically fetched from Hydrogen.Identity
 // But cache at here for better usage
 // At the same time this model can make relations between local models
 type Account struct {

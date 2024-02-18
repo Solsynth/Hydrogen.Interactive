@@ -16,12 +16,12 @@ var cfg oauth2.Config
 func buildOauth2Config() {
 	cfg = oauth2.Config{
 		RedirectURL:  fmt.Sprintf("https://%s/auth/callback", viper.GetString("domain")),
-		ClientID:     viper.GetString("passport.client_id"),
-		ClientSecret: viper.GetString("passport.client_secret"),
+		ClientID:     viper.GetString("identity.client_id"),
+		ClientSecret: viper.GetString("identity.client_secret"),
 		Scopes:       []string{"openid"},
 		Endpoint: oauth2.Endpoint{
-			AuthURL:   fmt.Sprintf("%s/auth/o/connect", viper.GetString("passport.endpoint")),
-			TokenURL:  fmt.Sprintf("%s/api/auth/token", viper.GetString("passport.endpoint")),
+			AuthURL:   fmt.Sprintf("%s/auth/o/connect", viper.GetString("identity.endpoint")),
+			TokenURL:  fmt.Sprintf("%s/api/auth/token", viper.GetString("identity.endpoint")),
 			AuthStyle: oauth2.AuthStyleInParams,
 		},
 	}
@@ -46,7 +46,7 @@ func postLogin(c *fiber.Ctx) error {
 	}
 
 	agent := fiber.
-		Get(fmt.Sprintf("%s/api/users/me", viper.GetString("passport.endpoint"))).
+		Get(fmt.Sprintf("%s/api/users/me", viper.GetString("identity.endpoint"))).
 		Set(fiber.HeaderAuthorization, fmt.Sprintf("Bearer %s", token.AccessToken))
 
 	_, body, errs := agent.Bytes()
@@ -54,7 +54,7 @@ func postLogin(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("failed to get userinfo: %q", errs))
 	}
 
-	var userinfo services.PassportUserinfo
+	var userinfo services.IdentityUserinfo
 	err = json.Unmarshal(body, &userinfo)
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("failed to parse userinfo: %q", err))

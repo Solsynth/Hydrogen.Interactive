@@ -1,4 +1,4 @@
-import Navbar from "./shared/Navbar.tsx";
+import Navigator from "./shared/Navigator.tsx";
 import { readProfiles, useUserinfo } from "../stores/userinfo.tsx";
 import { createEffect, createMemo, createSignal, Show } from "solid-js";
 import { readWellKnown } from "../stores/wellKnown.tsx";
@@ -54,7 +54,7 @@ export default function RootLayout(props: any) {
       }
     >
       <Show when={!searchParams["embedded"]}>
-        <Navbar />
+        <Navigator />
       </Show>
 
       <main class={`${mainContentStyles()} scrollbar-hidden`}>{props.children}</main>

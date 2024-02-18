@@ -9,7 +9,7 @@ interface MenuItem {
   href?: string;
 }
 
-export default function Navbar() {
+export default function Navigator() {
   const nav: MenuItem[] = [
     { icon: "fa-solid fa-pen-nib", label: "Creators", href: "/creators" },
     { icon: "fa-solid fa-newspaper", label: "Feed", href: "/" },

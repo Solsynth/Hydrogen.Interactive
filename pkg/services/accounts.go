@@ -33,10 +33,10 @@ func GetAccountFollowed(user models.Account, target models.Account) (models.Acco
 }
 
 func NotifyAccount(user models.Account, subject, content string, links ...fiber.Map) error {
-	agent := fiber.Post(viper.GetString("passport.endpoint") + "/api/dev/notify")
+	agent := fiber.Post(viper.GetString("identity.endpoint") + "/api/dev/notify")
 	agent.JSON(fiber.Map{
-		"client_id":     viper.GetString("passport.client_id"),
-		"client_secret": viper.GetString("passport.client_secret"),
+		"client_id":     viper.GetString("identity.client_id"),
+		"client_secret": viper.GetString("identity.client_secret"),
 		"subject":       subject,
 		"content":       content,
 		"links":         links,
