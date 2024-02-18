@@ -67,7 +67,10 @@ func NewServer() {
 		api.Get("/users/:accountId/follow", auth, getAccountFollowed)
 		api.Post("/users/:accountId/follow", auth, doFollowAccount)
 
-		api.Get("/attachments/o/:fileId", openAttachment)
+		api.Get("/attachments/o/:fileId", cache.New(cache.Config{
+			Expiration:   365 * 24 * time.Hour,
+			CacheControl: true,
+		}), openAttachment)
 		api.Post("/attachments", auth, uploadAttachment)
 
 		api.Get("/posts", listPost)
