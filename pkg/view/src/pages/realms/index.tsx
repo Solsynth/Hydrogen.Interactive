@@ -9,7 +9,7 @@ export default function RealmDirectoryPage() {
   const [realms, setRealms] = createSignal<any>(null);
 
   async function readRealms() {
-    const res = await fetch(`/api/realms`);
+    const res = await request(`/api/realms`);
     if (res.status !== 200) {
       setError(await res.text());
     } else {
@@ -26,7 +26,7 @@ export default function RealmDirectoryPage() {
     const data = Object.fromEntries(new FormData(form));
 
     setSubmitting(true);
-    const res = await fetch("/api/realms", {
+    const res = await request("/api/realms", {
       method: "POST",
       headers: { "Authorization": `Bearer ${getAtk()}`, "Content-Type": "application/json" },
       body: JSON.stringify({

@@ -12,7 +12,7 @@ export default function NameCard(props: { accountId: string, onError: (messasge:
 
   async function readInfo() {
     setLoading(true);
-    const res = await fetch(`/api/users/${props.accountId}`);
+    const res = await request(`/api/users/${props.accountId}`);
     if (res.status !== 200) {
       props.onError(await res.text());
     } else {
@@ -24,7 +24,7 @@ export default function NameCard(props: { accountId: string, onError: (messasge:
 
   async function readIsFollowing() {
     setLoading(true);
-    const res = await fetch(`/api/users/${props.accountId}/follow`, {
+    const res = await request(`/api/users/${props.accountId}/follow`, {
       method: "GET",
       headers: { Authorization: `Bearer ${getAtk()}` }
     });
@@ -37,7 +37,7 @@ export default function NameCard(props: { accountId: string, onError: (messasge:
 
   async function follow() {
     setSubmitting(true);
-    const res = await fetch(`/api/users/${props.accountId}/follow`, {
+    const res = await request(`/api/users/${props.accountId}/follow`, {
       method: "POST",
       headers: { "Authorization": `Bearer ${getAtk()}` }
     });

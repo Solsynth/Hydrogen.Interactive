@@ -34,7 +34,7 @@ export default function PostList(props: {
     if (!confirm(`Are you sure to delete post#${item.id}?`)) return;
 
     setLoading(true);
-    const res = await fetch(`/api/posts/${item.id}`, {
+    const res = await request(`/api/posts/${item.id}`, {
       method: "DELETE",
       headers: { "Authorization": `Bearer ${getAtk()}` }
     });

@@ -17,7 +17,7 @@ export default function SearchPage() {
 
   async function readPosts(pn?: number) {
     if (pn) setPage(pn);
-    const res = await fetch("/api/posts?" + new URLSearchParams({
+    const res = await request("/api/posts?" + new URLSearchParams({
       take: (10).toString(),
       offset: ((page() - 1) * 10).toString(),
       ...searchParams

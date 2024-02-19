@@ -21,7 +21,7 @@ export default function PostPage() {
 
   async function readPost(pn?: number) {
     if (pn) setPage(pn);
-    const res = await fetch(`/api/posts/${params["postId"]}?` + new URLSearchParams({
+    const res = await request(`/api/posts/${params["postId"]}?` + new URLSearchParams({
       take: (10).toString(),
       offset: ((page() - 1) * 10).toString()
     }));
@@ -43,7 +43,7 @@ export default function PostPage() {
   async function deletePost(item: any) {
     if (!confirm(`Are you sure to delete post#${item.id}?`)) return;
 
-    const res = await fetch(`/api/posts/${item.id}`, {
+    const res = await request(`/api/posts/${item.id}`, {
       method: "DELETE",
       headers: { "Authorization": `Bearer ${getAtk()}` }
     });

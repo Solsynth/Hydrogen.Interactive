@@ -23,7 +23,7 @@ export default function AccountPage() {
 
   async function readPosts(pn?: number) {
     if (pn) setSearchParams({ page: pn });
-    const res = await fetch(
+    const res = await request(
       "/api/posts?" +
         new URLSearchParams({
           take: searchParams["take"] ? searchParams["take"] : (10).toString(),

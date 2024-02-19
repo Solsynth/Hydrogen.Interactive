@@ -11,7 +11,7 @@ export default function PublishPost() {
   const [post, setPost] = createSignal<any>();
 
   async function readPost() {
-    const res = await fetch(`/api/creators/posts/${params["postId"]}`, {
+    const res = await request(`/api/creators/posts/${params["postId"]}`, {
       headers: { "Authorization": `Bearer ${getAtk()}` }
     });
     if (res.status === 200) {

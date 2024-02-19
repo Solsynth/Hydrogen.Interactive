@@ -6,7 +6,7 @@ const WellKnownContext = createContext<any>();
 const [wellKnown, setWellKnown] = createStore<any>(null);
 
 export async function readWellKnown() {
-  const res = await fetch("/.well-known")
+  const res = await request("/.well-known")
   setWellKnown(await res.json())
 }
 

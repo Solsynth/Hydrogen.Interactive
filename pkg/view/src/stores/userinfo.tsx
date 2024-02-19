@@ -25,7 +25,7 @@ export function getAtk(): string {
 export async function refreshAtk() {
     const rtk = new Cookie().get("refresh_token");
 
-    const res = await fetch("/api/auth/refresh", {
+    const res = await request("/api/auth/refresh", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({
@@ -48,7 +48,7 @@ function checkLoggedIn(): boolean {
 export async function readProfiles(recovering = true) {
     if (!checkLoggedIn()) return;
 
-    const res = await fetch("/api/users/me", {
+    const res = await request("/api/users/me", {
         headers: {"Authorization": `Bearer ${getAtk()}`}
     });
 

@@ -25,7 +25,7 @@ export default function PostEditActions(props: {
   const [attachmentMode, setAttachmentMode] = createSignal(0);
 
   async function readCategories() {
-    const res = await fetch("/api/categories");
+    const res = await request("/api/categories");
     if (res.status === 200) {
       setAvailableCategories(await res.json());
     }
@@ -41,7 +41,7 @@ export default function PostEditActions(props: {
     if (!data.get("attachment")) return;
 
     setUploading(true);
-    const res = await fetch("/api/attachments", {
+    const res = await request("/api/attachments", {
       method: "POST",
       headers: { Authorization: `Bearer ${getAtk()}` },
       body: data,

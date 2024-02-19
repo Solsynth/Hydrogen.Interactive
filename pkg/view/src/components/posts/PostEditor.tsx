@@ -54,7 +54,7 @@ export default function PostEditor(props: {
   }, [props.editing]);
 
   async function listRealm() {
-    const res = await fetch("/api/realms/me/available", {
+    const res = await request("/api/realms/me/available", {
       headers: { "Authorization": `Bearer ${getAtk()}` }
     });
     if (res.status === 200) {
@@ -72,7 +72,7 @@ export default function PostEditor(props: {
     if (!editor()?.getValue()) return;
 
     setSubmitting(true);
-    const res = await fetch("/api/posts", {
+    const res = await request("/api/posts", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -107,7 +107,7 @@ export default function PostEditor(props: {
     if (!editor()?.getValue()) return;
 
     setSubmitting(true);
-    const res = await fetch(`/api/posts/${props.editing?.id}`, {
+    const res = await request(`/api/posts/${props.editing?.id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

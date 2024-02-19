@@ -23,7 +23,7 @@ export default function RealmPage() {
   const navigate = useNavigate();
 
   async function readRealm() {
-    const res = await fetch(`/api/realms/${params["realmId"]}`);
+    const res = await request(`/api/realms/${params["realmId"]}`);
     if (res.status !== 200) {
       setError(await res.text());
     } else {
@@ -35,7 +35,7 @@ export default function RealmPage() {
 
   async function readPosts(pn?: number) {
     if (pn) setPage(pn);
-    const res = await fetch(`/api/posts?` + new URLSearchParams({
+    const res = await request(`/api/posts?` + new URLSearchParams({
       take: (10).toString(),
       offset: ((page() - 1) * 10).toString(),
       realmId: params["realmId"]
@@ -55,7 +55,7 @@ export default function RealmPage() {
     const data = Object.fromEntries(new FormData(form));
 
     setSubmitting(true);
-    const res = await fetch(`/api/realms/${params["realmId"]}`, {
+    const res = await request(`/api/realms/${params["realmId"]}`, {
       method: "PUT",
       headers: { "Authorization": `Bearer ${getAtk()}`, "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -81,7 +81,7 @@ export default function RealmPage() {
     const data = Object.fromEntries(new FormData(form));
 
     setSubmitting(true);
-    const res = await fetch(`/api/realms/${params["realmId"]}/invite`, {
+    const res = await request(`/api/realms/${params["realmId"]}/invite`, {
       method: "POST",
       headers: { "Authorization": `Bearer ${getAtk()}`, "Content-Type": "application/json" },
       body: JSON.stringify(data)
@@ -103,7 +103,7 @@ export default function RealmPage() {
     const data = Object.fromEntries(new FormData(form));
 
     setSubmitting(true);
-    const res = await fetch(`/api/realms/${params["realmId"]}/kick`, {
+    const res = await request(`/api/realms/${params["realmId"]}/kick`, {
       method: "POST",
       headers: { "Authorization": `Bearer ${getAtk()}`, "Content-Type": "application/json" },
       body: JSON.stringify(data)
@@ -121,7 +121,7 @@ export default function RealmPage() {
   async function breakRealm() {
     if (!confirm("Are you sure about that? All posts in this realm will disappear forever.")) return;
 
-    const res = await fetch(`/api/realms/${params["realmId"]}`, {
+    const res = await request(`/api/realms/${params["realmId"]}`, {
       method: "DELETE",
       headers: { "Authorization": `Bearer ${getAtk()}` }
     });

@@ -5,7 +5,7 @@ export default function AuthCallout() {
   const [status, setStatus] = createSignal("Communicating with Goatpass...");
 
   async function communicate() {
-    const res = await fetch(`/api/auth${location.search}`);
+    const res = await request(`/api/auth${location.search}`);
     if (res.status !== 200) {
       setError(await res.text());
     } else {

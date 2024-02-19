@@ -17,7 +17,7 @@ export default function CreatorHub() {
   async function readPosts(pn?: number) {
     if (pn) setPage(pn);
     setLoading(true);
-    const res = await fetch("/api/creators/posts?" + new URLSearchParams({
+    const res = await request("/api/creators/posts?" + new URLSearchParams({
       take: (10).toString(),
       offset: ((page() - 1) * 10).toString()
     }), { headers: { "Authorization": `Bearer ${getAtk()}` } });

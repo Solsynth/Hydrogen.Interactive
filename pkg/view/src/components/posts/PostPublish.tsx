@@ -48,7 +48,7 @@ export default function PostPublish(props: {
     if (!data.content) return;
 
     setSubmitting(true);
-    const res = await fetch("/api/posts", {
+    const res = await request("/api/posts", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -85,7 +85,7 @@ export default function PostPublish(props: {
     if (!data.content) return;
 
     setSubmitting(true);
-    const res = await fetch(`/api/posts/${props.editing?.id}`, {
+    const res = await request(`/api/posts/${props.editing?.id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

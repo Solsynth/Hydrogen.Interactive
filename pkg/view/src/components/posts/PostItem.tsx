@@ -25,7 +25,7 @@ export default function PostItem(props: {
 
   async function reactPost(item: any, type: string) {
     setReacting(true);
-    const res = await fetch(`/api/posts/${item.id}/react/${type}`, {
+    const res = await request(`/api/posts/${item.id}/react/${type}`, {
       method: "POST",
       headers: { Authorization: `Bearer ${getAtk()}` },
     });

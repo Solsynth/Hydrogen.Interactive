@@ -10,7 +10,7 @@ export default function AuthCallback() {
   const navigate = useNavigate();
 
   async function callback() {
-    const res = await fetch(`/api/auth/callback${location.search}`);
+    const res = await request(`/api/auth/callback${location.search}`);
     if (res.status !== 200) {
       setError(await res.text());
     } else {
