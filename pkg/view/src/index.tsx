@@ -20,10 +20,10 @@ import { WellKnownProvider } from "./stores/wellKnown.tsx";
 
 const root = document.getElementById("root");
 
-render(() => (
+const router = (basename?: string) => (
   <WellKnownProvider>
     <UserinfoProvider>
-      <Router root={RootLayout}>
+      <Router root={RootLayout} base={basename}>
         <Route path="/" component={FeedView}>
           <Route path="/" component={Global} />
           <Route path="/posts/:postId" component={PostReference} />
@@ -42,4 +42,38 @@ render(() => (
       </Router>
     </UserinfoProvider>
   </WellKnownProvider>
-), root!);
+);
+
+declare const __GARFISH_EXPORTS__: {
+  provider: Object;
+  registerProvider?: (provider: any) => void;
+};
+
+declare global {
+  interface Window {
+    __GARFISH__: boolean;
+  }
+}
+
+export const provider = () => ({
+  render: ({ dom, basename }: { dom: any, basename: string }) => {
+    render(
+      () => router(basename),
+      dom.querySelector("#root")
+    );
+  },
+  destroy: () => {
+  }
+});
+
+if (!window.__GARFISH__) {
+  console.log("Running directly!")
+  render(router, root!);
+} else if (typeof __GARFISH_EXPORTS__ !== "undefined") {
+  console.log("Running in launchpad container!")
+  if (__GARFISH_EXPORTS__.registerProvider) {
+    __GARFISH_EXPORTS__.registerProvider(provider);
+  } else {
+    __GARFISH_EXPORTS__.provider = provider;
+  }
+}
