@@ -1,6 +1,7 @@
 import Cookie from "universal-cookie";
 import {createContext, useContext} from "solid-js";
 import {createStore} from "solid-js/store";
+import { request } from "../scripts/request.ts";
 
 export interface Userinfo {
     isLoggedIn: boolean,

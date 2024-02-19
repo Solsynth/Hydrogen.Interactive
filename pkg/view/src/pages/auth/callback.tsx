@@ -2,6 +2,7 @@ import { createSignal, Show } from "solid-js";
 import { readProfiles } from "../../stores/userinfo.tsx";
 import { useNavigate } from "@solidjs/router";
 import Cookie from "universal-cookie";
+import { request } from "../../scripts/request.ts";
 
 export default function AuthCallback() {
   const [error, setError] = createSignal<string | null>(null);

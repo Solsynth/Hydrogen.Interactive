@@ -1,6 +1,7 @@
 import { closeModel, openModel } from "../../scripts/modals.ts";
 import { createSignal, For, Match, Show, Switch } from "solid-js";
 import { getAtk, useUserinfo } from "../../stores/userinfo.tsx";
+import { request } from "../../scripts/request.ts";
 
 import styles from "./PostPublish.module.css";
 

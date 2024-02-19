@@ -1,4 +1,5 @@
 import { createSignal, Show } from "solid-js";
+import { request } from "../../scripts/request.ts";
 
 export default function AuthCallout() {
   const [error, setError] = createSignal<string | null>(null);

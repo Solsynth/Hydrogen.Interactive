@@ -2,6 +2,7 @@ import { createMemo, createSignal, For, Show } from "solid-js";
 import { getAtk } from "../../stores/userinfo.tsx";
 import LoadingAnimation from "../../components/LoadingAnimation.tsx";
 import styles from "../../components/posts/PostList.module.css";
+import { request } from "../../scripts/request.ts";
 
 export default function CreatorHub() {
   const [error, setError] = createSignal<string | null>(null);

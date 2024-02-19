@@ -1,6 +1,7 @@
 import { createSignal, For, Show } from "solid-js";
 import { closeModel, openModel } from "../../scripts/modals.ts";
 import { getAtk } from "../../stores/userinfo.tsx";
+import { request } from "../../scripts/request.ts";
 
 export default function RealmDirectoryPage() {
   const [error, setError] = createSignal<string | null>(null);

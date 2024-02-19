@@ -2,6 +2,7 @@ import PostEdit from "../../components/posts/PostEditor.tsx";
 import { useNavigate, useParams } from "@solidjs/router";
 import { createSignal, Show } from "solid-js";
 import { getAtk } from "../../stores/userinfo.tsx";
+import { request } from "../../scripts/request.ts";
 
 export default function PublishPost() {
   const navigate = useNavigate();

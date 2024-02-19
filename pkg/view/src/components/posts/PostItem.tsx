@@ -1,5 +1,6 @@
 import { createSignal, For, Show } from "solid-js";
 import { getAtk, useUserinfo } from "../../stores/userinfo.tsx";
+import { request } from "../../scripts/request.ts";
 import PostAttachments from "./PostAttachments.tsx";
 import * as marked from "marked";
 import DOMPurify from "dompurify";

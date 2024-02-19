@@ -3,6 +3,7 @@ import { useParams } from "@solidjs/router";
 import { useSearchParams } from "@solidjs/router";
 import { createStore } from "solid-js/store";
 import { closeModel, openModel } from "../scripts/modals.ts";
+import { request } from "../scripts/request.ts";
 
 import PostList from "../components/posts/PostList.tsx";
 import NameCard from "../components/NameCard.tsx";

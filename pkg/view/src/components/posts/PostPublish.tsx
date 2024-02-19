@@ -1,5 +1,6 @@
 import { createEffect, createSignal, Show } from "solid-js";
 import { getAtk, useUserinfo } from "../../stores/userinfo.tsx";
+import { request } from "../../scripts/request.ts";
 
 import styles from "./PostPublish.module.css";
 import PostEditActions from "./PostEditActions.tsx";

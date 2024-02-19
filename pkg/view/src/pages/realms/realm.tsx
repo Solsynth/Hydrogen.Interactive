@@ -1,6 +1,7 @@
 import { createSignal, Show } from "solid-js";
 import { createStore } from "solid-js/store";
 import { useNavigate, useParams } from "@solidjs/router";
+import { request } from "../../scripts/request.ts";
 
 import PostList from "../../components/posts/PostList.tsx";
 import PostPublish from "../../components/posts/PostPublish.tsx";

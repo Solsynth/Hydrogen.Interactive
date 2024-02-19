@@ -3,6 +3,7 @@ import { createEffect, createMemo, createSignal, For, onMount, Show } from "soli
 import Cherry from "cherry-markdown";
 import "cherry-markdown/dist/cherry-markdown.min.css";
 import { getAtk } from "../../stores/userinfo.tsx";
+import { request } from "../../scripts/request.ts";
 import PostEditActions from "./PostEditActions.tsx";
 
 export default function PostEditor(props: {

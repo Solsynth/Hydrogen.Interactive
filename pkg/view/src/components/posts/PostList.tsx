@@ -4,6 +4,7 @@ import styles from "./PostList.module.css";
 import PostItem from "./PostItem.tsx";
 import LoadingAnimation from "../LoadingAnimation.tsx";
 import { getAtk } from "../../stores/userinfo.tsx";
+import { request } from "../../scripts/request.ts";
 
 export default function PostList(props: {
   noRelated?: boolean,
