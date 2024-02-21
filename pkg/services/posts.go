@@ -1,11 +1,11 @@
 package services
 
 import (
+	"code.smartsheep.studio/hydrogen/identity/pkg/grpc/proto"
 	"errors"
 	"fmt"
 	"time"
 
-	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog/log"
 
 	"code.smartsheep.studio/hydrogen/interactive/pkg/database"
@@ -230,7 +230,7 @@ func NewPost(
 					op.Author,
 					fmt.Sprintf("%s replied you", user.Name),
 					fmt.Sprintf("%s replied your post. Check it out!", user.Name),
-					fiber.Map{"label": "Related post", "url": postUrl},
+					&proto.NotifyLink{Label: "Related post", Url: postUrl},
 				)
 				if err != nil {
 					log.Error().Err(err).Msg("An error occurred when notifying user...")
@@ -257,7 +257,7 @@ func NewPost(
 				account,
 				fmt.Sprintf("%s just posted a post", user.Name),
 				"Account you followed post a brand new post. Check it out!",
-				fiber.Map{"label": "Related post", "url": postUrl},
+				&proto.NotifyLink{Label: "Related post", Url: postUrl},
 			)
 			if err != nil {
 				log.Error().Err(err).Msg("An error occurred when notifying user...")

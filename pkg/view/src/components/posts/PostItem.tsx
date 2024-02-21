@@ -4,6 +4,7 @@ import { request } from "../../scripts/request.ts";
 import PostAttachments from "./PostAttachments.tsx";
 import * as marked from "marked";
 import DOMPurify from "dompurify";
+import Avatar from "../Avatar.tsx";
 
 export default function PostItem(props: {
   post: any;
@@ -28,7 +29,7 @@ export default function PostItem(props: {
     setReacting(true);
     const res = await request(`/api/posts/${item.id}/react/${type}`, {
       method: "POST",
-      headers: { Authorization: `Bearer ${getAtk()}` },
+      headers: { Authorization: `Bearer ${getAtk()}` }
     });
     if (res.status !== 201 && res.status !== 204) {
       props.onError(await res.text());
@@ -46,15 +47,8 @@ export default function PostItem(props: {
       <Show when={!props.noAuthor}>
         <a href={`/accounts/${props.post.author.name}`}>
           <div class="flex bg-base-200">
-            <div class="avatar pl-[20px]">
-              <div class="w-12">
-                <Show
-                  when={props.post.author.avatar}
-                  fallback={<span class="text-3xl">{props.post.author.name.substring(0, 1)}</span>}
-                >
-                  <img alt="avatar" src={props.post.author.avatar} />
-                </Show>
-              </div>
+            <div class="pl-[20px]">
+              <Avatar user={props.post.author} />
             </div>
             <div class="flex items-center px-5">
               <div>
@@ -122,7 +116,8 @@ export default function PostItem(props: {
       <Show when={!props.noControl}>
         <div class="relative">
           <Show when={!userinfo?.isLoggedIn}>
-            <div class="px-7 py-2.5 h-12 w-full opacity-0 transition-opacity hover:opacity-100 bg-base-100 border-t border-base-200 z-[1] absolute top-0 left-0">
+            <div
+              class="px-7 py-2.5 h-12 w-full opacity-0 transition-opacity hover:opacity-100 bg-base-100 border-t border-base-200 z-[1] absolute top-0 left-0">
               <b>Login!</b> To access entire platform.
             </div>
           </Show>

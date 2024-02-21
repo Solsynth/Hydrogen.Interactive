@@ -1,4 +1,4 @@
-import { For, Match, Switch } from "solid-js";
+import { createMemo, For, Match, Switch } from "solid-js";
 import { clearUserinfo, useUserinfo } from "../../stores/userinfo.tsx";
 import { useNavigate } from "@solidjs/router";
 import { useWellKnown } from "../../stores/wellKnown.tsx";
@@ -20,9 +20,11 @@ export default function Navigator() {
   const userinfo = useUserinfo();
   const navigate = useNavigate();
 
+  const endpoint = createMemo(() => wellKnown?.components?.identity)
+
   function logout() {
     clearUserinfo();
-    navigate("/auth/login");
+    navigate("/");
   }
 
   return (
@@ -54,7 +56,7 @@ export default function Navigator() {
               </button>
             </Match>
             <Match when={!userinfo?.isLoggedIn}>
-              <a href="/auth" class="btn btn-sm btn-primary">
+              <a href={`${endpoint()}/auth/login?redirect_uri=${window.location}`} class="btn btn-sm btn-primary">
                 Login
               </a>
             </Match>

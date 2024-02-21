@@ -9,5 +9,8 @@ func getMetadata(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{
 		"name":   viper.GetString("name"),
 		"domain": viper.GetString("domain"),
+		"components": fiber.Map{
+			"identity": viper.GetString("identity.endpoint"),
+		},
 	})
 }

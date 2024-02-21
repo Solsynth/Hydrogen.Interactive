@@ -4,6 +4,7 @@ import { request } from "../../scripts/request.ts";
 
 import styles from "./PostPublish.module.css";
 import PostEditActions from "./PostEditActions.tsx";
+import Avatar from "../Avatar.tsx";
 
 export default function PostPublish(props: {
   replying?: any,
@@ -100,7 +101,7 @@ export default function PostPublish(props: {
         categories: categories(),
         tags: tags(),
         realm_id: props.realmId,
-        published_at: publishedAt() ? new Date(publishedAt()) : new Date(),
+        published_at: publishedAt() ? new Date(publishedAt()) : new Date()
       })
     });
     if (res.status !== 200) {
@@ -124,13 +125,8 @@ export default function PostPublish(props: {
     <>
       <form id="publish" onSubmit={(evt) => (props.editing ? doEdit : doPost)(evt)} onReset={() => resetForm()}>
         <div id="publish-identity" class="flex border-y border-base-200">
-          <div class="avatar pl-[20px]">
-            <div class="w-12">
-              <Show when={userinfo?.profiles?.avatar}
-                    fallback={<span class="text-3xl">{userinfo?.displayName.substring(0, 1)}</span>}>
-                <img alt="avatar" src={userinfo?.profiles?.avatar} />
-              </Show>
-            </div>
+          <div class="pl-[20px]">
+            <Avatar user={userinfo?.profiles} />
           </div>
           <div class="flex flex-grow">
             <input name="title" value={props.editing?.title ?? ""}

@@ -1,35 +1,51 @@
 package server
 
 import (
-	"code.smartsheep.studio/hydrogen/interactive/pkg/database"
-	"code.smartsheep.studio/hydrogen/interactive/pkg/models"
 	"code.smartsheep.studio/hydrogen/interactive/pkg/security"
+	"code.smartsheep.studio/hydrogen/interactive/pkg/services"
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/keyauth"
-	"strconv"
+	"strings"
 )
 
-var auth = keyauth.New(keyauth.Config{
-	KeyLookup:  "header:Authorization",
-	AuthScheme: "Bearer",
-	Validator: func(c *fiber.Ctx, token string) (bool, error) {
-		claims, err := security.DecodeJwt(token)
-		if err != nil {
-			return false, err
+func authMiddleware(c *fiber.Ctx) error {
+	var token string
+	if cookie := c.Cookies(security.CookieAccessKey); len(cookie) > 0 {
+		token = cookie
+	}
+	if header := c.Get(fiber.HeaderAuthorization); len(header) > 0 {
+		tk := strings.Replace(header, "Bearer", "", 1)
+		token = strings.TrimSpace(tk)
+	}
+
+	c.Locals("token", token)
+
+	if err := authFunc(c); err != nil {
+		return err
+	}
+
+	return c.Next()
+}
+
+func authFunc(c *fiber.Ctx, overrides ...string) error {
+	var token string
+	if len(overrides) > 0 {
+		token = overrides[0]
+	} else {
+		if tk, ok := c.Locals("token").(string); !ok {
+			return fiber.NewError(fiber.StatusUnauthorized)
+		} else {
+			token = tk
 		}
+	}
 
-		id, _ := strconv.Atoi(claims.Subject)
-
-		var user models.Account
-		if err := database.C.Where(&models.Account{
-			BaseModel: models.BaseModel{ID: uint(id)},
-		}).First(&user).Error; err != nil {
-			return false, err
+	rtk := c.Cookies(security.CookieRefreshKey)
+	if user, atk, rtk, err := services.Authenticate(token, rtk); err == nil {
+		if atk != token {
+			security.SetJwtCookieSet(c, atk, rtk)
 		}
-
 		c.Locals("principal", user)
-
-		return true, nil
-	},
-	ContextKey: "token",
-})
+		return nil
+	} else {
+		return err
+	}
+}

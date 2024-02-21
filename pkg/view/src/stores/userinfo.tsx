@@ -1,92 +1,73 @@
 import Cookie from "universal-cookie";
-import {createContext, useContext} from "solid-js";
-import {createStore} from "solid-js/store";
+import { createContext, useContext } from "solid-js";
+import { createStore } from "solid-js/store";
 import { request } from "../scripts/request.ts";
 
 export interface Userinfo {
-    isLoggedIn: boolean,
-    displayName: string,
-    profiles: any,
+  isLoggedIn: boolean,
+  displayName: string,
+  profiles: any,
 }
 
 const UserinfoContext = createContext<Userinfo>();
 
 const defaultUserinfo: Userinfo = {
-    isLoggedIn: false,
-    displayName: "Citizen",
-    profiles: null,
+  isLoggedIn: false,
+  displayName: "Citizen",
+  profiles: null
 };
 
 const [userinfo, setUserinfo] = createStore<Userinfo>(structuredClone(defaultUserinfo));
 
 export function getAtk(): string {
-    return new Cookie().get("access_token");
-}
-
-export async function refreshAtk() {
-    const rtk = new Cookie().get("refresh_token");
-
-    const res = await request("/api/auth/refresh", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({
-            refresh_token: rtk,
-        })
-    });
-    if (res.status !== 200) {
-        console.error(await res.text())
-    } else {
-        const data = await res.json();
-        new Cookie().set("access_token", data["access_token"], {path: "/", maxAge: undefined});
-        new Cookie().set("refresh_token", data["refresh_token"], {path: "/", maxAge: undefined});
-    }
+  return new Cookie().get("identity_auth_key");
 }
 
 function checkLoggedIn(): boolean {
-    return new Cookie().get("access_token");
+  return new Cookie().get("identity_auth_key");
 }
 
-export async function readProfiles(recovering = true) {
-    if (!checkLoggedIn()) return;
+export async function readProfiles() {
+  if (!checkLoggedIn()) return;
 
-    const res = await request("/api/users/me", {
-        headers: {"Authorization": `Bearer ${getAtk()}`}
-    });
+  const res = await request("/api/users/me", {
+    headers: { "Authorization": `Bearer ${getAtk()}` }
+  });
 
-    if (res.status !== 200) {
-        if (recovering) {
-            // Auto retry after refresh access token
-            await refreshAtk();
-            return await readProfiles(false);
-        } else {
-            clearUserinfo();
-            window.location.reload();
-        }
-    }
+  if (res.status !== 200) {
+    clearUserinfo();
+    window.location.reload();
+  }
 
-    const data = await res.json();
+  const data = await res.json();
 
-    setUserinfo({
-        isLoggedIn: true,
-        displayName: data["name"],
-        profiles: data,
-    });
+  setUserinfo({
+    isLoggedIn: true,
+    displayName: data["name"],
+    profiles: data
+  });
 }
 
 export function clearUserinfo() {
-    new Cookie().remove("access_token", {path: "/", maxAge: undefined});
-    new Cookie().remove("refresh_token", {path: "/", maxAge: undefined});
-    setUserinfo(defaultUserinfo);
+  const cookies = document.cookie.split(";");
+  for (let i = 0; i < cookies.length; i++) {
+    const cookie = cookies[i];
+    const eqPos = cookie.indexOf("=");
+    const name = eqPos > -1 ? cookie.substring(0, eqPos) : cookie;
+    document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+  }
+
+  setUserinfo(defaultUserinfo);
 }
 
 export function UserinfoProvider(props: any) {
-    return (
-        <UserinfoContext.Provider value={userinfo}>
-            {props.children}
-        </UserinfoContext.Provider>
-    );
+  return (
+    <UserinfoContext.Provider value={userinfo}>
+      {props.children}
+    </UserinfoContext.Provider>
+  );
 }
 
 export function useUserinfo() {
-    return useContext(UserinfoContext);
+  return useContext(UserinfoContext);
 }

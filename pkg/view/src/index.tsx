@@ -37,8 +37,6 @@ const router = (basename?: string) => (
           <Route path="/publish" component={lazy(() => import("./pages/creators/publish.tsx"))} />
           <Route path="/edit/:postId" component={lazy(() => import("./pages/creators/edit.tsx"))} />
         </Route>
-        <Route path="/auth" component={lazy(() => import("./pages/auth/callout.tsx"))} />
-        <Route path="/auth/callback" component={lazy(() => import("./pages/auth/callback.tsx"))} />
       </Router>
     </UserinfoProvider>
   </WellKnownProvider>

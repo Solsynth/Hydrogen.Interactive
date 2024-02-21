@@ -1,40 +1,29 @@
 package services
 
 import (
+	"code.smartsheep.studio/hydrogen/identity/pkg/grpc/proto"
 	"code.smartsheep.studio/hydrogen/interactive/pkg/database"
+	"code.smartsheep.studio/hydrogen/interactive/pkg/grpc"
 	"code.smartsheep.studio/hydrogen/interactive/pkg/models"
-	"code.smartsheep.studio/hydrogen/interactive/pkg/security"
+	"context"
 	"errors"
-	"fmt"
-	"github.com/google/uuid"
 	"gorm.io/gorm"
-	"strconv"
 	"time"
 )
 
-type IdentityUserinfo struct {
-	Sub               string `json:"sub"`
-	Name              string `json:"name"`
-	Email             string `json:"email"`
-	Picture           string `json:"picture"`
-	PreferredUsername string `json:"preferred_username"`
-}
-
-func LinkAccount(userinfo IdentityUserinfo) (models.Account, error) {
-	id, _ := strconv.Atoi(userinfo.Sub)
-
+func LinkAccount(userinfo *proto.Userinfo) (models.Account, error) {
 	var account models.Account
 	if err := database.C.Where(&models.Account{
-		ExternalID: uint(id),
+		ExternalID: uint(userinfo.Id),
 	}).First(&account).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			account = models.Account{
 				Name:         userinfo.Name,
-				Nick:         userinfo.PreferredUsername,
-				Avatar:       userinfo.Picture,
+				Nick:         userinfo.Nick,
+				Avatar:       userinfo.Avatar,
 				EmailAddress: userinfo.Email,
 				PowerLevel:   0,
-				ExternalID:   uint(id),
+				ExternalID:   uint(userinfo.Id),
 			}
 			return account, database.C.Save(&account).Error
 		}
@@ -42,8 +31,8 @@ func LinkAccount(userinfo IdentityUserinfo) (models.Account, error) {
 	}
 
 	account.Name = userinfo.Name
-	account.Nick = userinfo.PreferredUsername
-	account.Avatar = userinfo.Picture
+	account.Nick = userinfo.Nick
+	account.Avatar = userinfo.Avatar
 	account.EmailAddress = userinfo.Email
 
 	err := database.C.Save(&account).Error
@@ -51,51 +40,21 @@ func LinkAccount(userinfo IdentityUserinfo) (models.Account, error) {
 	return account, err
 }
 
-func GetToken(account models.Account) (string, string, error) {
+func Authenticate(atk, rtk string) (models.Account, string, string, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
 	var err error
-	var refresh, access string
-
-	sub := strconv.Itoa(int(account.ID))
-	access, err = security.EncodeJwt(
-		uuid.NewString(),
-		security.JwtAccessType,
-		sub,
-		[]string{"interactive"},
-		time.Now().Add(30*time.Minute),
-	)
+	var user models.Account
+	reply, err := grpc.Auth.Authenticate(ctx, &proto.AuthRequest{
+		AccessToken:  atk,
+		RefreshToken: &rtk,
+	})
 	if err != nil {
-		return refresh, access, err
-	}
-	refresh, err = security.EncodeJwt(
-		uuid.NewString(),
-		security.JwtRefreshType,
-		sub,
-		[]string{"interactive"},
-		time.Now().Add(30*24*time.Hour),
-	)
-	if err != nil {
-		return refresh, access, err
+		return user, reply.GetAccessToken(), reply.GetRefreshToken(), err
 	}
 
-	return access, refresh, nil
-}
+	user, err = LinkAccount(reply.Userinfo)
 
-func RefreshToken(token string) (string, string, error) {
-	parseInt := func(str string) int {
-		val, _ := strconv.Atoi(str)
-		return val
-	}
-
-	var account models.Account
-	if claims, err := security.DecodeJwt(token); err != nil {
-		return "404", "403", err
-	} else if claims.Type != security.JwtRefreshType {
-		return "404", "403", fmt.Errorf("invalid token type, expected refresh token")
-	} else if err := database.C.Where(models.Account{
-		BaseModel: models.BaseModel{ID: uint(parseInt(claims.Subject))},
-	}).First(&account).Error; err != nil {
-		return "404", "403", err
-	}
-
-	return GetToken(account)
+	return user, reply.GetAccessToken(), reply.GetRefreshToken(), err
 }

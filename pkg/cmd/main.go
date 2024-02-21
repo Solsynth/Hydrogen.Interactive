@@ -1,6 +1,7 @@
 package main
 
 import (
+	"code.smartsheep.studio/hydrogen/interactive/pkg/grpc"
 	"code.smartsheep.studio/hydrogen/interactive/pkg/server"
 	"os"
 	"os/signal"
@@ -36,6 +37,13 @@ func main() {
 	} else if err := database.RunMigration(database.C); err != nil {
 		log.Fatal().Err(err).Msg("An error occurred when running database auto migration.")
 	}
+
+	// Connect other services
+	go func() {
+		if err := grpc.ConnectPassport(); err != nil {
+			log.Fatal().Err(err).Msg("An error occurred when connecting to identity grpc endpoint...")
+		}
+	}()
 
 	// Server
 	server.NewServer()

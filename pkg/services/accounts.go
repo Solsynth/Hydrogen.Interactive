@@ -1,11 +1,13 @@
 package services
 
 import (
+	"code.smartsheep.studio/hydrogen/identity/pkg/grpc/proto"
 	"code.smartsheep.studio/hydrogen/interactive/pkg/database"
+	"code.smartsheep.studio/hydrogen/interactive/pkg/grpc"
 	"code.smartsheep.studio/hydrogen/interactive/pkg/models"
-	"fmt"
-	"github.com/gofiber/fiber/v2"
+	"context"
 	"github.com/spf13/viper"
+	"time"
 )
 
 func FollowAccount(followerId, followingId uint) error {
@@ -32,22 +34,19 @@ func GetAccountFollowed(user models.Account, target models.Account) (models.Acco
 	return relationship, err == nil
 }
 
-func NotifyAccount(user models.Account, subject, content string, links ...fiber.Map) error {
-	agent := fiber.Post(viper.GetString("identity.endpoint") + "/api/dev/notify")
-	agent.JSON(fiber.Map{
-		"client_id":     viper.GetString("identity.client_id"),
-		"client_secret": viper.GetString("identity.client_secret"),
-		"subject":       subject,
-		"content":       content,
-		"links":         links,
-		"user_id":       user.ExternalID,
+func NotifyAccount(user models.Account, subject, content string, links ...*proto.NotifyLink) error {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	_, err := grpc.Notify.NotifyUser(ctx, &proto.NotifyRequest{
+		ClientId:     viper.GetString("identity.client_id"),
+		ClientSecret: viper.GetString("identity.client_secret"),
+		Subject:      subject,
+		Content:      content,
+		Links:        links,
+		RecipientId:  uint64(user.ID),
+		IsImportant:  false,
 	})
 
-	if status, body, errs := agent.Bytes(); len(errs) > 0 {
-		return errs[0]
-	} else if status != 200 {
-		return fmt.Errorf(string(body))
-	}
-
-	return nil
+	return err
 }

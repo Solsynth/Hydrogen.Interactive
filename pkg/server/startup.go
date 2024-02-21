@@ -58,45 +58,41 @@ func NewServer() {
 
 	api := A.Group("/api").Name("API")
 	{
-		api.Get("/auth", doLogin)
-		api.Get("/auth/callback", postLogin)
-		api.Post("/auth/refresh", doRefreshToken)
-
-		api.Get("/users/me", auth, getUserinfo)
+		api.Get("/users/me", authMiddleware, getUserinfo)
 		api.Get("/users/:accountId", getOthersInfo)
-		api.Get("/users/:accountId/follow", auth, getAccountFollowed)
-		api.Post("/users/:accountId/follow", auth, doFollowAccount)
+		api.Get("/users/:accountId/follow", authMiddleware, getAccountFollowed)
+		api.Post("/users/:accountId/follow", authMiddleware, doFollowAccount)
 
 		api.Get("/attachments/o/:fileId", cache.New(cache.Config{
 			Expiration:   365 * 24 * time.Hour,
 			CacheControl: true,
 		}), openAttachment)
-		api.Post("/attachments", auth, uploadAttachment)
+		api.Post("/attachments", authMiddleware, uploadAttachment)
 
 		api.Get("/posts", listPost)
 		api.Get("/posts/:postId", getPost)
-		api.Post("/posts", auth, createPost)
-		api.Post("/posts/:postId/react/:reactType", auth, reactPost)
-		api.Put("/posts/:postId", auth, editPost)
-		api.Delete("/posts/:postId", auth, deletePost)
+		api.Post("/posts", authMiddleware, createPost)
+		api.Post("/posts/:postId/react/:reactType", authMiddleware, reactPost)
+		api.Put("/posts/:postId", authMiddleware, editPost)
+		api.Delete("/posts/:postId", authMiddleware, deletePost)
 
 		api.Get("/categories", listCategroies)
-		api.Post("/categories", auth, newCategory)
-		api.Put("/categories/:categoryId", auth, editCategory)
-		api.Delete("/categories/:categoryId", auth, deleteCategory)
+		api.Post("/categories", authMiddleware, newCategory)
+		api.Put("/categories/:categoryId", authMiddleware, editCategory)
+		api.Delete("/categories/:categoryId", authMiddleware, deleteCategory)
 
-		api.Get("/creators/posts", auth, listOwnPost)
-		api.Get("/creators/posts/:postId", auth, getOwnPost)
+		api.Get("/creators/posts", authMiddleware, listOwnPost)
+		api.Get("/creators/posts/:postId", authMiddleware, getOwnPost)
 
 		api.Get("/realms", listRealm)
-		api.Get("/realms/me", auth, listOwnedRealm)
-		api.Get("/realms/me/available", auth, listAvailableRealm)
+		api.Get("/realms/me", authMiddleware, listOwnedRealm)
+		api.Get("/realms/me/available", authMiddleware, listAvailableRealm)
 		api.Get("/realms/:realmId", getRealm)
-		api.Post("/realms", auth, createRealm)
-		api.Post("/realms/:realmId/invite", auth, inviteRealm)
-		api.Post("/realms/:realmId/kick", auth, kickRealm)
-		api.Put("/realms/:realmId", auth, editRealm)
-		api.Delete("/realms/:realmId", auth, deleteRealm)
+		api.Post("/realms", authMiddleware, createRealm)
+		api.Post("/realms/:realmId/invite", authMiddleware, inviteRealm)
+		api.Post("/realms/:realmId/kick", authMiddleware, kickRealm)
+		api.Put("/realms/:realmId", authMiddleware, editRealm)
+		api.Delete("/realms/:realmId", authMiddleware, deleteRealm)
 	}
 
 	A.Use("/", cache.New(cache.Config{

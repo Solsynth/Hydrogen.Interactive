@@ -12,7 +12,8 @@ content = "uploads"
 [identity]
 client_id = "goatplaza"
 client_secret = "Z9k9AFTj^p"
-endpoint = "https://id.smartsheep.studio"
+endpoint = "http://localhost:8444"
+grpc_endpoint = "127.0.0.1:7444"
 
 [mailer]
 name = "Alphabot <alphabot@smartsheep.studio>"
@@ -20,6 +21,12 @@ smtp_host = "smtp.exmail.qq.com"
 smtp_port = 465
 username = "alphabot@smartsheep.studio"
 password = "gz937Zxxzfcd9SeH"
+
+[security]
+cookie_domain = "localhost"
+cookie_samesite = "Lax"
+access_token_duration = 300
+refresh_token_duration = 2592000
 
 [database]
 dsn = "host=localhost dbname=hy_interactive port=5432 sslmode=disable"
