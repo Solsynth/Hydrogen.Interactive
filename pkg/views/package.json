@@ -13,9 +13,11 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@fontsource/roboto": "^5.0.8",
     "@mdi/font": "^7.4.47",
     "@unocss/reset": "^0.58.5",
     "pinia": "^2.1.7",
+    "universal-cookie": "^7.1.0",
     "unocss": "^0.58.5",
     "vue": "^3.4.15",
     "vue-router": "^4.2.5",

@@ -1,41 +1,50 @@
-import "virtual:uno.css"
+import "virtual:uno.css";
 
-import { createApp } from "vue"
-import { createPinia } from "pinia"
+import "./assets/utils.css";
 
-import "vuetify/styles"
-import { createVuetify } from "vuetify"
-import * as components from "vuetify/components"
-import * as directives from "vuetify/directives"
+import { createApp } from "vue";
+import { createPinia } from "pinia";
 
-import "@mdi/font/css/materialdesignicons.min.css"
+import "vuetify/styles";
+import { createVuetify } from "vuetify";
+import { md3 } from "vuetify/blueprints";
+import * as components from "vuetify/components";
+import * as directives from "vuetify/directives";
 
-import index from "./index.vue"
-import router from "./router"
+import "@mdi/font/css/materialdesignicons.min.css";
+import "@fontsource/roboto/latin.css";
+import "@unocss/reset/tailwind.css";
 
-const app = createApp(index)
+import index from "./index.vue";
+import router from "./router";
+
+const app = createApp(index);
 
 app.use(
   createVuetify({
     components,
     directives,
+    blueprint: md3,
     theme: {
+      defaultTheme: "original",
       themes: {
-        light: {
-          primary: "#4a5099",
-          secondary: "#2196f3",
-          accent: "#009688",
-          error: "#f44336",
-          warning: "#ff9800",
-          info: "#03a9f4",
-          success: "#4caf50"
+        original: {
+          colors: {
+            primary: "#4a5099",
+            secondary: "#2196f3",
+            accent: "#009688",
+            error: "#f44336",
+            warning: "#ff9800",
+            info: "#03a9f4",
+            success: "#4caf50"
+          }
         }
       }
     }
   })
-)
+);
 
-app.use(createPinia())
-app.use(router)
+app.use(createPinia());
+app.use(router);
 
-app.mount("#app")
+app.mount("#app");

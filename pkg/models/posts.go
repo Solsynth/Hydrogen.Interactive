@@ -5,10 +5,8 @@ import "time"
 type Post struct {
 	BaseModel
 
-	Alias            string        `json:"alias" gorm:"uniqueIndex"`
-	Title            string        `json:"title"`
 	Content          string        `json:"content"`
-	Tags             []Tag         `json:"tags" gorm:"many2many:post_tags"`
+	Hashtags         []Tag         `json:"tags" gorm:"many2many:post_tags"`
 	Categories       []Category    `json:"categories" gorm:"many2many:post_categories"`
 	Attachments      []Attachment  `json:"attachments"`
 	LikedAccounts    []PostLike    `json:"liked_accounts"`

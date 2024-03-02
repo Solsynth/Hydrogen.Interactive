@@ -1,0 +1,11 @@
+html, body, #app, .v-application {
+    overflow: auto !important;
+}
+
+.no-scrollbar {
+    scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+    width: 0;
+}

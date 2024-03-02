@@ -20,7 +20,7 @@ func PreloadRelatedPost(tx *gorm.DB) *gorm.DB {
 		Preload("Author").
 		Preload("Attachments").
 		Preload("Categories").
-		Preload("Tags").
+		Preload("Hashtags").
 		Preload("RepostTo").
 		Preload("ReplyTo").
 		Preload("RepostTo.Author").
@@ -29,8 +29,8 @@ func PreloadRelatedPost(tx *gorm.DB) *gorm.DB {
 		Preload("ReplyTo.Attachments").
 		Preload("RepostTo.Categories").
 		Preload("ReplyTo.Categories").
-		Preload("RepostTo.Tags").
-		Preload("ReplyTo.Tags")
+		Preload("RepostTo.Hashtags").
+		Preload("ReplyTo.Hashtags")
 }
 
 func FilterPostWithCategory(tx *gorm.DB, alias string) *gorm.DB {
@@ -161,7 +161,7 @@ WHERE t.id IN ?`, prefix, prefix, prefix, prefix, prefix), postIds).Scan(&reactI
 func NewPost(
 	user models.Account,
 	realm *models.Realm,
-	alias, title, content string,
+	content string,
 	attachments []models.Attachment,
 	categories []models.Category,
 	tags []models.Tag,
@@ -202,11 +202,9 @@ func NewPost(
 	}
 
 	post = models.Post{
-		Alias:       alias,
-		Title:       title,
 		Content:     content,
 		Attachments: attachments,
-		Tags:        tags,
+		Hashtags:    tags,
 		Categories:  categories,
 		AuthorID:    user.ID,
 		RealmID:     realmId,
@@ -225,7 +223,7 @@ func NewPost(
 			BaseModel: models.BaseModel{ID: *post.ReplyID},
 		}).Preload("Author").First(&op).Error; err == nil {
 			if op.Author.ID != user.ID {
-				postUrl := fmt.Sprintf("https://%s/posts/%s", viper.GetString("domain"), post.Alias)
+				postUrl := fmt.Sprintf("https://%s/posts/%d", viper.GetString("domain"), post.ID)
 				err := NotifyAccount(
 					op.Author,
 					fmt.Sprintf("%s replied you", user.Name),
@@ -252,7 +250,7 @@ func NewPost(
 		})
 
 		for _, account := range accounts {
-			postUrl := fmt.Sprintf("https://%s/posts/%s", viper.GetString("domain"), post.Alias)
+			postUrl := fmt.Sprintf("https://%s/posts/%d", viper.GetString("domain"), post.ID)
 			err := NotifyAccount(
 				account,
 				fmt.Sprintf("%s just posted a post", user.Name),
@@ -270,7 +268,7 @@ func NewPost(
 
 func EditPost(
 	post models.Post,
-	alias, title, content string,
+	content string,
 	publishedAt *time.Time,
 	categories []models.Category,
 	tags []models.Tag,
@@ -294,11 +292,9 @@ func EditPost(
 		publishedAt = lo.ToPtr(time.Now())
 	}
 
-	post.Alias = alias
-	post.Title = title
 	post.Content = content
 	post.PublishedAt = *publishedAt
-	post.Tags = tags
+	post.Hashtags = tags
 	post.Categories = categories
 	post.Attachments = attachments
 

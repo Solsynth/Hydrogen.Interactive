@@ -12,13 +12,13 @@ import (
 func getOwnPost(c *fiber.Ctx) error {
 	user := c.Locals("principal").(models.Account)
 
-	id := c.Params("postId")
+	id, _ := c.ParamsInt("postId", 0)
 	take := c.QueryInt("take", 0)
 	offset := c.QueryInt("offset", 0)
 
 	tx := database.C.Where(&models.Post{
-		Alias:    id,
-		AuthorID: user.ID,
+		BaseModel: models.BaseModel{ID: uint(id)},
+		AuthorID:  user.ID,
 	})
 
 	post, err := services.GetPost(tx)

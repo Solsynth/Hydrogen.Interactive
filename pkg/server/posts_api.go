@@ -13,12 +13,12 @@ import (
 )
 
 func getPost(c *fiber.Ctx) error {
-	id := c.Params("postId")
+	id, _ := c.ParamsInt("postId", 0)
 	take := c.QueryInt("take", 0)
 	offset := c.QueryInt("offset", 0)
 
 	tx := database.C.Where(&models.Post{
-		Alias: id,
+		BaseModel: models.BaseModel{ID: uint(id)},
 	}).Where("published_at <= ? OR published_at IS NULL", time.Now())
 
 	post, err := services.GetPost(tx)
@@ -162,8 +162,6 @@ func createPost(c *fiber.Ctx) error {
 	post, err := services.NewPost(
 		user,
 		realm,
-		data.Alias,
-		data.Title,
 		data.Content,
 		data.Attachments,
 		data.Categories,
@@ -207,8 +205,6 @@ func editPost(c *fiber.Ctx) error {
 
 	post, err := services.EditPost(
 		post,
-		data.Alias,
-		data.Title,
 		data.Content,
 		data.PublishedAt,
 		data.Categories,
