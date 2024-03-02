@@ -13,9 +13,15 @@ func RunMigration(source *gorm.DB) error {
 		&models.RealmMember{},
 		&models.Category{},
 		&models.Tag{},
-		&models.Post{},
-		&models.PostLike{},
-		&models.PostDislike{},
+		&models.Moment{},
+		&models.MomentLike{},
+		&models.MomentDislike{},
+		&models.Article{},
+		&models.ArticleLike{},
+		&models.ArticleDislike{},
+		&models.Comment{},
+		&models.CommentLike{},
+		&models.CommentDislike{},
 		&models.Attachment{},
 	); err != nil {
 		return err

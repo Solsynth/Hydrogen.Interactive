@@ -12,105 +12,81 @@ import (
 	"github.com/samber/lo"
 )
 
-func getPost(c *fiber.Ctx) error {
-	id, _ := c.ParamsInt("postId", 0)
-	take := c.QueryInt("take", 0)
-	offset := c.QueryInt("offset", 0)
+func getMomentContext() *services.PostTypeContext[models.Moment] {
+	return &services.PostTypeContext[models.Moment]{
+		Tx:        database.C,
+		TypeName:  "Moment",
+		CanReply:  false,
+		CanRepost: true,
+	}
+}
 
-	tx := database.C.Where(&models.Post{
-		BaseModel: models.BaseModel{ID: uint(id)},
-	}).Where("published_at <= ? OR published_at IS NULL", time.Now())
+func getMoment(c *fiber.Ctx) error {
+	id, _ := c.ParamsInt("momentId", 0)
 
-	post, err := services.GetPost(tx)
+	mx := getMomentContext().FilterPublishedAt(time.Now())
+
+	item, err := mx.Get(uint(id))
 	if err != nil {
 		return fiber.NewError(fiber.StatusNotFound, err.Error())
 	}
 
-	tx = database.C.
-		Where(&models.Post{ReplyID: &post.ID}).
-		Where("published_at <= ? OR published_at IS NULL", time.Now()).
-		Order("created_at desc")
-
-	var count int64
-	if err := tx.
-		Model(&models.Post{}).
-		Count(&count).Error; err != nil {
-		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
-	}
-
-	posts, err := services.ListPost(tx, take, offset)
-	if err != nil {
-		return fiber.NewError(fiber.StatusBadRequest, err.Error())
-	}
-
-	return c.JSON(fiber.Map{
-		"data":    post,
-		"count":   count,
-		"related": posts,
-	})
+	return c.JSON(item)
 }
 
-func listPost(c *fiber.Ctx) error {
+func listMoment(c *fiber.Ctx) error {
 	take := c.QueryInt("take", 0)
 	offset := c.QueryInt("offset", 0)
-
 	realmId := c.QueryInt("realmId", 0)
 
-	tx := database.C.
-		Where("published_at <= ? OR published_at IS NULL", time.Now()).
-		Order("created_at desc")
-
-	if realmId > 0 {
-		tx = tx.Where(&models.Post{RealmID: lo.ToPtr(uint(realmId))})
-	} else {
-		tx = tx.Where("realm_id IS NULL")
-	}
+	mx := getMomentContext().
+		FilterPublishedAt(time.Now()).
+		FilterRealm(uint(realmId)).
+		SortCreatedAt("desc")
 
 	var author models.Account
 	if len(c.Query("authorId")) > 0 {
 		if err := database.C.Where(&models.Account{Name: c.Query("authorId")}).First(&author).Error; err != nil {
 			return fiber.NewError(fiber.StatusNotFound, err.Error())
 		}
-		tx = tx.Where(&models.Post{AuthorID: author.ID})
+		mx = mx.FilterAuthor(author.ID)
 	}
 
 	if len(c.Query("category")) > 0 {
-		tx = services.FilterPostWithCategory(tx, c.Query("category"))
+		mx = mx.FilterWithCategory(c.Query("category"))
 	}
 	if len(c.Query("tag")) > 0 {
-		tx = services.FilterPostWithTag(tx, c.Query("tag"))
+		mx = mx.FilterWithTag(c.Query("tag"))
 	}
 
 	if !c.QueryBool("reply", true) {
-		tx = tx.Where("reply_id IS NULL")
+		mx = mx.FilterReply(true)
 	}
 
-	var count int64
-	if err := tx.
-		Model(&models.Post{}).
-		Count(&count).Error; err != nil {
+	count, err := mx.Count()
+	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
-	posts, err := services.ListPost(tx, take, offset)
+	items, err := mx.List(take, offset)
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 
 	return c.JSON(fiber.Map{
 		"count": count,
-		"data":  posts,
+		"data":  items,
 	})
 }
 
-func createPost(c *fiber.Ctx) error {
+func createMoment(c *fiber.Ctx) error {
 	user := c.Locals("principal").(models.Account)
 
 	var data struct {
 		Alias       string              `json:"alias"`
 		Title       string              `json:"title"`
 		Content     string              `json:"content" validate:"required"`
-		Tags        []models.Tag        `json:"tags"`
+		Hashtags    []models.Tag        `json:"hashtags"`
 		Categories  []models.Category   `json:"categories"`
 		Attachments []models.Attachment `json:"attachments"`
 		PublishedAt *time.Time          `json:"published_at"`
@@ -125,28 +101,30 @@ func createPost(c *fiber.Ctx) error {
 		data.Alias = strings.ReplaceAll(uuid.NewString(), "-", "")
 	}
 
-	var repostTo *uint = nil
-	var replyTo *uint = nil
+	mx := getMomentContext()
+
+	item := models.Moment{
+		PostBase: models.PostBase{
+			Alias:       data.Alias,
+			Attachments: data.Attachments,
+			PublishedAt: data.PublishedAt,
+			AuthorID:    user.ID,
+		},
+		Hashtags:   data.Hashtags,
+		Categories: data.Categories,
+		Content:    data.Content,
+		RealmID:    data.RealmID,
+	}
+
 	var relatedCount int64
 	if data.RepostTo > 0 {
-		if err := database.C.Where(&models.Post{
-			BaseModel: models.BaseModel{ID: data.RepostTo},
-		}).Model(&models.Post{}).Count(&relatedCount).Error; err != nil {
+		if err := database.C.Where("id = ?", data.RepostTo).
+			Model(&models.Moment{}).Count(&relatedCount).Error; err != nil {
 			return fiber.NewError(fiber.StatusBadRequest, err.Error())
 		} else if relatedCount <= 0 {
 			return fiber.NewError(fiber.StatusNotFound, "related post was not found")
 		} else {
-			repostTo = &data.RepostTo
-		}
-	} else if data.ReplyTo > 0 {
-		if err := database.C.Where(&models.Post{
-			BaseModel: models.BaseModel{ID: data.ReplyTo},
-		}).Model(&models.Post{}).Count(&relatedCount).Error; err != nil {
-			return fiber.NewError(fiber.StatusBadRequest, err.Error())
-		} else if relatedCount <= 0 {
-			return fiber.NewError(fiber.StatusNotFound, "related post was not found")
-		} else {
-			replyTo = &data.ReplyTo
+			item.RepostID = &data.RepostTo
 		}
 	}
 
@@ -159,34 +137,23 @@ func createPost(c *fiber.Ctx) error {
 		}
 	}
 
-	post, err := services.NewPost(
-		user,
-		realm,
-		data.Content,
-		data.Attachments,
-		data.Categories,
-		data.Tags,
-		data.PublishedAt,
-		replyTo,
-		repostTo,
-	)
+	item, err := mx.New(item)
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 
-	return c.JSON(post)
+	return c.JSON(item)
 }
 
-func editPost(c *fiber.Ctx) error {
+func editMoment(c *fiber.Ctx) error {
 	user := c.Locals("principal").(models.Account)
-	id, _ := c.ParamsInt("postId", 0)
+	id, _ := c.ParamsInt("momentId", 0)
 
 	var data struct {
 		Alias       string              `json:"alias" validate:"required"`
-		Title       string              `json:"title"`
 		Content     string              `json:"content" validate:"required"`
 		PublishedAt *time.Time          `json:"published_at"`
-		Tags        []models.Tag        `json:"tags"`
+		Hashtags    []models.Tag        `json:"hashtags"`
 		Categories  []models.Category   `json:"categories"`
 		Attachments []models.Attachment `json:"attachments"`
 	}
@@ -195,49 +162,48 @@ func editPost(c *fiber.Ctx) error {
 		return err
 	}
 
-	var post models.Post
-	if err := database.C.Where(&models.Post{
-		BaseModel: models.BaseModel{ID: uint(id)},
-		AuthorID:  user.ID,
-	}).First(&post).Error; err != nil {
+	mx := getMomentContext().FilterAuthor(user.ID)
+
+	item, err := mx.Get(uint(id), true)
+	if err != nil {
 		return fiber.NewError(fiber.StatusNotFound, err.Error())
 	}
 
-	post, err := services.EditPost(
-		post,
-		data.Content,
-		data.PublishedAt,
-		data.Categories,
-		data.Tags,
-		data.Attachments,
-	)
+	item.Alias = data.Alias
+	item.Content = data.Content
+	item.PublishedAt = data.PublishedAt
+	item.Hashtags = data.Hashtags
+	item.Categories = data.Categories
+	item.Attachments = data.Attachments
+
+	item, err = mx.Edit(item)
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 
-	return c.JSON(post)
+	return c.JSON(item)
 }
 
-func reactPost(c *fiber.Ctx) error {
+func reactMoment(c *fiber.Ctx) error {
 	user := c.Locals("principal").(models.Account)
-	id, _ := c.ParamsInt("postId", 0)
+	id, _ := c.ParamsInt("momentId", 0)
 
-	var post models.Post
-	if err := database.C.Where(&models.Post{
-		BaseModel: models.BaseModel{ID: uint(id)},
-	}).First(&post).Error; err != nil {
+	mx := getMomentContext()
+
+	item, err := mx.Get(uint(id), true)
+	if err != nil {
 		return fiber.NewError(fiber.StatusNotFound, err.Error())
 	}
 
 	switch strings.ToLower(c.Params("reactType")) {
 	case "like":
-		if positive, err := services.LikePost(user, post); err != nil {
+		if positive, err := mx.ReactLike(user, item.ID); err != nil {
 			return fiber.NewError(fiber.StatusBadRequest, err.Error())
 		} else {
 			return c.SendStatus(lo.Ternary(positive, fiber.StatusCreated, fiber.StatusNoContent))
 		}
 	case "dislike":
-		if positive, err := services.DislikePost(user, post); err != nil {
+		if positive, err := mx.ReactDislike(user, item.ID); err != nil {
 			return fiber.NewError(fiber.StatusBadRequest, err.Error())
 		} else {
 			return c.SendStatus(lo.Ternary(positive, fiber.StatusCreated, fiber.StatusNoContent))
@@ -247,19 +213,18 @@ func reactPost(c *fiber.Ctx) error {
 	}
 }
 
-func deletePost(c *fiber.Ctx) error {
+func deleteMoment(c *fiber.Ctx) error {
 	user := c.Locals("principal").(models.Account)
-	id, _ := c.ParamsInt("postId", 0)
+	id, _ := c.ParamsInt("momentId", 0)
 
-	var post models.Post
-	if err := database.C.Where(&models.Post{
-		BaseModel: models.BaseModel{ID: uint(id)},
-		AuthorID:  user.ID,
-	}).First(&post).Error; err != nil {
+	mx := getMomentContext().FilterAuthor(user.ID)
+
+	item, err := mx.Get(uint(id), true)
+	if err != nil {
 		return fiber.NewError(fiber.StatusNotFound, err.Error())
 	}
 
-	if err := services.DeletePost(post); err != nil {
+	if err := mx.Delete(item); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 

@@ -5,7 +5,8 @@ type Realm struct {
 
 	Name        string        `json:"name"`
 	Description string        `json:"description"`
-	Posts       []Post        `json:"posts"`
+	Articles    []Article     `json:"article"`
+	Moments     []Moment      `json:"moments"`
 	Members     []RealmMember `json:"members"`
 	IsPublic    bool          `json:"is_public"`
 	AccountID   uint          `json:"account_id"`

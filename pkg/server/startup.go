@@ -69,20 +69,22 @@ func NewServer() {
 		}), openAttachment)
 		api.Post("/attachments", authMiddleware, uploadAttachment)
 
-		api.Get("/posts", listPost)
-		api.Get("/posts/:postId", getPost)
-		api.Post("/posts", authMiddleware, createPost)
-		api.Post("/posts/:postId/react/:reactType", authMiddleware, reactPost)
-		api.Put("/posts/:postId", authMiddleware, editPost)
-		api.Delete("/posts/:postId", authMiddleware, deletePost)
+		// TODO Feed (aka. Union source)
 
-		api.Get("/categories", listCategroies)
+		moments := api.Group("/moments").Name("Moments API")
+		{
+			moments.Get("/", listMoment)
+			moments.Get("/:momentId", getMoment)
+			moments.Post("/", authMiddleware, createMoment)
+			moments.Post("/:momentId/react/:reactType", authMiddleware, reactMoment)
+			moments.Put("/:momentId", authMiddleware, editMoment)
+			moments.Delete("/:momentId", authMiddleware, deleteMoment)
+		}
+
+		api.Get("/categories", listCategories)
 		api.Post("/categories", authMiddleware, newCategory)
 		api.Put("/categories/:categoryId", authMiddleware, editCategory)
 		api.Delete("/categories/:categoryId", authMiddleware, deleteCategory)
-
-		api.Get("/creators/posts", authMiddleware, listOwnPost)
-		api.Get("/creators/posts/:postId", authMiddleware, getOwnPost)
 
 		api.Get("/realms", listRealm)
 		api.Get("/realms/me", authMiddleware, listOwnedRealm)

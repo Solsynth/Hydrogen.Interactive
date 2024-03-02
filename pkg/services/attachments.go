@@ -14,7 +14,7 @@ func NewAttachment(user models.Account, header *multipart.FileHeader) (models.At
 		Filesize: header.Size,
 		Filename: header.Filename,
 		Mimetype: "unknown/unknown",
-		PostID:   nil,
+		Type:     models.AttachmentOthers,
 		AuthorID: user.ID,
 	}
 
