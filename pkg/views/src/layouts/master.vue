@@ -25,11 +25,25 @@
   <v-main>
     <router-view />
   </v-main>
+
+  <v-fab
+    class="editor-fab"
+    icon="mdi-pencil"
+    color="primary"
+    size="64"
+    appear
+    @click="editor.show = true"
+  />
+
+  <post-editor />
 </template>
 
 <script setup lang="ts">
 import { ref } from "vue";
+import { useEditor } from "@/stores/editor";
+import PostEditor from "@/components/publish/PostEditor.vue";
 
+const editor = useEditor()
 const navigationMenu = [
   { name: "Explore", icon: "mdi-compass", to: "explore" }
 ];
@@ -40,3 +54,11 @@ function toggleDrawer() {
   drawerOpen.value = !drawerOpen.value;
 }
 </script>
+
+<style scoped>
+.editor-fab {
+  position: fixed !important;
+  bottom: 16px;
+  right: 20px;
+}
+</style>

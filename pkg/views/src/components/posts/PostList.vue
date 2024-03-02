@@ -5,7 +5,7 @@
     </div>
 
     <v-infinite-scroll :items="props.posts" :onLoad="props.loader">
-      <template v-for="(item, index) in props.posts" :key="item">
+      <template v-for="item in props.posts" :key="item">
         <div class="mb-3 px-1">
           <post-item :item="item" />
         </div>

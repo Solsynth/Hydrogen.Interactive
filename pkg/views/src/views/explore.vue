@@ -1,5 +1,5 @@
 <template>
-  <v-container class="flex max-md:flex-col gap-3 overflow-auto max-h-[calc(100vh-72px)] no-scrollbar">
+  <v-container class="flex max-md:flex-col gap-3 overflow-auto max-h-[calc(100vh-64px)] no-scrollbar">
     <div class="timeline flex-grow-1 mt-[-16px]">
       <post-list :loading="loading" :posts="posts" :loader="readMore" />
     </div>

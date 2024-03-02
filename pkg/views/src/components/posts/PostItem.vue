@@ -13,7 +13,7 @@
 
         <div>
           <div class="font-bold">{{ props.item?.author.nick }}</div>
-          {{ props.item?.content }}
+          <div class="prose prose-post" v-html="parseContent(props.item.content)"></div>
         </div>
       </div>
     </template>
@@ -21,11 +21,24 @@
 </template>
 
 <script setup lang="ts">
+import dompurify from "dompurify";
+import { parse } from "marked";
+
 const props = defineProps<{ item: any }>();
+
+function parseContent(src: string): string {
+  return dompurify().sanitize(parse(src) as string);
+}
 </script>
 
 <style scoped>
 .rounded-card {
   border-radius: 8px;
+}
+</style>
+
+<style>
+.prose.prose-post, p {
+  margin: 0 !important;
 }
 </style>

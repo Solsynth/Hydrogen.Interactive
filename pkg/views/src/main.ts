@@ -9,6 +9,7 @@ import "vuetify/styles";
 import { createVuetify } from "vuetify";
 import { md3 } from "vuetify/blueprints";
 import * as components from "vuetify/components";
+import * as labsComponents from 'vuetify/labs/components'
 import * as directives from "vuetify/directives";
 
 import "@mdi/font/css/materialdesignicons.min.css";
@@ -22,8 +23,11 @@ const app = createApp(index);
 
 app.use(
   createVuetify({
-    components,
     directives,
+    components: {
+      ...components,
+      ...labsComponents,
+    },
     blueprint: md3,
     theme: {
       defaultTheme: "original",
