@@ -12,19 +12,19 @@ import (
 	"github.com/samber/lo"
 )
 
-func contextMoment() *services.PostTypeContext[models.Moment] {
-	return &services.PostTypeContext[models.Moment]{
+func contextArticle() *services.PostTypeContext[models.Article] {
+	return &services.PostTypeContext[models.Article]{
 		Tx:        database.C,
-		TypeName:  "Moment",
+		TypeName:  "Article",
 		CanReply:  false,
-		CanRepost: true,
+		CanRepost: false,
 	}
 }
 
-func getMoment(c *fiber.Ctx) error {
-	id, _ := c.ParamsInt("momentId", 0)
+func getArticle(c *fiber.Ctx) error {
+	id, _ := c.ParamsInt("articleId", 0)
 
-	mx := contextMoment().FilterPublishedAt(time.Now())
+	mx := contextArticle().FilterPublishedAt(time.Now())
 
 	item, err := mx.Get(uint(id))
 	if err != nil {
@@ -34,12 +34,12 @@ func getMoment(c *fiber.Ctx) error {
 	return c.JSON(item)
 }
 
-func listMoment(c *fiber.Ctx) error {
+func listArticle(c *fiber.Ctx) error {
 	take := c.QueryInt("take", 0)
 	offset := c.QueryInt("offset", 0)
 	realmId := c.QueryInt("realmId", 0)
 
-	mx := contextMoment().
+	mx := contextArticle().
 		FilterPublishedAt(time.Now()).
 		FilterRealm(uint(realmId)).
 		SortCreatedAt("desc")
@@ -79,18 +79,19 @@ func listMoment(c *fiber.Ctx) error {
 	})
 }
 
-func createMoment(c *fiber.Ctx) error {
+func createArticle(c *fiber.Ctx) error {
 	user := c.Locals("principal").(models.Account)
 
 	var data struct {
 		Alias       string              `json:"alias"`
+		Title       string              `json:"title" validate:"required"`
+		Description string              `json:"description"`
 		Content     string              `json:"content" validate:"required"`
 		Hashtags    []models.Tag        `json:"hashtags"`
 		Categories  []models.Category   `json:"categories"`
 		Attachments []models.Attachment `json:"attachments"`
 		PublishedAt *time.Time          `json:"published_at"`
 		RealmID     *uint               `json:"realm_id"`
-		RepostTo    uint                `json:"repost_to"`
 	}
 
 	if err := BindAndValidate(c, &data); err != nil {
@@ -99,31 +100,21 @@ func createMoment(c *fiber.Ctx) error {
 		data.Alias = strings.ReplaceAll(uuid.NewString(), "-", "")
 	}
 
-	mx := contextMoment()
+	mx := contextArticle()
 
-	item := models.Moment{
+	item := models.Article{
 		PostBase: models.PostBase{
 			Alias:       data.Alias,
 			Attachments: data.Attachments,
 			PublishedAt: data.PublishedAt,
 			AuthorID:    user.ID,
 		},
-		Hashtags:   data.Hashtags,
-		Categories: data.Categories,
-		Content:    data.Content,
-		RealmID:    data.RealmID,
-	}
-
-	var relatedCount int64
-	if data.RepostTo > 0 {
-		if err := database.C.Where("id = ?", data.RepostTo).
-			Model(&models.Moment{}).Count(&relatedCount).Error; err != nil {
-			return fiber.NewError(fiber.StatusBadRequest, err.Error())
-		} else if relatedCount <= 0 {
-			return fiber.NewError(fiber.StatusNotFound, "related post was not found")
-		} else {
-			item.RepostID = &data.RepostTo
-		}
+		Hashtags:    data.Hashtags,
+		Categories:  data.Categories,
+		Title:       data.Title,
+		Description: data.Description,
+		Content:     data.Content,
+		RealmID:     data.RealmID,
 	}
 
 	var realm *models.Realm
@@ -143,12 +134,14 @@ func createMoment(c *fiber.Ctx) error {
 	return c.JSON(item)
 }
 
-func editMoment(c *fiber.Ctx) error {
+func editArticle(c *fiber.Ctx) error {
 	user := c.Locals("principal").(models.Account)
-	id, _ := c.ParamsInt("momentId", 0)
+	id, _ := c.ParamsInt("articleId", 0)
 
 	var data struct {
 		Alias       string              `json:"alias" validate:"required"`
+		Title       string              `json:"title" validate:"required"`
+		Description string              `json:"description"`
 		Content     string              `json:"content" validate:"required"`
 		PublishedAt *time.Time          `json:"published_at"`
 		Hashtags    []models.Tag        `json:"hashtags"`
@@ -160,7 +153,7 @@ func editMoment(c *fiber.Ctx) error {
 		return err
 	}
 
-	mx := contextMoment().FilterAuthor(user.ID)
+	mx := contextArticle().FilterAuthor(user.ID)
 
 	item, err := mx.Get(uint(id))
 	if err != nil {
@@ -168,6 +161,8 @@ func editMoment(c *fiber.Ctx) error {
 	}
 
 	item.Alias = data.Alias
+	item.Title = data.Title
+	item.Description = data.Description
 	item.Content = data.Content
 	item.PublishedAt = data.PublishedAt
 	item.Hashtags = data.Hashtags
@@ -182,9 +177,9 @@ func editMoment(c *fiber.Ctx) error {
 	return c.JSON(item)
 }
 
-func reactMoment(c *fiber.Ctx) error {
+func reactArticle(c *fiber.Ctx) error {
 	user := c.Locals("principal").(models.Account)
-	id, _ := c.ParamsInt("momentId", 0)
+	id, _ := c.ParamsInt("articleId", 0)
 
 	var data struct {
 		Symbol   string                  `json:"symbol" validate:"required"`
@@ -195,7 +190,7 @@ func reactMoment(c *fiber.Ctx) error {
 		return err
 	}
 
-	mx := contextMoment()
+	mx := contextArticle()
 
 	item, err := mx.Get(uint(id))
 	if err != nil {
@@ -206,7 +201,7 @@ func reactMoment(c *fiber.Ctx) error {
 		Symbol:    data.Symbol,
 		Attitude:  data.Attitude,
 		AccountID: user.ID,
-		MomentID:  &item.ID,
+		ArticleID: &item.ID,
 	}
 
 	if positive, reaction, err := mx.React(reaction); err != nil {
@@ -217,11 +212,11 @@ func reactMoment(c *fiber.Ctx) error {
 
 }
 
-func deleteMoment(c *fiber.Ctx) error {
+func deleteArticle(c *fiber.Ctx) error {
 	user := c.Locals("principal").(models.Account)
-	id, _ := c.ParamsInt("momentId", 0)
+	id, _ := c.ParamsInt("articleId", 0)
 
-	mx := contextMoment().FilterAuthor(user.ID)
+	mx := contextArticle().FilterAuthor(user.ID)
 
 	item, err := mx.Get(uint(id))
 	if err != nil {

@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -12,19 +13,19 @@ import (
 	"github.com/samber/lo"
 )
 
-func contextMoment() *services.PostTypeContext[models.Moment] {
-	return &services.PostTypeContext[models.Moment]{
+func contextComment() *services.PostTypeContext[models.Comment] {
+	return &services.PostTypeContext[models.Comment]{
 		Tx:        database.C,
-		TypeName:  "Moment",
+		TypeName:  "Comment",
 		CanReply:  false,
 		CanRepost: true,
 	}
 }
 
-func getMoment(c *fiber.Ctx) error {
-	id, _ := c.ParamsInt("momentId", 0)
+func getComment(c *fiber.Ctx) error {
+	id, _ := c.ParamsInt("commentId", 0)
 
-	mx := contextMoment().FilterPublishedAt(time.Now())
+	mx := contextComment().FilterPublishedAt(time.Now())
 
 	item, err := mx.Get(uint(id))
 	if err != nil {
@@ -34,12 +35,12 @@ func getMoment(c *fiber.Ctx) error {
 	return c.JSON(item)
 }
 
-func listMoment(c *fiber.Ctx) error {
+func listComment(c *fiber.Ctx) error {
 	take := c.QueryInt("take", 0)
 	offset := c.QueryInt("offset", 0)
 	realmId := c.QueryInt("realmId", 0)
 
-	mx := contextMoment().
+	mx := contextComment().
 		FilterPublishedAt(time.Now()).
 		FilterRealm(uint(realmId)).
 		SortCreatedAt("desc")
@@ -79,7 +80,7 @@ func listMoment(c *fiber.Ctx) error {
 	})
 }
 
-func createMoment(c *fiber.Ctx) error {
+func createComment(c *fiber.Ctx) error {
 	user := c.Locals("principal").(models.Account)
 
 	var data struct {
@@ -89,8 +90,9 @@ func createMoment(c *fiber.Ctx) error {
 		Categories  []models.Category   `json:"categories"`
 		Attachments []models.Attachment `json:"attachments"`
 		PublishedAt *time.Time          `json:"published_at"`
-		RealmID     *uint               `json:"realm_id"`
-		RepostTo    uint                `json:"repost_to"`
+		ArticleID   *uint               `json:"article_id"`
+		MomentID    *uint               `json:"moment_id"`
+		ReplyTo     uint                `json:"reply_to"`
 	}
 
 	if err := BindAndValidate(c, &data); err != nil {
@@ -99,9 +101,9 @@ func createMoment(c *fiber.Ctx) error {
 		data.Alias = strings.ReplaceAll(uuid.NewString(), "-", "")
 	}
 
-	mx := contextMoment()
+	mx := contextComment()
 
-	item := models.Moment{
+	item := models.Comment{
 		PostBase: models.PostBase{
 			Alias:       data.Alias,
 			Attachments: data.Attachments,
@@ -111,27 +113,27 @@ func createMoment(c *fiber.Ctx) error {
 		Hashtags:   data.Hashtags,
 		Categories: data.Categories,
 		Content:    data.Content,
-		RealmID:    data.RealmID,
+	}
+
+	if data.ArticleID == nil && data.MomentID == nil {
+		return fiber.NewError(fiber.StatusBadRequest, "comment must belongs to a resource")
+	}
+	if data.ArticleID != nil {
+		var article models.Article
+		if err := database.C.Where("id = ?", data.ArticleID).First(&article).Error; err != nil {
+			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("belongs to resource was not found: %v", err))
+		}
 	}
 
 	var relatedCount int64
-	if data.RepostTo > 0 {
-		if err := database.C.Where("id = ?", data.RepostTo).
-			Model(&models.Moment{}).Count(&relatedCount).Error; err != nil {
+	if data.ReplyTo > 0 {
+		if err := database.C.Where("id = ?", data.ReplyTo).
+			Model(&models.Comment{}).Count(&relatedCount).Error; err != nil {
 			return fiber.NewError(fiber.StatusBadRequest, err.Error())
 		} else if relatedCount <= 0 {
 			return fiber.NewError(fiber.StatusNotFound, "related post was not found")
 		} else {
-			item.RepostID = &data.RepostTo
-		}
-	}
-
-	var realm *models.Realm
-	if data.RealmID != nil {
-		if err := database.C.Where(&models.Realm{
-			BaseModel: models.BaseModel{ID: *data.RealmID},
-		}).First(&realm).Error; err != nil {
-			return fiber.NewError(fiber.StatusBadRequest, err.Error())
+			item.ReplyID = &data.ReplyTo
 		}
 	}
 
@@ -143,9 +145,9 @@ func createMoment(c *fiber.Ctx) error {
 	return c.JSON(item)
 }
 
-func editMoment(c *fiber.Ctx) error {
+func editComment(c *fiber.Ctx) error {
 	user := c.Locals("principal").(models.Account)
-	id, _ := c.ParamsInt("momentId", 0)
+	id, _ := c.ParamsInt("commentId", 0)
 
 	var data struct {
 		Alias       string              `json:"alias" validate:"required"`
@@ -160,7 +162,7 @@ func editMoment(c *fiber.Ctx) error {
 		return err
 	}
 
-	mx := contextMoment().FilterAuthor(user.ID)
+	mx := contextComment().FilterAuthor(user.ID)
 
 	item, err := mx.Get(uint(id))
 	if err != nil {
@@ -182,9 +184,9 @@ func editMoment(c *fiber.Ctx) error {
 	return c.JSON(item)
 }
 
-func reactMoment(c *fiber.Ctx) error {
+func reactComment(c *fiber.Ctx) error {
 	user := c.Locals("principal").(models.Account)
-	id, _ := c.ParamsInt("momentId", 0)
+	id, _ := c.ParamsInt("commentId", 0)
 
 	var data struct {
 		Symbol   string                  `json:"symbol" validate:"required"`
@@ -195,7 +197,7 @@ func reactMoment(c *fiber.Ctx) error {
 		return err
 	}
 
-	mx := contextMoment()
+	mx := contextComment()
 
 	item, err := mx.Get(uint(id))
 	if err != nil {
@@ -206,7 +208,7 @@ func reactMoment(c *fiber.Ctx) error {
 		Symbol:    data.Symbol,
 		Attitude:  data.Attitude,
 		AccountID: user.ID,
-		MomentID:  &item.ID,
+		CommentID: &item.ID,
 	}
 
 	if positive, reaction, err := mx.React(reaction); err != nil {
@@ -217,11 +219,11 @@ func reactMoment(c *fiber.Ctx) error {
 
 }
 
-func deleteMoment(c *fiber.Ctx) error {
+func deleteComment(c *fiber.Ctx) error {
 	user := c.Locals("principal").(models.Account)
-	id, _ := c.ParamsInt("momentId", 0)
+	id, _ := c.ParamsInt("commentId", 0)
 
-	mx := contextMoment().FilterAuthor(user.ID)
+	mx := contextComment().FilterAuthor(user.ID)
 
 	item, err := mx.Get(uint(id))
 	if err != nil {
