@@ -1,6 +1,6 @@
 <template>
-  <v-dialog v-model="editor.show" class="max-w-[540px]">
-    <v-card title="New post">
+  <v-dialog v-model="editor.show.moment" class="max-w-[540px]">
+    <v-card title="Record a moment">
       <v-form>
         <v-card-text>
           <v-textarea
@@ -32,7 +32,7 @@
         <v-card-actions>
           <v-spacer></v-spacer>
 
-          <v-btn type="reset" color="grey" @click="editor.show = false">Cancel</v-btn>
+          <v-btn type="reset" color="grey-darken-3" @click="editor.show.moment = false">Cancel</v-btn>
           <v-btn type="submit" @click.prevent>Publish</v-btn>
         </v-card-actions>
       </v-form>

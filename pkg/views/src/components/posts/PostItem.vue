@@ -1,5 +1,5 @@
 <template>
-  <v-card>
+  <v-card :loading="props.loading">
     <template #text>
       <div class="flex gap-3">
         <div>
@@ -11,9 +11,12 @@
           />
         </div>
 
-        <div>
+        <div class="flex-grow-1">
           <div class="font-bold">{{ props.item?.author.nick }}</div>
-          <div class="prose prose-post" v-html="parseContent(props.item.content)"></div>
+
+          <div v-if="props.item?.modal_type === 'article'" class="text-xs text-grey-darken-4 mb-2">Published an article</div>
+
+          <component :is="renderer[props.item?.model_type]" v-bind="props" />
         </div>
       </div>
     </template>
@@ -21,24 +24,20 @@
 </template>
 
 <script setup lang="ts">
-import dompurify from "dompurify";
-import { parse } from "marked";
+import type { Component } from "vue";
+import ArticleContent from "@/components/posts/ArticleContent.vue";
+import MomentContent from "@/components/posts/MomentContent.vue";
 
-const props = defineProps<{ item: any }>();
+const props = defineProps<{ item: any, brief?: boolean, loading?: boolean }>();
 
-function parseContent(src: string): string {
-  return dompurify().sanitize(parse(src) as string);
-}
+const renderer: { [id: string]: Component } = {
+  article: ArticleContent,
+  moment: MomentContent
+};
 </script>
 
 <style scoped>
 .rounded-card {
   border-radius: 8px;
-}
-</style>
-
-<style>
-.prose.prose-post, p {
-  margin: 0 !important;
 }
 </style>

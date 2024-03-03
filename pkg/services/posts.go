@@ -37,8 +37,7 @@ func (v *PostTypeContext[T]) Preload() *PostTypeContext[T] {
 	v.Tx.Preload("Author").
 		Preload("Attachments").
 		Preload("Categories").
-		Preload("Hashtags").
-		Preload("Reactions")
+		Preload("Hashtags")
 
 	if v.CanReply {
 		v.Tx.Preload("ReplyTo")
@@ -97,6 +96,15 @@ func (v *PostTypeContext[T]) FilterReply(condition bool) *PostTypeContext[T] {
 func (v *PostTypeContext[T]) SortCreatedAt(order string) *PostTypeContext[T] {
 	v.Tx.Order(fmt.Sprintf("created_at %s", order))
 	return v
+}
+
+func (v *PostTypeContext[T]) GetViaAlias(alias string) (T, error) {
+	var item T
+	if err := v.Preload().Tx.Where("alias = ?", alias).First(&item).Error; err != nil {
+		return item, err
+	}
+
+	return item, nil
 }
 
 func (v *PostTypeContext[T]) Get(id uint) (T, error) {

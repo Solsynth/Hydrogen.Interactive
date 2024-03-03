@@ -22,11 +22,11 @@ func contextArticle() *services.PostTypeContext[models.Article] {
 }
 
 func getArticle(c *fiber.Ctx) error {
-	id, _ := c.ParamsInt("articleId", 0)
+	alias := c.Params("articleId")
 
 	mx := contextArticle().FilterPublishedAt(time.Now())
 
-	item, err := mx.Get(uint(id))
+	item, err := mx.GetViaAlias(alias)
 	if err != nil {
 		return fiber.NewError(fiber.StatusNotFound, err.Error())
 	}

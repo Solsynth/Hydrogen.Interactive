@@ -1,8 +1,11 @@
 import { defineStore } from "pinia";
-import { ref } from "vue";
+import { reactive, ref } from "vue";
 
 export const useEditor = defineStore("editor", () => {
-  const show = ref(false);
+  const show = reactive({
+    moment: false,
+    article: false,
+  });
 
   return { show };
 });

@@ -4,7 +4,7 @@
       <post-list :loading="loading" :posts="posts" :loader="readMore" />
     </div>
 
-    <div class="aside sticky top-0 w-full h-fit md:min-w-[280px] md:max-w-[320px]">
+    <div class="aside sticky top-0 w-full h-fit md:min-w-[280px] md:max-w-[320px] max-md:order-first">
       <v-card title="Categories">
         <v-list density="compact">
         </v-list>
@@ -18,28 +18,27 @@ import PostList from "@/components/posts/PostList.vue";
 import { reactive, ref } from "vue";
 import { request } from "@/scripts/request";
 
-const error = ref<string | null>(null);
 const loading = ref(false);
+const error = ref<string | null>(null);
 const pagination = reactive({ page: 1, pageSize: 10, total: 0 });
 
 const posts = ref<any[]>([]);
 
 async function readPosts() {
   loading.value = true;
-  const res = await request(`/api/posts?` + new URLSearchParams({
+  const res = await request(`/api/feed?` + new URLSearchParams({
     take: pagination.pageSize.toString(),
     offset: ((pagination.page - 1) * pagination.pageSize).toString()
   }));
   if (res.status !== 200) {
-    loading.value = false;
     error.value = await res.text();
   } else {
     error.value = null;
-    loading.value = false;
     const data = await res.json();
     pagination.total = data["count"];
     posts.value.push(...data["data"]);
   }
+  loading.value = false;
 }
 
 async function readMore({ done }: any) {

@@ -23,11 +23,11 @@ func contextComment() *services.PostTypeContext[models.Comment] {
 }
 
 func getComment(c *fiber.Ctx) error {
-	id, _ := c.ParamsInt("commentId", 0)
+	alias := c.Params("commentId")
 
 	mx := contextComment().FilterPublishedAt(time.Now())
 
-	item, err := mx.Get(uint(id))
+	item, err := mx.GetViaAlias(alias)
 	if err != nil {
 		return fiber.NewError(fiber.StatusNotFound, err.Error())
 	}

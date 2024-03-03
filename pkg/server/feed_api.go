@@ -12,6 +12,7 @@ import (
 type FeedItem struct {
 	models.BaseModel
 
+	Alias         string `json:"alias"`
 	Title         string `json:"title"`
 	Description   string `json:"description"`
 	Content       string `json:"content"`
@@ -25,8 +26,8 @@ type FeedItem struct {
 }
 
 const (
-	queryArticle = "id, created_at, updated_at, title, content, description, realm_id, author_id, 'article' as model_type"
-	queryMoment  = "id, created_at, updated_at, NULL as title, content, NULL as description, realm_id, author_id, 'moment' as model_type"
+	queryArticle = "id, created_at, updated_at, alias, title, NULL as content, description, realm_id, author_id, 'article' as model_type"
+	queryMoment  = "id, created_at, updated_at, alias, NULL as title, content, NULL as description, realm_id, author_id, 'moment' as model_type"
 )
 
 func listFeed(c *fiber.Ctx) error {
@@ -83,5 +84,14 @@ func listFeed(c *fiber.Ctx) error {
 		offset,
 	).Scan(&result)
 
-	return c.JSON(result)
+	var count int64
+	database.C.Raw(`SELECT COUNT(*) FROM (? UNION ALL ?) as feed`,
+		database.C.Select(queryArticle).Model(&models.Article{}),
+		database.C.Select(queryMoment).Model(&models.Moment{}),
+	).Scan(&count)
+
+	return c.JSON(fiber.Map{
+		"count": count,
+		"data":  result,
+	})
 }

@@ -16,7 +16,7 @@
 
       <v-tooltip v-for="item in navigationMenu" :text="item.name" location="bottom">
         <template #activator="{ props }">
-          <v-btn flat v-bind="props" :to="{ name: item.to }" size="small" :icon="item.icon" />
+          <v-btn flat exact v-bind="props" :to="{ name: item.to }" size="small" :icon="item.icon" />
         </template>
       </v-tooltip>
     </div>
@@ -26,14 +26,30 @@
     <router-view />
   </v-main>
 
-  <v-fab
-    class="editor-fab"
-    icon="mdi-pencil"
-    color="primary"
-    size="64"
-    appear
-    @click="editor.show = true"
-  />
+  <v-menu
+    open-on-hover
+    open-on-click
+    :open-delay="0"
+    :close-delay="1850"
+    location="top"
+    transition="scroll-y-reverse-transition"
+  >
+    <template v-slot:activator="{ props }">
+      <v-fab
+        v-bind="props"
+        class="editor-fab"
+        icon="mdi-pencil"
+        color="primary"
+        size="64"
+        appear
+      />
+    </template>
+
+    <div class="flex flex-col items-center gap-4 mb-4">
+      <v-btn variant="elevated" color="secondary" icon="mdi-newspaper-variant" @click="editor.show.article = true" />
+      <v-btn variant="elevated" color="accent" icon="mdi-camera-iris" @click="editor.show.moment = true" />
+    </div>
+  </v-menu>
 
   <post-editor />
 </template>
@@ -43,7 +59,7 @@ import { ref } from "vue";
 import { useEditor } from "@/stores/editor";
 import PostEditor from "@/components/publish/PostEditor.vue";
 
-const editor = useEditor()
+const editor = useEditor();
 const navigationMenu = [
   { name: "Explore", icon: "mdi-compass", to: "explore" }
 ];
