@@ -12,8 +12,8 @@ import (
 	"github.com/samber/lo"
 )
 
-func contextArticle() *services.PostTypeContext[models.Article] {
-	return &services.PostTypeContext[models.Article]{
+func contextArticle() *services.PostTypeContext[*models.Article] {
+	return &services.PostTypeContext[*models.Article]{
 		Tx:        database.C,
 		TypeName:  "Article",
 		CanReply:  false,
@@ -29,6 +29,11 @@ func getArticle(c *fiber.Ctx) error {
 	item, err := mx.GetViaAlias(alias)
 	if err != nil {
 		return fiber.NewError(fiber.StatusNotFound, err.Error())
+	}
+
+	item.ReactionList, err = mx.CountReactions(item.ID)
+	if err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
 	return c.JSON(item)
@@ -102,7 +107,7 @@ func createArticle(c *fiber.Ctx) error {
 
 	mx := contextArticle()
 
-	item := models.Article{
+	item := &models.Article{
 		PostBase: models.PostBase{
 			Alias:       data.Alias,
 			Attachments: data.Attachments,
@@ -192,7 +197,7 @@ func reactArticle(c *fiber.Ctx) error {
 
 	mx := contextArticle()
 
-	item, err := mx.Get(uint(id))
+	item, err := mx.Get(uint(id), true)
 	if err != nil {
 		return fiber.NewError(fiber.StatusNotFound, err.Error())
 	}
@@ -218,7 +223,7 @@ func deleteArticle(c *fiber.Ctx) error {
 
 	mx := contextArticle().FilterAuthor(user.ID)
 
-	item, err := mx.Get(uint(id))
+	item, err := mx.Get(uint(id), true)
 	if err != nil {
 		return fiber.NewError(fiber.StatusNotFound, err.Error())
 	}

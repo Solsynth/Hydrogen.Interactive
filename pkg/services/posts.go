@@ -1,5 +1,6 @@
 package services
 
+import "C"
 import (
 	"code.smartsheep.studio/hydrogen/identity/pkg/grpc/proto"
 	"code.smartsheep.studio/hydrogen/interactive/pkg/database"
@@ -33,11 +34,15 @@ func (v *PostTypeContext[T]) GetTableName(plural ...bool) string {
 	}
 }
 
-func (v *PostTypeContext[T]) Preload() *PostTypeContext[T] {
+func (v *PostTypeContext[T]) Preload(noComments ...bool) *PostTypeContext[T] {
 	v.Tx.Preload("Author").
 		Preload("Attachments").
 		Preload("Categories").
 		Preload("Hashtags")
+
+	if len(noComments) <= 0 || !noComments[0] {
+		v.Tx = v.Tx.Preload("Comments")
+	}
 
 	if v.CanReply {
 		v.Tx.Preload("ReplyTo")
@@ -98,18 +103,18 @@ func (v *PostTypeContext[T]) SortCreatedAt(order string) *PostTypeContext[T] {
 	return v
 }
 
-func (v *PostTypeContext[T]) GetViaAlias(alias string) (T, error) {
+func (v *PostTypeContext[T]) GetViaAlias(alias string, noComments ...bool) (T, error) {
 	var item T
-	if err := v.Preload().Tx.Where("alias = ?", alias).First(&item).Error; err != nil {
+	if err := v.Preload(noComments...).Tx.Where("alias = ?", alias).First(&item).Error; err != nil {
 		return item, err
 	}
 
 	return item, nil
 }
 
-func (v *PostTypeContext[T]) Get(id uint) (T, error) {
+func (v *PostTypeContext[T]) Get(id uint, noComments ...bool) (T, error) {
 	var item T
-	if err := v.Preload().Tx.Where("id = ?", id).First(&item).Error; err != nil {
+	if err := v.Preload(noComments...).Tx.Where("id = ?", id).First(&item).Error; err != nil {
 		return item, err
 	}
 
@@ -126,6 +131,28 @@ func (v *PostTypeContext[T]) Count() (int64, error) {
 	return count, nil
 }
 
+func (v *PostTypeContext[T]) CountReactions(id uint) (map[string]int64, error) {
+	var reactions []struct {
+		Symbol string
+		Count  int64
+	}
+
+	if err := database.C.Model(&models.Reaction{}).
+		Select("symbol, COUNT(id) as count").
+		Where(strings.ToLower(v.TypeName)+"_id = ?", id).
+		Group("symbol").
+		Scan(&reactions).Error; err != nil {
+		return map[string]int64{}, err
+	}
+
+	return lo.SliceToMap(reactions, func(item struct {
+		Symbol string
+		Count  int64
+	}) (string, int64) {
+		return item.Symbol, item.Count
+	}), nil
+}
+
 func (v *PostTypeContext[T]) List(take int, offset int, noReact ...bool) ([]T, error) {
 	if take > 20 {
 		take = 20
@@ -134,6 +161,44 @@ func (v *PostTypeContext[T]) List(take int, offset int, noReact ...bool) ([]T, e
 	var items []T
 	if err := v.Preload().Tx.Limit(take).Offset(offset).Find(&items).Error; err != nil {
 		return items, err
+	}
+
+	idx := lo.Map(items, func(item T, index int) uint {
+		return item.GetID()
+	})
+
+	if len(noReact) <= 0 || !noReact[0] {
+		var reactions []struct {
+			PostID uint
+			Symbol string
+			Count  int64
+		}
+
+		if err := database.C.Model(&models.Reaction{}).
+			Select(strings.ToLower(v.TypeName)+"_id as post_id, symbol, COUNT(id) as count").
+			Where(strings.ToLower(v.TypeName)+"_id IN (?)", idx).
+			Group("post_id, symbol").
+			Scan(&reactions).Error; err != nil {
+			return items, err
+		}
+
+		itemMap := lo.SliceToMap(items, func(item T) (uint, T) {
+			return item.GetID(), item
+		})
+
+		list := map[uint]map[string]int64{}
+		for _, info := range reactions {
+			if _, ok := list[info.PostID]; !ok {
+				list[info.PostID] = make(map[string]int64)
+			}
+			list[info.PostID][info.Symbol] = info.Count
+		}
+
+		for k, v := range list {
+			if post, ok := itemMap[k]; ok {
+				post.SetReactionList(v)
+			}
+		}
 	}
 
 	return items, nil

@@ -30,7 +30,7 @@
     open-on-hover
     open-on-click
     :open-delay="0"
-    :close-delay="1850"
+    :close-delay="0"
     location="top"
     transition="scroll-y-reverse-transition"
   >

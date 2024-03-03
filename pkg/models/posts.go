@@ -22,27 +22,32 @@ type PostBase struct {
 	AuthorID uint    `json:"author_id"`
 	Author   Account `json:"author"`
 
-	// TODO Give the reactions & replies & reposts info back
+	// Dynamic Calculated Values
+	ReactionList map[string]int64 `json:"reaction_list" gorm:"-"`
 }
 
-func (p PostBase) GetID() uint {
+func (p *PostBase) GetID() uint {
 	return p.ID
 }
 
-func (p PostBase) GetReplyTo() PostInterface {
+func (p *PostBase) GetReplyTo() PostInterface {
 	return nil
 }
 
-func (p PostBase) GetRepostTo() PostInterface {
+func (p *PostBase) GetRepostTo() PostInterface {
 	return nil
 }
 
-func (p PostBase) GetAuthor() Account {
+func (p *PostBase) GetAuthor() Account {
 	return p.Author
 }
 
-func (p PostBase) GetRealm() *Realm {
+func (p *PostBase) GetRealm() *Realm {
 	return nil
+}
+
+func (p *PostBase) SetReactionList(list map[string]int64) {
+	p.ReactionList = list
 }
 
 type PostInterface interface {
@@ -56,4 +61,5 @@ type PostInterface interface {
 
 	SetHashtags([]Tag)
 	SetCategories([]Category)
+	SetReactionList(map[string]int64)
 }

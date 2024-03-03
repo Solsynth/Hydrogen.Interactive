@@ -12,8 +12,8 @@ import (
 	"github.com/samber/lo"
 )
 
-func contextMoment() *services.PostTypeContext[models.Moment] {
-	return &services.PostTypeContext[models.Moment]{
+func contextMoment() *services.PostTypeContext[*models.Moment] {
+	return &services.PostTypeContext[*models.Moment]{
 		Tx:        database.C,
 		TypeName:  "Moment",
 		CanReply:  false,
@@ -29,6 +29,11 @@ func getMoment(c *fiber.Ctx) error {
 	item, err := mx.GetViaAlias(alias)
 	if err != nil {
 		return fiber.NewError(fiber.StatusNotFound, err.Error())
+	}
+
+	item.ReactionList, err = mx.CountReactions(item.ID)
+	if err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
 	return c.JSON(item)
@@ -101,7 +106,7 @@ func createMoment(c *fiber.Ctx) error {
 
 	mx := contextMoment()
 
-	item := models.Moment{
+	item := &models.Moment{
 		PostBase: models.PostBase{
 			Alias:       data.Alias,
 			Attachments: data.Attachments,
@@ -197,7 +202,7 @@ func reactMoment(c *fiber.Ctx) error {
 
 	mx := contextMoment()
 
-	item, err := mx.Get(uint(id))
+	item, err := mx.Get(uint(id), true)
 	if err != nil {
 		return fiber.NewError(fiber.StatusNotFound, err.Error())
 	}
@@ -223,7 +228,7 @@ func deleteMoment(c *fiber.Ctx) error {
 
 	mx := contextMoment().FilterAuthor(user.ID)
 
-	item, err := mx.Get(uint(id))
+	item, err := mx.Get(uint(id), true)
 	if err != nil {
 		return fiber.NewError(fiber.StatusNotFound, err.Error())
 	}

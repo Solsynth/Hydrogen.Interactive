@@ -15,26 +15,26 @@ type Moment struct {
 	Comments []Comment `json:"comments" gorm:"foreignKey:MomentID"`
 }
 
-func (p Moment) GetRepostTo() PostInterface {
+func (p *Moment) GetRepostTo() PostInterface {
 	return p.RepostTo
 }
 
-func (p Moment) GetRealm() *Realm {
+func (p *Moment) GetRealm() *Realm {
 	return p.Realm
 }
 
-func (p Moment) GetHashtags() []Tag {
+func (p *Moment) GetHashtags() []Tag {
 	return p.Hashtags
 }
 
-func (p Moment) GetCategories() []Category {
+func (p *Moment) GetCategories() []Category {
 	return p.Categories
 }
 
-func (p Moment) SetHashtags(tags []Tag) {
+func (p *Moment) SetHashtags(tags []Tag) {
 	p.Hashtags = tags
 }
 
-func (p Moment) SetCategories(categories []Category) {
+func (p *Moment) SetCategories(categories []Category) {
 	p.Categories = categories
 }

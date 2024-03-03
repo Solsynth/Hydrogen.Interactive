@@ -6,6 +6,7 @@ import (
 	"code.smartsheep.studio/hydrogen/interactive/pkg/models"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
+	"github.com/samber/lo"
 	"github.com/spf13/viper"
 )
 
@@ -22,7 +23,8 @@ type FeedItem struct {
 	AuthorID      uint   `json:"author_id"`
 	RealmID       *uint  `json:"realm_id"`
 
-	Author models.Account `json:"author" gorm:"embedded"`
+	Author       models.Account   `json:"author" gorm:"embedded"`
+	ReactionList map[string]int64 `json:"reaction_list"`
 }
 
 const (
@@ -56,7 +58,7 @@ func listFeed(c *fiber.Ctx) error {
 		}
 	}
 
-	var result []FeedItem
+	var result []*FeedItem
 
 	userTable := viper.GetString("database.prefix") + "accounts"
 	commentTable := viper.GetString("database.prefix") + "comments"
@@ -83,6 +85,59 @@ func listFeed(c *fiber.Ctx) error {
 		take,
 		offset,
 	).Scan(&result)
+
+	if !c.QueryBool("noReact", false) {
+		var reactions []struct {
+			PostID uint
+			Symbol string
+			Count  int64
+		}
+
+		revertReaction := func(dataset string) error {
+			itemMap := lo.SliceToMap(lo.FilterMap(result, func(item *FeedItem, index int) (*FeedItem, bool) {
+				return item, item.ModelType == dataset
+			}), func(item *FeedItem) (uint, *FeedItem) {
+				return item.ID, item
+			})
+
+			idx := lo.Map(lo.Filter(result, func(item *FeedItem, index int) bool {
+				return item.ModelType == dataset
+			}), func(item *FeedItem, index int) uint {
+				return item.ID
+			})
+
+			if err := database.C.Model(&models.Reaction{}).
+				Select(dataset+"_id as post_id, symbol, COUNT(id) as count").
+				Where(dataset+"_id IN (?)", idx).
+				Group("post_id, symbol").
+				Scan(&reactions).Error; err != nil {
+				return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+			}
+
+			list := map[uint]map[string]int64{}
+			for _, info := range reactions {
+				if _, ok := list[info.PostID]; !ok {
+					list[info.PostID] = make(map[string]int64)
+				}
+				list[info.PostID][info.Symbol] = info.Count
+			}
+
+			for k, v := range list {
+				if post, ok := itemMap[k]; ok {
+					post.ReactionList = v
+				}
+			}
+
+			return nil
+		}
+
+		if err := revertReaction("article"); err != nil {
+			return err
+		}
+		if err := revertReaction("moment"); err != nil {
+			return err
+		}
+	}
 
 	var count int64
 	database.C.Raw(`SELECT COUNT(*) FROM (? UNION ALL ?) as feed`,

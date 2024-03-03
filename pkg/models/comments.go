@@ -16,22 +16,22 @@ type Comment struct {
 	Moment    *Moment  `json:"moment"`
 }
 
-func (p Comment) GetReplyTo() PostInterface {
+func (p *Comment) GetReplyTo() PostInterface {
 	return p.ReplyTo
 }
 
-func (p Comment) GetHashtags() []Tag {
+func (p *Comment) GetHashtags() []Tag {
 	return p.Hashtags
 }
 
-func (p Comment) GetCategories() []Category {
+func (p *Comment) GetCategories() []Category {
 	return p.Categories
 }
 
-func (p Comment) SetHashtags(tags []Tag) {
+func (p *Comment) SetHashtags(tags []Tag) {
 	p.Hashtags = tags
 }
 
-func (p Comment) SetCategories(categories []Category) {
+func (p *Comment) SetCategories(categories []Category) {
 	p.Categories = categories
 }

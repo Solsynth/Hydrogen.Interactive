@@ -15,26 +15,26 @@ type Article struct {
 	Comments []Comment `json:"comments" gorm:"foreignKey:ArticleID"`
 }
 
-func (p Article) GetReplyTo() PostInterface {
+func (p *Article) GetReplyTo() PostInterface {
 	return nil
 }
 
-func (p Article) GetRepostTo() PostInterface {
+func (p *Article) GetRepostTo() PostInterface {
 	return nil
 }
 
-func (p Article) GetHashtags() []Tag {
+func (p *Article) GetHashtags() []Tag {
 	return p.Hashtags
 }
 
-func (p Article) GetCategories() []Category {
+func (p *Article) GetCategories() []Category {
 	return p.Categories
 }
 
-func (p Article) SetHashtags(tags []Tag) {
+func (p *Article) SetHashtags(tags []Tag) {
 	p.Hashtags = tags
 }
 
-func (p Article) SetCategories(categories []Category) {
+func (p *Article) SetCategories(categories []Category) {
 	p.Categories = categories
 }
