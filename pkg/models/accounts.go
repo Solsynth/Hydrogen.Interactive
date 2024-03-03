@@ -8,24 +8,19 @@ import "time"
 type Account struct {
 	BaseModel
 
-	Name             string           `json:"name"`
-	Nick             string           `json:"nick"`
-	Avatar           string           `json:"avatar"`
-	Description      string           `json:"description"`
-	EmailAddress     string           `json:"email_address"`
-	PowerLevel       int              `json:"power_level"`
-	Moments          []Moment         `json:"moments" gorm:"foreignKey:AuthorID"`
-	Articles         []Article        `json:"articles" gorm:"foreignKey:AuthorID"`
-	Attachments      []Attachment     `json:"attachments" gorm:"foreignKey:AuthorID"`
-	LikedMoments     []MomentLike     `json:"liked_moments"`
-	DislikedMoments  []MomentDislike  `json:"disliked_moments"`
-	LikedArticles    []ArticleLike    `json:"liked_articles"`
-	DislikedArticles []ArticleDislike `json:"disliked_articles"`
-	LikedComments    []CommentLike    `json:"liked_comments"`
-	DislikedComments []CommentDislike `json:"disliked_comments"`
-	RealmIdentities  []RealmMember    `json:"identities"`
-	Realms           []Realm          `json:"realms"`
-	ExternalID       uint             `json:"external_id"`
+	Name            string        `json:"name"`
+	Nick            string        `json:"nick"`
+	Avatar          string        `json:"avatar"`
+	Description     string        `json:"description"`
+	EmailAddress    string        `json:"email_address"`
+	PowerLevel      int           `json:"power_level"`
+	Moments         []Moment      `json:"moments" gorm:"foreignKey:AuthorID"`
+	Articles        []Article     `json:"articles" gorm:"foreignKey:AuthorID"`
+	Attachments     []Attachment  `json:"attachments" gorm:"foreignKey:AuthorID"`
+	Reactions       []Reaction    `json:"reactions"`
+	RealmIdentities []RealmMember `json:"identities"`
+	Realms          []Realm       `json:"realms"`
+	ExternalID      uint          `json:"external_id"`
 }
 
 type AccountMembership struct {

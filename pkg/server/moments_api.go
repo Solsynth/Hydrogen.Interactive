@@ -164,7 +164,7 @@ func editMoment(c *fiber.Ctx) error {
 
 	mx := getMomentContext().FilterAuthor(user.ID)
 
-	item, err := mx.Get(uint(id), true)
+	item, err := mx.Get(uint(id))
 	if err != nil {
 		return fiber.NewError(fiber.StatusNotFound, err.Error())
 	}
@@ -188,29 +188,35 @@ func reactMoment(c *fiber.Ctx) error {
 	user := c.Locals("principal").(models.Account)
 	id, _ := c.ParamsInt("momentId", 0)
 
+	var data struct {
+		Symbol   string                  `json:"symbol" validate:"required"`
+		Attitude models.ReactionAttitude `json:"attitude" validate:"required"`
+	}
+
+	if err := BindAndValidate(c, &data); err != nil {
+		return err
+	}
+
 	mx := getMomentContext()
 
-	item, err := mx.Get(uint(id), true)
+	item, err := mx.Get(uint(id))
 	if err != nil {
 		return fiber.NewError(fiber.StatusNotFound, err.Error())
 	}
 
-	switch strings.ToLower(c.Params("reactType")) {
-	case "like":
-		if positive, err := mx.ReactLike(user, item.ID); err != nil {
-			return fiber.NewError(fiber.StatusBadRequest, err.Error())
-		} else {
-			return c.SendStatus(lo.Ternary(positive, fiber.StatusCreated, fiber.StatusNoContent))
-		}
-	case "dislike":
-		if positive, err := mx.ReactDislike(user, item.ID); err != nil {
-			return fiber.NewError(fiber.StatusBadRequest, err.Error())
-		} else {
-			return c.SendStatus(lo.Ternary(positive, fiber.StatusCreated, fiber.StatusNoContent))
-		}
-	default:
-		return fiber.NewError(fiber.StatusBadRequest, "unsupported reaction")
+	reaction := models.Reaction{
+		Symbol:    data.Symbol,
+		Attitude:  data.Attitude,
+		AccountID: user.ID,
+		MomentID:  &item.ID,
 	}
+
+	if positive, reaction, err := mx.React(reaction); err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	} else {
+		return c.Status(lo.Ternary(positive, fiber.StatusCreated, fiber.StatusNoContent)).JSON(reaction)
+	}
+
 }
 
 func deleteMoment(c *fiber.Ctx) error {
@@ -219,7 +225,7 @@ func deleteMoment(c *fiber.Ctx) error {
 
 	mx := getMomentContext().FilterAuthor(user.ID)
 
-	item, err := mx.Get(uint(id), true)
+	item, err := mx.Get(uint(id))
 	if err != nil {
 		return fiber.NewError(fiber.StatusNotFound, err.Error())
 	}

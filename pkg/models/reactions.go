@@ -1,63 +1,27 @@
 package models
 
-import "time"
+import (
+	"time"
+)
 
-type CommentLike struct {
+type ReactionAttitude = uint8
+
+const (
+	AttitudeNeutral = ReactionAttitude(iota)
+	AttitudePositive
+	AttitudeNegative
+)
+
+type Reaction struct {
 	ID        uint      `json:"id" gorm:"primaryKey"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
-	ArticleID *uint     `json:"article_id"`
-	MomentID  *uint     `json:"moment_id"`
-	CommentID *uint     `json:"comment_id"`
-	AccountID uint      `json:"account_id"`
-}
 
-type CommentDislike struct {
-	ID        uint      `json:"id" gorm:"primaryKey"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	ArticleID *uint     `json:"article_id"`
-	MomentID  *uint     `json:"moment_id"`
-	CommentID *uint     `json:"comment_id"`
-	AccountID uint      `json:"account_id"`
-}
+	Symbol   string           `json:"symbol"`
+	Attitude ReactionAttitude `json:"attitude"`
 
-type MomentLike struct {
-	ID        uint      `json:"id" gorm:"primaryKey"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	ArticleID *uint     `json:"article_id"`
-	MomentID  *uint     `json:"moment_id"`
-	CommentID *uint     `json:"comment_id"`
-	AccountID uint      `json:"account_id"`
-}
-
-type MomentDislike struct {
-	ID        uint      `json:"id" gorm:"primaryKey"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	ArticleID *uint     `json:"article_id"`
-	MomentID  *uint     `json:"moment_id"`
-	CommentID *uint     `json:"comment_id"`
-	AccountID uint      `json:"account_id"`
-}
-
-type ArticleLike struct {
-	ID        uint      `json:"id" gorm:"primaryKey"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	ArticleID *uint     `json:"article_id"`
-	MomentID  *uint     `json:"moment_id"`
-	CommentID *uint     `json:"comment_id"`
-	AccountID uint      `json:"account_id"`
-}
-
-type ArticleDislike struct {
-	ID        uint      `json:"id" gorm:"primaryKey"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	ArticleID *uint     `json:"article_id"`
-	MomentID  *uint     `json:"moment_id"`
-	CommentID *uint     `json:"comment_id"`
-	AccountID uint      `json:"account_id"`
+	ArticleID *uint `json:"article_id"`
+	MomentID  *uint `json:"moment_id"`
+	CommentID *uint `json:"comment_id"`
+	AccountID uint  `json:"account_id"`
 }

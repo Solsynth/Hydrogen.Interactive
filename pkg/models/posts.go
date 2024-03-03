@@ -22,11 +22,7 @@ type PostBase struct {
 	AuthorID uint    `json:"author_id"`
 	Author   Account `json:"author"`
 
-	// Dynamic Calculating Values
-	LikeCount    int64 `json:"like_count" gorm:"-"`
-	DislikeCount int64 `json:"dislike_count" gorm:"-"`
-	ReplyCount   int64 `json:"reply_count" gorm:"-"`
-	RepostCount  int64 `json:"repost_count" gorm:"-"`
+	// TODO Give the reactions & replies & reposts info back
 }
 
 func (p PostBase) GetID() uint {
@@ -49,13 +45,6 @@ func (p PostBase) GetRealm() *Realm {
 	return nil
 }
 
-func (p PostBase) SetReactInfo(info PostReactInfo) {
-	p.LikeCount = info.LikeCount
-	p.DislikeCount = info.DislikeCount
-	p.ReplyCount = info.ReplyCount
-	p.RepostCount = info.RepostCount
-}
-
 type PostInterface interface {
 	GetID() uint
 	GetHashtags() []Tag
@@ -67,5 +56,4 @@ type PostInterface interface {
 
 	SetHashtags([]Tag)
 	SetCategories([]Category)
-	SetReactInfo(PostReactInfo)
 }

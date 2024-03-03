@@ -3,13 +3,12 @@ package models
 type Comment struct {
 	PostBase
 
-	Content          string           `json:"content"`
-	Hashtags         []Tag            `json:"tags" gorm:"many2many:comment_tags"`
-	Categories       []Category       `json:"categories" gorm:"many2many:comment_categories"`
-	LikedAccounts    []CommentLike    `json:"liked_accounts"`
-	DislikedAccounts []CommentDislike `json:"disliked_accounts"`
-	ReplyID          *uint            `json:"reply_id"`
-	ReplyTo          *Comment         `json:"reply_to" gorm:"foreignKey:ReplyID"`
+	Content    string     `json:"content"`
+	Hashtags   []Tag      `json:"tags" gorm:"many2many:comment_tags"`
+	Categories []Category `json:"categories" gorm:"many2many:comment_categories"`
+	Reactions  []Reaction `json:"reactions"`
+	ReplyID    *uint      `json:"reply_id"`
+	ReplyTo    *Comment   `json:"reply_to" gorm:"foreignKey:ReplyID"`
 
 	ArticleID *uint    `json:"article_id"`
 	MomentID  *uint    `json:"moment_id"`

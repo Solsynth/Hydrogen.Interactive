@@ -76,7 +76,7 @@ func NewServer() {
 			moments.Get("/", listMoment)
 			moments.Get("/:momentId", getMoment)
 			moments.Post("/", authMiddleware, createMoment)
-			moments.Post("/:momentId/react/:reactType", authMiddleware, reactMoment)
+			moments.Post("/:momentId/react", authMiddleware, reactMoment)
 			moments.Put("/:momentId", authMiddleware, editMoment)
 			moments.Delete("/:momentId", authMiddleware, deleteMoment)
 		}

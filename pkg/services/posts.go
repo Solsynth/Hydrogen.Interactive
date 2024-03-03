@@ -4,6 +4,7 @@ import (
 	"code.smartsheep.studio/hydrogen/identity/pkg/grpc/proto"
 	"code.smartsheep.studio/hydrogen/interactive/pkg/database"
 	"code.smartsheep.studio/hydrogen/interactive/pkg/models"
+	"errors"
 	"fmt"
 	pluralize "github.com/gertd/go-pluralize"
 	"github.com/rs/zerolog/log"
@@ -12,35 +13,6 @@ import (
 	"gorm.io/gorm"
 	"strings"
 	"time"
-)
-
-const (
-	reactUnionSelect = `SELECT t.id AS post_id,
-       COALESCE(l.like_count, 0)    AS like_count,
-       COALESCE(d.dislike_count, 0) AS dislike_count--!COMMA!--
-       --!REPLY_UNION_COLUMN!-- --!BOTH_COMMA!--
-       --!REPOST_UNION_COLUMN!-- 
-	FROM %s t
-         LEFT JOIN (SELECT %s_id, COUNT(*) AS like_count
-                    FROM %s_likes
-                    GROUP BY %s_id) l ON t.id = l.%s_id
-         LEFT JOIN (SELECT %s_id, COUNT(*) AS dislike_count
-                    FROM %s_likes
-                    GROUP BY %s_id) d ON t.id = d.%s_id
-        --!REPLY_UNION_SELECT!--
-		--!REPOST_UNION_SELECT!--
-	WHERE t.id = ?`
-	// TODO Solve for the cross table query(like articles -> comments)
-	replyUnionColumn = `COALESCE(r.reply_count, 0) AS reply_count`
-	replyUnionSelect = `LEFT JOIN (SELECT reply_id, COUNT(*) AS reply_count
-		FROM %s
-		WHERE reply_id IS NOT NULL
-        GROUP BY reply_id) r ON t.id = r.reply_id`
-	repostUnionColumn = `COALESCE(rp.repost_count, 0) AS repost_count`
-	repostUnionSelect = `LEFT JOIN (SELECT repost_id, COUNT(*) AS repost_count
-		FROM %s
-		WHERE repost_id IS NOT NULL
-		GROUP BY repost_id) rp ON t.id = rp.repost_id`
 )
 
 type PostTypeContext[T models.PostInterface] struct {
@@ -62,7 +34,11 @@ func (v *PostTypeContext[T]) GetTableName(plural ...bool) string {
 }
 
 func (v *PostTypeContext[T]) Preload() *PostTypeContext[T] {
-	v.Tx.Preload("Author").Preload("Attachments").Preload("Categories").Preload("Hashtags")
+	v.Tx.Preload("Author").
+		Preload("Attachments").
+		Preload("Categories").
+		Preload("Hashtags").
+		Preload("Reactions")
 
 	if v.CanReply {
 		v.Tx.Preload("ReplyTo")
@@ -123,44 +99,11 @@ func (v *PostTypeContext[T]) SortCreatedAt(order string) *PostTypeContext[T] {
 	return v
 }
 
-func (v *PostTypeContext[T]) BuildReactInfoSql() string {
-	column := strings.ToLower(v.TypeName)
-	table := viper.GetString("database.prefix") + v.GetTableName()
-	pluralTable := viper.GetString("database.prefix") + v.GetTableName(true)
-	sql := fmt.Sprintf(reactUnionSelect, pluralTable, column, table, column, column, column, table, column, column)
-
-	if v.CanReply {
-		sql = strings.Replace(sql, "--!REPLY_UNION_COLUMN!--", replyUnionColumn, 1)
-		sql = strings.Replace(sql, "--!REPLY_UNION_SELECT!--", fmt.Sprintf(replyUnionSelect, pluralTable), 1)
-	}
-	if v.CanRepost {
-		sql = strings.Replace(sql, "--!REPOST_UNION_COLUMN!--", repostUnionColumn, 1)
-		sql = strings.Replace(sql, "--!REPOST_UNION_SELECT!--", fmt.Sprintf(repostUnionSelect, pluralTable), 1)
-	}
-	if v.CanReply || v.CanRepost {
-		sql = strings.ReplaceAll(sql, "--!COMMA!--", ",")
-	}
-	if v.CanReply && v.CanRepost {
-		sql = strings.ReplaceAll(sql, "--!BOTH_COMMA!--", ",")
-	}
-
-	return sql
-}
-
-func (v *PostTypeContext[T]) Get(id uint, noReact ...bool) (T, error) {
+func (v *PostTypeContext[T]) Get(id uint) (T, error) {
 	var item T
 	if err := v.Preload().Tx.Where("id = ?", id).First(&item).Error; err != nil {
 		return item, err
 	}
-
-	var reactInfo models.PostReactInfo
-
-	if len(noReact) <= 0 || !noReact[0] {
-		sql := v.BuildReactInfoSql()
-		database.C.Raw(sql, item.GetID()).Scan(&reactInfo)
-	}
-
-	item.SetReactInfo(reactInfo)
 
 	return item, nil
 }
@@ -183,33 +126,6 @@ func (v *PostTypeContext[T]) List(take int, offset int, noReact ...bool) ([]T, e
 	var items []T
 	if err := v.Preload().Tx.Limit(take).Offset(offset).Find(&items).Error; err != nil {
 		return items, err
-	}
-
-	idx := lo.Map(items, func(item T, _ int) uint {
-		return item.GetID()
-	})
-
-	var reactInfo []struct {
-		PostID       uint  `json:"post_id"`
-		LikeCount    int64 `json:"like_count"`
-		DislikeCount int64 `json:"dislike_count"`
-		ReplyCount   int64 `json:"reply_count"`
-		RepostCount  int64 `json:"repost_count"`
-	}
-
-	if len(noReact) <= 0 || !noReact[0] {
-		sql := v.BuildReactInfoSql()
-		database.C.Raw(sql, idx).Scan(&reactInfo)
-	}
-
-	itemMap := lo.SliceToMap(items, func(item T) (uint, T) {
-		return item.GetID(), item
-	})
-
-	for _, info := range reactInfo {
-		if item, ok := itemMap[info.PostID]; ok {
-			item.SetReactInfo(info)
-		}
 	}
 
 	return items, nil
@@ -320,32 +236,14 @@ func (v *PostTypeContext[T]) Delete(item T) error {
 	return database.C.Delete(&item).Error
 }
 
-func (v *PostTypeContext[T]) ReactLike(user models.Account, id uint) (bool, error) {
-	var count int64
-	table := viper.GetString("database.prefix") + v.GetTableName() + "_likes"
-	tx := database.C.Where("account_id = ?", user.ID).Where(v.GetTableName()+"id = ?", id)
-	if tx.Count(&count); count <= 0 {
-		return true, database.C.Table(table).Create(map[string]any{
-			"AccountID":       user.ID,
-			v.TypeName + "ID": id,
-		}).Error
+func (v *PostTypeContext[T]) React(reaction models.Reaction) (bool, models.Reaction, error) {
+	if err := database.C.Where(reaction).First(&reaction).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return true, reaction, database.C.Save(&reaction).Error
+		} else {
+			return true, reaction, err
+		}
 	} else {
-		column := strings.ToLower(v.TypeName)
-		return false, tx.Raw(fmt.Sprintf("DELETE FROM %s WHERE account_id = ? AND %s_id = ?", table, column), user.ID, id).Error
-	}
-}
-
-func (v *PostTypeContext[T]) ReactDislike(user models.Account, id uint) (bool, error) {
-	var count int64
-	table := viper.GetString("database.prefix") + v.GetTableName() + "_dislikes"
-	tx := database.C.Where("account_id = ?", user.ID).Where(v.GetTableName()+"id = ?", id)
-	if tx.Count(&count); count <= 0 {
-		return true, database.C.Table(table).Create(map[string]any{
-			"AccountID":       user.ID,
-			v.TypeName + "ID": id,
-		}).Error
-	} else {
-		column := strings.ToLower(v.TypeName)
-		return false, tx.Raw(fmt.Sprintf("DELETE FROM %s WHERE account_id = ? AND %s_id = ?", table, column), user.ID, id).Error
+		return false, reaction, database.C.Delete(&reaction).Error
 	}
 }
