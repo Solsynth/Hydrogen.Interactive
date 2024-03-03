@@ -69,7 +69,7 @@ func NewServer() {
 		}), openAttachment)
 		api.Post("/attachments", authMiddleware, uploadAttachment)
 
-		// TODO Feed (aka. Union source)
+		api.Get("/feed", listFeed)
 
 		moments := api.Group("/moments").Name("Moments API")
 		{
