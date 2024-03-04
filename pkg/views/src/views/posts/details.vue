@@ -23,8 +23,14 @@
       </v-card>
 
       <v-card title="Reactions" class="mt-3">
-        <v-list density="compact">
-        </v-list>
+        <div class="px-[1rem] pb-[0.825rem] mt-[-12px]">
+          <post-reaction
+            :item="post"
+            :model="route.params.postType"
+            :reactions="post?.reaction_list ?? {}"
+            @update="updateReactions"
+          />
+        </div>
       </v-card>
     </div>
   </v-container>
@@ -35,6 +41,7 @@ import { ref } from "vue";
 import { request } from "@/scripts/request";
 import { useRoute } from "vue-router";
 import ArticleContent from "@/components/posts/ArticleContent.vue";
+import PostReaction from "@/components/posts/PostReaction.vue";
 
 const loading = ref(false);
 const error = ref<string | null>(null);
@@ -55,4 +62,12 @@ async function readPost() {
 }
 
 readPost();
+
+function updateReactions(symbol: string, num: number) {
+  if (post.value.reaction_list.hasOwnProperty(symbol)) {
+    post.value.reaction_list[symbol] += num;
+  } else {
+    post.value.reaction_list[symbol] = num;
+  }
+}
 </script>

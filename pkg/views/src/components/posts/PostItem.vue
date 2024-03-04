@@ -14,9 +14,19 @@
         <div class="flex-grow-1">
           <div class="font-bold">{{ props.item?.author.nick }}</div>
 
-          <div v-if="props.item?.modal_type === 'article'" class="text-xs text-grey-darken-4 mb-2">Published an article</div>
+          <div v-if="props.item?.model_type === 'article'" class="text-xs text-grey-darken-4 mb-2">Published an
+            article
+          </div>
 
           <component :is="renderer[props.item?.model_type]" v-bind="props" />
+
+          <post-reaction
+            size="small"
+            :item="props.item"
+            :model="props.item?.model_type ? props.item?.model_type + 's' : 'articles'"
+            :reactions="props.item?.reaction_list ?? {}"
+            @update="updateReactions"
+          />
         </div>
       </div>
     </template>
@@ -27,13 +37,25 @@
 import type { Component } from "vue";
 import ArticleContent from "@/components/posts/ArticleContent.vue";
 import MomentContent from "@/components/posts/MomentContent.vue";
+import PostReaction from "@/components/posts/PostReaction.vue";
 
 const props = defineProps<{ item: any, brief?: boolean, loading?: boolean }>();
+const emits = defineEmits(["update:item"]);
 
 const renderer: { [id: string]: Component } = {
   article: ArticleContent,
   moment: MomentContent
 };
+
+function updateReactions(symbol: string, num: number) {
+  const item = JSON.parse(JSON.stringify(props.item));
+  if (item.reaction_list.hasOwnProperty(symbol)) {
+    item.reaction_list[symbol] += num;
+  } else {
+    item.reaction_list[symbol] = num;
+  }
+  emits("update:item", item);
+}
 </script>
 
 <style scoped>

@@ -1,7 +1,7 @@
 <template>
   <v-container class="flex max-md:flex-col gap-3 overflow-auto max-h-[calc(100vh-64px)] no-scrollbar">
     <div class="timeline flex-grow-1 mt-[-16px]">
-      <post-list :loading="loading" :posts="posts" :loader="readMore" />
+      <post-list v-model:posts="posts" :loading="loading" :loader="readMore" />
     </div>
 
     <div class="aside sticky top-0 w-full h-fit md:min-w-[280px] md:max-w-[320px] max-md:order-first">

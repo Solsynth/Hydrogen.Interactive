@@ -5,9 +5,9 @@
     </div>
 
     <v-infinite-scroll :items="props.posts" :onLoad="props.loader">
-      <template v-for="item in props.posts" :key="item">
+      <template v-for="(item, idx) in props.posts" :key="item">
         <div class="mb-3 px-1">
-          <post-item :item="item" brief />
+          <post-item brief :item="item" @update:item="val => updateItem(idx, val)" />
         </div>
       </template>
     </v-infinite-scroll>
@@ -18,4 +18,11 @@
 import PostItem from "@/components/posts/PostItem.vue";
 
 const props = defineProps<{ loading: boolean, posts: any[], loader: (opts: any) => Promise<any> }>();
+const emits = defineEmits(["update:posts"]);
+
+function updateItem(idx: number, data: any) {
+  const posts = JSON.parse(JSON.stringify(props.posts));
+  posts[idx] = data;
+  emits("update:posts", posts);
+}
 </script>
