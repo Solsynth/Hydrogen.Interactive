@@ -14,7 +14,7 @@ function parseContent(src: string): string {
 </script>
 
 <style>
-.prose.prose-moment, p {
+.prose.prose-moment p {
   margin: 0 !important;
 }
 </style>

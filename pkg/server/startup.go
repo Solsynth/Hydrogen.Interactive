@@ -71,32 +71,30 @@ func NewServer() {
 
 		api.Get("/feed", listFeed)
 
+		posts := api.Group("/p/:postType").Use(useDynamicContext).Name("Dataset Universal API")
+		{
+			posts.Get("/", listPost)
+			posts.Get("/:postId", getPost)
+			posts.Post("/:postId/react", authMiddleware, reactPost)
+		}
+
 		moments := api.Group("/moments").Name("Moments API")
 		{
-			moments.Get("/", listMoment)
-			moments.Get("/:momentId", getMoment)
 			moments.Post("/", authMiddleware, createMoment)
-			moments.Post("/:momentId/react", authMiddleware, reactMoment)
 			moments.Put("/:momentId", authMiddleware, editMoment)
 			moments.Delete("/:momentId", authMiddleware, deleteMoment)
 		}
 
-		articles := api.Group("/articles").Name("Articles API")
+		articles := api.Group("/p/articles").Name("Articles API")
 		{
-			articles.Get("/", listArticle)
-			articles.Get("/:articleId", getArticle)
 			articles.Post("/", authMiddleware, createArticle)
-			articles.Post("/:articleId/react", authMiddleware, reactArticle)
 			articles.Put("/:articleId", authMiddleware, editArticle)
 			articles.Delete("/:articleId", authMiddleware, deleteArticle)
 		}
 
-		comments := api.Group("/comments").Name("Comments API")
+		comments := api.Group("/p/comments").Name("Comments API")
 		{
-			comments.Get("/", listComment)
-			comments.Get("/:commentId", getComment)
 			comments.Post("/", authMiddleware, createComment)
-			comments.Post("/:commentId/react", authMiddleware, reactComment)
 			comments.Put("/:commentId", authMiddleware, editComment)
 			comments.Delete("/:commentId", authMiddleware, deleteComment)
 		}

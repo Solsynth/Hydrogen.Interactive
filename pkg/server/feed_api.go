@@ -1,6 +1,5 @@
 package server
 
-import "C"
 import (
 	"code.smartsheep.studio/hydrogen/interactive/pkg/database"
 	"code.smartsheep.studio/hydrogen/interactive/pkg/models"
@@ -9,23 +8,6 @@ import (
 	"github.com/samber/lo"
 	"github.com/spf13/viper"
 )
-
-type FeedItem struct {
-	models.BaseModel
-
-	Alias         string `json:"alias"`
-	Title         string `json:"title"`
-	Description   string `json:"description"`
-	Content       string `json:"content"`
-	ModelType     string `json:"model_type"`
-	CommentCount  int64  `json:"comment_count"`
-	ReactionCount int64  `json:"reaction_count"`
-	AuthorID      uint   `json:"author_id"`
-	RealmID       *uint  `json:"realm_id"`
-
-	Author       models.Account   `json:"author" gorm:"embedded"`
-	ReactionList map[string]int64 `json:"reaction_list"`
-}
 
 const (
 	queryArticle = "id, created_at, updated_at, alias, title, NULL as content, description, realm_id, author_id, 'article' as model_type"
@@ -58,7 +40,7 @@ func listFeed(c *fiber.Ctx) error {
 		}
 	}
 
-	var result []*FeedItem
+	var result []*models.Feed
 
 	userTable := viper.GetString("database.prefix") + "accounts"
 	commentTable := viper.GetString("database.prefix") + "comments"
@@ -94,15 +76,15 @@ func listFeed(c *fiber.Ctx) error {
 		}
 
 		revertReaction := func(dataset string) error {
-			itemMap := lo.SliceToMap(lo.FilterMap(result, func(item *FeedItem, index int) (*FeedItem, bool) {
+			itemMap := lo.SliceToMap(lo.FilterMap(result, func(item *models.Feed, index int) (*models.Feed, bool) {
 				return item, item.ModelType == dataset
-			}), func(item *FeedItem) (uint, *FeedItem) {
+			}), func(item *models.Feed) (uint, *models.Feed) {
 				return item.ID, item
 			})
 
-			idx := lo.Map(lo.Filter(result, func(item *FeedItem, index int) bool {
+			idx := lo.Map(lo.Filter(result, func(item *models.Feed, index int) bool {
 				return item.ModelType == dataset
-			}), func(item *FeedItem, index int) uint {
+			}), func(item *models.Feed, index int) uint {
 				return item.ID
 			})
 
