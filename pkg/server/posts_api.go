@@ -31,7 +31,8 @@ func useDynamicContext(c *fiber.Ctx) error {
 func getPost(c *fiber.Ctx) error {
 	alias := c.Params("postId")
 
-	mx := c.Locals(postContextKey).(*services.PostTypeContext)
+	mx := c.Locals(postContextKey).(*services.PostTypeContext).
+		FilterPublishedAt(time.Now())
 
 	item, err := mx.GetViaAlias(alias)
 	if err != nil {

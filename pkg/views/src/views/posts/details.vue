@@ -24,12 +24,8 @@
 
       <v-card title="Reactions" class="mt-3">
         <div class="px-[1rem] pb-[0.825rem] mt-[-12px]">
-          <post-reaction
-            :item="post"
-            :model="route.params.postType"
-            :reactions="post?.reaction_list ?? {}"
-            @update="updateReactions"
-          />
+          <post-reaction :item="post" :model="route.params.postType" :reactions="post?.reaction_list ?? {}"
+            @update="updateReactions" />
         </div>
       </v-card>
     </div>
@@ -51,7 +47,7 @@ const route = useRoute();
 
 async function readPost() {
   loading.value = true;
-  const res = await request(`/api/${route.params.postType}/${route.params.alias}?`);
+  const res = await request(`/api/p/${route.params.postType}/${route.params.alias}?`);
   if (res.status !== 200) {
     error.value = await res.text();
   } else {

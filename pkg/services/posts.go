@@ -72,9 +72,13 @@ func (v *PostTypeContext) SortCreatedAt(order string) *PostTypeContext {
 	return v
 }
 
-func (v *PostTypeContext) GetViaAlias(alias string, noComments ...bool) (models.Feed, error) {
+func (v *PostTypeContext) GetViaAlias(alias string) (models.Feed, error) {
 	var item models.Feed
-	if err := v.Tx.Where("alias = ?", alias).First(&item).Error; err != nil {
+	table := viper.GetString("database.prefix") + v.TableName
+	if err := v.Tx.
+		Table(table).
+		Where("alias = ?", alias).
+		First(&item).Error; err != nil {
 		return item, err
 	}
 
@@ -83,7 +87,9 @@ func (v *PostTypeContext) GetViaAlias(alias string, noComments ...bool) (models.
 
 func (v *PostTypeContext) Get(id uint, noComments ...bool) (models.Feed, error) {
 	var item models.Feed
+	table := viper.GetString("database.prefix") + v.TableName
 	if err := v.Tx.
+		Table(table).
 		Select("*, ? as model_type", v.ColumnName).
 		Where("id = ?", id).First(&item).Error; err != nil {
 		return item, err
@@ -131,7 +137,9 @@ func (v *PostTypeContext) List(take int, offset int, noReact ...bool) ([]*models
 	}
 
 	var items []*models.Feed
+	table := viper.GetString("database.prefix") + v.TableName
 	if err := v.Tx.
+		Table(table).
 		Select("*, ? as model_type", v.ColumnName).
 		Limit(take).Offset(offset).Find(&items).Error; err != nil {
 		return items, err

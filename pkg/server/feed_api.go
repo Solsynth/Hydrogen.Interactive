@@ -1,9 +1,10 @@
 package server
 
 import (
+	"fmt"
+
 	"code.smartsheep.studio/hydrogen/interactive/pkg/database"
 	"code.smartsheep.studio/hydrogen/interactive/pkg/models"
-	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/samber/lo"
 	"github.com/spf13/viper"

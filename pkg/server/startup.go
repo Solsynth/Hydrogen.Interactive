@@ -76,6 +76,8 @@ func NewServer() {
 			posts.Get("/", listPost)
 			posts.Get("/:postId", getPost)
 			posts.Post("/:postId/react", authMiddleware, reactPost)
+			posts.Get("/:postId/comments", listComment)
+			posts.Post("/:postId/comments", authMiddleware, createComment)
 		}
 
 		moments := api.Group("/moments").Name("Moments API")
@@ -94,7 +96,6 @@ func NewServer() {
 
 		comments := api.Group("/p/comments").Name("Comments API")
 		{
-			comments.Post("/", authMiddleware, createComment)
 			comments.Put("/:commentId", authMiddleware, editComment)
 			comments.Delete("/:commentId", authMiddleware, deleteComment)
 		}

@@ -22,6 +22,37 @@ func contextComment() *services.PostTypeContext {
 	}
 }
 
+func listComment(c *fiber.Ctx) error {
+	take := c.QueryInt("take", 0)
+	offset := c.QueryInt("offset", 0)
+	noReact := c.QueryBool("noReact", false)
+
+	alias := c.Params("postId")
+
+	mx := c.Locals(postContextKey).(*services.PostTypeContext).
+		FilterPublishedAt(time.Now())
+
+	item, err := mx.GetViaAlias(alias)
+	if err != nil {
+		return fiber.NewError(fiber.StatusNotFound, err.Error())
+	}
+
+	data, err := mx.ListComment(item.ID, take, offset, noReact)
+	if err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	}
+
+	count, err := mx.CountComment(item.ID)
+	if err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	}
+
+	return c.JSON(fiber.Map{
+		"count": count,
+		"data":  data,
+	})
+}
+
 func createComment(c *fiber.Ctx) error {
 	user := c.Locals("principal").(models.Account)
 
@@ -32,8 +63,6 @@ func createComment(c *fiber.Ctx) error {
 		Categories  []models.Category   `json:"categories"`
 		Attachments []models.Attachment `json:"attachments"`
 		PublishedAt *time.Time          `json:"published_at"`
-		ArticleID   *uint               `json:"article_id"`
-		MomentID    *uint               `json:"moment_id"`
 		ReplyTo     uint                `json:"reply_to"`
 	}
 
@@ -55,13 +84,29 @@ func createComment(c *fiber.Ctx) error {
 		Content:    data.Content,
 	}
 
-	if data.ArticleID == nil && data.MomentID == nil {
+	postType := c.Params("postType")
+	alias := c.Params("postId")
+
+	var err error
+	var res models.Feed
+
+	switch postType {
+	case "moments":
+		err = database.C.Model(&models.Moment{}).Where("alias = ?", alias).Select("id").First(&res).Error
+	case "articles":
+		err = database.C.Model(&models.Article{}).Where("alias = ?", alias).Select("id").First(&res).Error
+	default:
 		return fiber.NewError(fiber.StatusBadRequest, "comment must belongs to a resource")
 	}
-	if data.ArticleID != nil {
-		var article models.Article
-		if err := database.C.Where("id = ?", data.ArticleID).First(&article).Error; err != nil {
-			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("belongs to resource was not found: %v", err))
+
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("belongs to resource was not found: %v", err))
+	} else {
+		switch postType {
+		case "moments":
+			item.MomentID = &res.ID
+		case "articles":
+			item.ArticleID = &res.ID
 		}
 	}
 
@@ -77,12 +122,11 @@ func createComment(c *fiber.Ctx) error {
 		}
 	}
 
-	item, err := services.NewPost(item)
-	if err != nil {
+	if item, err := services.NewPost(item); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	} else {
+		return c.JSON(item)
 	}
-
-	return c.JSON(item)
 }
 
 func editComment(c *fiber.Ctx) error {
