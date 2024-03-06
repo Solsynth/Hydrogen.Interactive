@@ -20,7 +20,7 @@ func (v *PostTypeContext) ListComment(id uint, take int, offset int, noReact ...
 	userTable := viper.GetString("database.prefix") + "accounts"
 	if err := v.Tx.
 		Table(table).
-		Select("*, ? as model_type", "comments").
+		Select("*, ? as model_type", "comment").
 		Where(v.ColumnName+"_id = ?", id).
 		Joins(fmt.Sprintf("INNER JOIN %s as author ON author_id = author.id", userTable)).
 		Limit(take).Offset(offset).Find(&items).Error; err != nil {

@@ -11,6 +11,17 @@
             <v-divider class="mt-5 mx-[-16px] border-opacity-50" />
 
             <article-content :item="post" content-only />
+
+            <v-divider class="my-5 mx-[-16px] border-opacity-50" />
+
+            <div class="px-3">
+              <post-reaction
+                :item="post"
+                :model="route.params.postType"
+                :reactions="post?.reaction_list ?? {}"
+                @update="updateReactions"
+              />
+            </div>
           </v-card-text>
         </article>
       </v-card>
@@ -18,14 +29,8 @@
 
     <div class="aside sticky top-0 w-full h-fit md:min-w-[280px]">
       <v-card title="Comments">
-        <v-list density="compact">
-        </v-list>
-      </v-card>
-
-      <v-card title="Reactions" class="mt-3">
         <div class="px-[1rem] pb-[0.825rem] mt-[-12px]">
-          <post-reaction :item="post" :model="route.params.postType" :reactions="post?.reaction_list ?? {}"
-            @update="updateReactions" />
+          <comment-list v-model:comments="comments" :model="route.params.postType" :alias="route.params.alias" />
         </div>
       </v-card>
     </div>
@@ -33,37 +38,40 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-import { request } from "@/scripts/request";
-import { useRoute } from "vue-router";
-import ArticleContent from "@/components/posts/ArticleContent.vue";
-import PostReaction from "@/components/posts/PostReaction.vue";
+import { ref } from "vue"
+import { request } from "@/scripts/request"
+import ArticleContent from "@/components/posts/ArticleContent.vue"
+import PostReaction from "@/components/posts/PostReaction.vue"
+import CommentList from "@/components/comments/CommentList.vue"
+import { useRoute } from "vue-router"
 
-const loading = ref(false);
-const error = ref<string | null>(null);
-const post = ref<any>(null);
+const loading = ref(false)
+const error = ref<string | null>(null)
 
-const route = useRoute();
+const post = ref<any>(null)
+const comments = ref<any[]>([])
+
+const route = useRoute()
 
 async function readPost() {
-  loading.value = true;
-  const res = await request(`/api/p/${route.params.postType}/${route.params.alias}?`);
+  loading.value = true
+  const res = await request(`/api/p/${route.params.postType}/${route.params.alias}`)
   if (res.status !== 200) {
-    error.value = await res.text();
+    error.value = await res.text()
   } else {
-    error.value = null;
-    post.value = await res.json();
+    error.value = null
+    post.value = await res.json()
   }
-  loading.value = false;
+  loading.value = false
 }
 
-readPost();
+readPost()
 
 function updateReactions(symbol: string, num: number) {
   if (post.value.reaction_list.hasOwnProperty(symbol)) {
-    post.value.reaction_list[symbol] += num;
+    post.value.reaction_list[symbol] += num
   } else {
-    post.value.reaction_list[symbol] = num;
+    post.value.reaction_list[symbol] = num
   }
 }
 </script>

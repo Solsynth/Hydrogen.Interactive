@@ -7,7 +7,11 @@
     <v-infinite-scroll :items="props.posts" :onLoad="props.loader">
       <template v-for="(item, idx) in props.posts" :key="item">
         <div class="mb-3 px-1">
-          <post-item brief :item="item" @update:item="val => updateItem(idx, val)" />
+          <v-card>
+            <template #text>
+              <post-item brief :item="item" @update:item="val => updateItem(idx, val)" />
+            </template>
+          </v-card>
         </div>
       </template>
     </v-infinite-scroll>

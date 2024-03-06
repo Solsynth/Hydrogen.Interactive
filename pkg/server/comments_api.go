@@ -25,7 +25,6 @@ func contextComment() *services.PostTypeContext {
 func listComment(c *fiber.Ctx) error {
 	take := c.QueryInt("take", 0)
 	offset := c.QueryInt("offset", 0)
-	noReact := c.QueryBool("noReact", false)
 
 	alias := c.Params("postId")
 
@@ -37,7 +36,7 @@ func listComment(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusNotFound, err.Error())
 	}
 
-	data, err := mx.ListComment(item.ID, take, offset, noReact)
+	data, err := mx.ListComment(item.ID, take, offset)
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}

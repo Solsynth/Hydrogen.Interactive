@@ -43,7 +43,7 @@ const emits = defineEmits(["update"]);
 const props = defineProps<{
   size?: string,
   readonly?: boolean,
-  model: string,
+  model: any,
   item: any,
   reactions: { [id: string]: number }
 }>();
@@ -63,7 +63,7 @@ const status = reactive({ added: false, removed: false });
 const error = ref<string | null>(null);
 
 async function reactPost(symbol: string, attitude: number) {
-  const res = await request(`/api/${props.model}/${props.item?.id}/react`, {
+  const res = await request(`/api/p/${props.model}/${props.item?.id}/react`, {
     method: "POST",
     headers: { "Authorization": `Bearer ${getAtk()}`, "Content-Type": "application/json" },
     body: JSON.stringify({ symbol, attitude })

@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"time"
 
 	"code.smartsheep.studio/hydrogen/interactive/pkg/database"
@@ -94,7 +95,6 @@ func listPost(c *fiber.Ctx) error {
 
 func reactPost(c *fiber.Ctx) error {
 	user := c.Locals("principal").(models.Account)
-	id, _ := c.ParamsInt("articleId", 0)
 
 	var data struct {
 		Symbol   string                  `json:"symbol" validate:"required"`
@@ -107,16 +107,40 @@ func reactPost(c *fiber.Ctx) error {
 
 	mx := c.Locals(postContextKey).(*services.PostTypeContext)
 
-	item, err := mx.Get(uint(id), true)
-	if err != nil {
-		return fiber.NewError(fiber.StatusNotFound, err.Error())
-	}
-
 	reaction := models.Reaction{
 		Symbol:    data.Symbol,
 		Attitude:  data.Attitude,
 		AccountID: user.ID,
-		ArticleID: &item.ID,
+	}
+
+	postType := c.Params("postType")
+	alias := c.Params("postId")
+
+	var err error
+	var res models.Feed
+
+	switch postType {
+	case "moments":
+		err = database.C.Model(&models.Moment{}).Where("id = ?", alias).Select("id").First(&res).Error
+	case "articles":
+		err = database.C.Model(&models.Article{}).Where("id = ?", alias).Select("id").First(&res).Error
+	case "comments":
+		err = database.C.Model(&models.Comment{}).Where("id = ?", alias).Select("id").First(&res).Error
+	default:
+		return fiber.NewError(fiber.StatusBadRequest, "comment must belongs to a resource")
+	}
+
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("belongs to resource was not found: %v", err))
+	} else {
+		switch postType {
+		case "moments":
+			reaction.MomentID = &res.ID
+		case "articles":
+			reaction.ArticleID = &res.ID
+		case "comments":
+			reaction.CommentID = &res.ID
+		}
 	}
 
 	if positive, reaction, err := mx.React(reaction); err != nil {
