@@ -80,7 +80,7 @@ func NewServer() {
 			posts.Post("/:postId/comments", authMiddleware, createComment)
 		}
 
-		moments := api.Group("/moments").Name("Moments API")
+		moments := api.Group("/p/moments").Name("Moments API")
 		{
 			moments.Post("/", authMiddleware, createMoment)
 			moments.Put("/:momentId", authMiddleware, editMoment)

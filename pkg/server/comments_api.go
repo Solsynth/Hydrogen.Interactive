@@ -56,13 +56,13 @@ func createComment(c *fiber.Ctx) error {
 	user := c.Locals("principal").(models.Account)
 
 	var data struct {
-		Alias       string              `json:"alias"`
-		Content     string              `json:"content" validate:"required"`
-		Hashtags    []models.Tag        `json:"hashtags"`
-		Categories  []models.Category   `json:"categories"`
-		Attachments []models.Attachment `json:"attachments"`
-		PublishedAt *time.Time          `json:"published_at"`
-		ReplyTo     uint                `json:"reply_to"`
+		Alias       string              `json:"alias" form:"alias"`
+		Content     string              `json:"content" form:"content" validate:"required"`
+		PublishedAt *time.Time          `json:"published_at" form:"published_at"`
+		Hashtags    []models.Tag        `json:"hashtags" form:"hashtags"`
+		Categories  []models.Category   `json:"categories" form:"categories"`
+		Attachments []models.Attachment `json:"attachments" form:"attachments"`
+		ReplyTo     uint                `json:"reply_to" form:"reply_to"`
 	}
 
 	if err := BindAndValidate(c, &data); err != nil {
@@ -133,12 +133,12 @@ func editComment(c *fiber.Ctx) error {
 	id, _ := c.ParamsInt("commentId", 0)
 
 	var data struct {
-		Alias       string              `json:"alias" validate:"required"`
-		Content     string              `json:"content" validate:"required"`
-		PublishedAt *time.Time          `json:"published_at"`
-		Hashtags    []models.Tag        `json:"hashtags"`
-		Categories  []models.Category   `json:"categories"`
-		Attachments []models.Attachment `json:"attachments"`
+		Alias       string              `json:"alias" form:"alias" validate:"required"`
+		Content     string              `json:"content" form:"content" validate:"required"`
+		PublishedAt *time.Time          `json:"published_at" form:"published_at"`
+		Hashtags    []models.Tag        `json:"hashtags" form:"hashtags"`
+		Categories  []models.Category   `json:"categories" form:"categories"`
+		Attachments []models.Attachment `json:"attachments" form:"attachments"`
 	}
 
 	if err := BindAndValidate(c, &data); err != nil {

@@ -97,8 +97,8 @@ func reactPost(c *fiber.Ctx) error {
 	user := c.Locals("principal").(models.Account)
 
 	var data struct {
-		Symbol   string                  `json:"symbol" validate:"required"`
-		Attitude models.ReactionAttitude `json:"attitude" validate:"required"`
+		Symbol   string                  `json:"symbol" form:"symbol" validate:"required"`
+		Attitude models.ReactionAttitude `json:"attitude" form:"attitude" validate:"required"`
 	}
 
 	if err := BindAndValidate(c, &data); err != nil {

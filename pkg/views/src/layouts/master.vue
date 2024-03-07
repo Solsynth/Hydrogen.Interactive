@@ -1,7 +1,6 @@
 <template>
   <v-navigation-drawer v-model="drawerOpen" color="grey-lighten-5" floating>
-    <v-list density="compact" nav>
-    </v-list>
+    <v-list density="compact" nav> </v-list>
   </v-navigation-drawer>
 
   <v-app-bar height="64" color="primary" scroll-behavior="elevate" flat>
@@ -35,14 +34,7 @@
     transition="scroll-y-reverse-transition"
   >
     <template v-slot:activator="{ props }">
-      <v-fab
-        v-bind="props"
-        class="editor-fab"
-        icon="mdi-pencil"
-        color="primary"
-        size="64"
-        appear
-      />
+      <v-fab v-bind="props" class="editor-fab" icon="mdi-pencil" color="primary" size="64" appear />
     </template>
 
     <div class="flex flex-col items-center gap-4 mb-4">
@@ -51,23 +43,21 @@
     </div>
   </v-menu>
 
-  <post-editor />
+  <post-action />
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-import { useEditor } from "@/stores/editor";
-import PostEditor from "@/components/publish/PostEditor.vue";
+import { ref } from "vue"
+import { useEditor } from "@/stores/editor"
+import PostAction from "@/components/publish/PostAction.vue"
 
-const editor = useEditor();
-const navigationMenu = [
-  { name: "Explore", icon: "mdi-compass", to: "explore" }
-];
+const editor = useEditor()
+const navigationMenu = [{ name: "Explore", icon: "mdi-compass", to: "explore" }]
 
-const drawerOpen = ref(true);
+const drawerOpen = ref(true)
 
 function toggleDrawer() {
-  drawerOpen.value = !drawerOpen.value;
+  drawerOpen.value = !drawerOpen.value
 }
 </script>
 

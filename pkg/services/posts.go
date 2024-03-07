@@ -77,6 +77,7 @@ func (v *PostTypeContext) GetViaAlias(alias string) (models.Feed, error) {
 	table := viper.GetString("database.prefix") + v.TableName
 	if err := v.Tx.
 		Table(table).
+		Select("*, ? as model_type", v.ColumnName).
 		Where("alias = ?", alias).
 		First(&item).Error; err != nil {
 		return item, err

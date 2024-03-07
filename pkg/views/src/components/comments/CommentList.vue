@@ -5,20 +5,28 @@
 
   <div v-else class="flex flex-col gap-2 mt-3">
     <div v-for="(item, idx) in props.comments" class="text-sm">
-      <post-item :item="item" @update:item="val => updateItem(idx, val)" />
+      <post-item :item="item" @update:item="(val) => updateItem(idx, val)" />
     </div>
   </div>
+
+  <v-divider class="mt-2 mb-3 border-opacity-50 mx-[-1rem]" />
+
+  <v-btn block prepend-icon="mdi-pencil" variant="plain" @click="leaveComment">Leave your comment</v-btn>
 </template>
 
 <script setup lang="ts">
 import { request } from "@/scripts/request"
-import { reactive, ref } from "vue"
+import { reactive, ref, watch } from "vue"
+import { useEditor } from "@/stores/editor"
 import PostItem from "@/components/posts/PostItem.vue"
+
+const editor = useEditor()
 
 const props = defineProps<{
   comments: any[]
   model: any
   alias: any
+  item: any
 }>()
 const emits = defineEmits(["update:comments"])
 
@@ -50,8 +58,20 @@ async function readComments() {
 readComments()
 
 function updateItem(idx: number, data: any) {
-  const comments = JSON.parse(JSON.stringify(props.comments));
-  comments[idx] = data;
-  emits("update:comments", comments);
+  const comments = JSON.parse(JSON.stringify(props.comments))
+  comments[idx] = data
+  emits("update:comments", comments)
+}
+
+watch(editor, (val) => {
+  if (val.done) {
+    readComments().then(() => (val.done = false))
+  }
+})
+
+function leaveComment() {
+  editor.related.comment_to = props.item
+  editor.related.comment_to.model_type += "s"
+  editor.show.comment = true
 }
 </script>

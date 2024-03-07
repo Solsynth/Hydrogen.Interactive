@@ -30,7 +30,12 @@
     <div class="aside sticky top-0 w-full h-fit md:min-w-[280px]">
       <v-card title="Comments">
         <div class="px-[1rem] pb-[0.825rem] mt-[-12px]">
-          <comment-list v-model:comments="comments" :model="route.params.postType" :alias="route.params.alias" />
+          <comment-list
+            v-model:comments="comments"
+            :item="post"
+            :model="route.params.postType"
+            :alias="route.params.alias"
+          />
         </div>
       </v-card>
     </div>
