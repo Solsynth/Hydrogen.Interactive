@@ -53,24 +53,7 @@
     </v-form>
   </v-card>
 
-  <v-dialog eager v-model="dialogs.plan" class="max-w-[540px]">
-    <v-card title="Plan your publish">
-      <template #text>
-        <v-text-field
-          v-model="extras.publishedAt"
-          class="mt-2"
-          label="Publish date"
-          hint="Your post will hidden for public before this time. Leave blank will publish immediately"
-          variant="outlined"
-          type="datetime-local"
-          clearable
-        />
-      </template>
-      <template #actions>
-        <v-btn class="ms-auto" text="Ok" @click="dialogs.plan = false"></v-btn>
-      </template>
-    </v-card>
-  </v-dialog>
+  <planned-publish v-model:show="dialogs.plan" v-model:value="extras.publishedAt" />
 
   <v-snackbar v-model="success" :timeout="3000">Your post has been published.</v-snackbar>
 
@@ -83,6 +66,7 @@ import { request } from "@/scripts/request"
 import { useEditor } from "@/stores/editor"
 import { getAtk } from "@/stores/userinfo"
 import { reactive, ref } from "vue"
+import PlannedPublish from "@/components/publish/parts/PlannedPublish.vue"
 
 const editor = useEditor()
 

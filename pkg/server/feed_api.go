@@ -62,7 +62,7 @@ func listFeed(c *fiber.Ctx) error {
             GROUP BY article_id, moment_id) as reactions
             ON (feed.model_type = 'article' AND feed.id = reactions.article_id) OR 
 			   (feed.model_type = 'moment' AND feed.id = reactions.moment_id)
-		WHERE %s LIMIT ? OFFSET ?`, userTable, commentTable, reactionTable, whereCondition),
+		WHERE %s ORDER BY feed.created_at desc  LIMIT ? OFFSET ?`, userTable, commentTable, reactionTable, whereCondition),
 		database.C.Select(queryArticle).Model(&models.Article{}),
 		database.C.Select(queryMoment).Model(&models.Moment{}),
 		take,
