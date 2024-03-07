@@ -1,6 +1,26 @@
 <template>
   <v-navigation-drawer v-model="drawerOpen" color="grey-lighten-5" floating>
-    <v-list density="compact" nav> </v-list>
+    <div class="flex flex-col h-full">
+      <v-list>
+        <v-list-item :subtitle="username" :title="nickname">
+          <template #prepend>
+            <v-avatar icon="mdi-account-circle" :src="id.userinfo.data?.avatar" />
+          </template>
+          <template #append>
+            <v-btn icon="mdi-menu-down" size="small" variant="text"></v-btn>
+          </template>
+        </v-list-item>
+      </v-list>
+  
+      <v-list density="compact" class="flex-grow-1" nav> </v-list>
+  
+      <div>
+        <v-alert type="info" variant="tonal" class="text-sm">
+          We just released the brand new design system and user interface!
+          <a class="underline" href="https://forms.office.com/r/Uh8vYmRQ8f" target="_blank">Contribute our survey</a>
+        </v-alert>
+      </div>
+    </div>
   </v-navigation-drawer>
 
   <v-app-bar height="64" color="primary" scroll-behavior="elevate" flat>
@@ -47,12 +67,31 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue"
+import { computed, ref } from "vue"
 import { useEditor } from "@/stores/editor"
+import { useUserinfo } from "@/stores/userinfo"
 import PostAction from "@/components/publish/PostAction.vue"
 
+const id = useUserinfo()
 const editor = useEditor()
 const navigationMenu = [{ name: "Explore", icon: "mdi-compass", to: "explore" }]
+
+const username = computed(() => {
+  if (id.userinfo.isLoggedIn) {
+    return "@" + id.userinfo.data?.name
+  } else {
+    return "@vistor"
+  }
+})
+const nickname = computed(() => {
+  if (id.userinfo.isLoggedIn) {
+    return id.userinfo.data?.nick
+  } else {
+    return "Anonymous"
+  }
+})
+
+id.readProfiles()
 
 const drawerOpen = ref(true)
 
