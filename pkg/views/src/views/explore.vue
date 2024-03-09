@@ -7,6 +7,7 @@
     <div class="aside sticky top-0 w-full h-fit md:min-w-[280px] md:max-w-[320px] max-md:order-first">
       <v-card title="Categories">
         <v-list density="compact">
+          <v-list-item title="All" prepend-icon="mdi-apps" active></v-list-item>
         </v-list>
       </v-card>
     </div>

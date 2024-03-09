@@ -30,9 +30,10 @@
       <v-card title="Comments">
         <div class="px-[1rem] pb-[0.825rem] mt-[-12px]">
           <comment-list
+            model="article"
+            dataset="articles"
             v-model:comments="comments"
             :item="post"
-            :model="route.params.postType"
             :alias="route.params.alias"
           />
         </div>
@@ -59,7 +60,7 @@ const route = useRoute()
 
 async function readPost() {
   loading.value = true
-  const res = await request(`/api/p/${route.params.postType}/${route.params.alias}`)
+  const res = await request(`/api/p/articles/${route.params.alias}`)
   if (res.status !== 200) {
     error.value = await res.text()
   } else {

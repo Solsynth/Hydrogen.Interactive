@@ -7,7 +7,7 @@
 
     <div v-if="props.brief">
       <router-link
-        :to="{ name: 'posts.details', params: { postType: 'articles', alias: props.item?.alias ?? 'not-found' } }"
+        :to="{ name: 'posts.details.articles', params: { alias: props.item?.alias ?? 'not-found' } }"
         append-icon="mdi-arrow-right"
         class="link underline text-primary font-medium"
       >

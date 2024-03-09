@@ -15,9 +15,9 @@ const router = createRouter({
         },
 
         {
-          path: "/p/:postType/:alias",
-          name: "posts.details",
-          component: () => import("@/views/posts/details.vue")
+          path: "/p/articles/:alias",
+          name: "posts.details.articles",
+          component: () => import("@/views/posts/articles.vue")
         }
       ]
     }

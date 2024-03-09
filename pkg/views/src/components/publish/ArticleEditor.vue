@@ -126,7 +126,7 @@ async function postArticle(evt: SubmitEvent) {
   if (res.status === 200) {
     const data = await res.json()
     form.reset()
-    router.push({ name: "posts.details", params: { postType: "articles", alias: data.alias } })
+    router.push({ name: "posts.details.articles", params: { alias: data.alias } })
     success.value = true
     editor.show.article = false
   } else {

@@ -24,7 +24,8 @@ const editor = useEditor()
 
 const props = defineProps<{
   comments: any[]
-  model: any
+  model: string
+  dataset: string
   alias: any
   item: any
 }>()
@@ -38,7 +39,7 @@ const pagination = reactive({ page: 0, pageSize: 10, total: 0 })
 async function readComments() {
   loading.value = true
   const res = await request(
-    `/api/p/${props.model}/${props.alias}/comments?` +
+    `/api/p/${props.dataset}/${props.alias}/comments?` +
       new URLSearchParams({
         take: pagination.pageSize.toString(),
         offset: (pagination.page * pagination.pageSize).toString()
@@ -71,7 +72,7 @@ watch(editor, (val) => {
 
 function leaveComment() {
   editor.related.comment_to = props.item
-  editor.related.comment_to.model_type += "s"
+  editor.related.comment_to.model_type = props.dataset
   editor.show.comment = true
 }
 </script>
