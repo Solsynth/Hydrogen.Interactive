@@ -85,7 +85,8 @@ const success = ref(false)
 const loading = ref(false)
 
 async function postMoment(evt: SubmitEvent) {
-  const data = new FormData(evt.target as HTMLFormElement)
+  const form = evt.target as HTMLFormElement
+  const data = new FormData(form)
   if (!data.has("content")) return
   if (!extras.publishedAt) data.set("published_at", new Date().toISOString())
   else data.set("published_at", extras.publishedAt)
@@ -97,11 +98,12 @@ async function postMoment(evt: SubmitEvent) {
     body: data
   })
   if (res.status === 200) {
+    form.reset()
     success.value = true
+    editor.show.moment = false
   } else {
     error.value = await res.text()
   }
   loading.value = false
-  editor.show.moment = false
 }
 </script>

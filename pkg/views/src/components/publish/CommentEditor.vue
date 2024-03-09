@@ -44,7 +44,8 @@ const success = ref(false)
 const loading = ref(false)
 
 async function postComment(evt: SubmitEvent) {
-  const data = new FormData(evt.target as HTMLFormElement)
+  const form = evt.target as HTMLFormElement
+  const data = new FormData(form)
   if (!data.has("content")) return
 
   loading.value = true
@@ -54,12 +55,13 @@ async function postComment(evt: SubmitEvent) {
     body: data
   })
   if (res.status === 200) {
+    form.reset()
     success.value = true
+    editor.show.comment = false
   } else {
     error.value = await res.text()
   }
   loading.value = false
-  editor.show.comment = false
   editor.done = true
 }
 </script>

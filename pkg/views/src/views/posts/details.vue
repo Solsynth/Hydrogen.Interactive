@@ -3,10 +3,9 @@
     <div class="timeline flex-grow-1 max-w-[75ch]">
       <v-card :loading="loading">
         <article>
-          <v-card-title>{{ post?.title }}</v-card-title>
-
           <v-card-text>
-            <div class="text-sm">{{ post?.description }}</div>
+            <h1 class="text-lg font-medium">{{ post?.title }}</h1>
+            <p class="text-sm">{{ post?.description }}</p>
 
             <v-divider class="mt-5 mx-[-16px] border-opacity-50" />
 
