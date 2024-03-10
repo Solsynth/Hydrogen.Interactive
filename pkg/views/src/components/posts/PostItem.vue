@@ -9,7 +9,7 @@
       />
     </div>
 
-    <div class="flex-grow-1">
+    <div class="flex-grow-1 relative">
       <div class="font-bold">{{ props.item?.author.nick }}</div>
 
       <div v-if="props.item?.model_type === 'article'" class="text-xs text-grey-darken-4 mb-2">
@@ -32,25 +32,59 @@
         :reactions="props.item?.reaction_list ?? {}"
         @update="updateReactions"
       />
+
+      <div class="mt-1 text-xs text-opacity-60 flex gap-2 items-center">
+        <span>Posted at {{ new Date(props.item?.created_at).toLocaleString() }}</span>
+      </div>
+
+      <v-menu>
+        <template #activator="{ props }">
+          <div class="absolute right-0 top-0">
+            <v-btn v-bind="props" icon="mdi-dots-vertical" variant="text" size="x-small" />
+          </div>
+        </template>
+
+        <v-list density="compact" lines="one">
+          <v-list-item disabled append-icon="mdi-flag" title="Report" />
+          <v-list-item v-if="isOwned" append-icon="mdi-pencil" title="Edit" @click="editPost" />
+          <v-list-item v-if="isOwned" append-icon="mdi-delete" title="Delete" />
+        </v-list>
+      </v-menu>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { Component } from "vue"
+import { computed, type Component } from "vue"
+import { useUserinfo } from "@/stores/userinfo"
+import { useEditor } from "@/stores/editor"
 import ArticleContent from "@/components/posts/ArticleContent.vue"
 import MomentContent from "@/components/posts/MomentContent.vue"
 import CommentContent from "@/components/posts/CommentContent.vue"
 import PostAttachment from "./PostAttachment.vue"
 import PostReaction from "@/components/posts/PostReaction.vue"
 
+const id = useUserinfo()
+
 const props = defineProps<{ item: any; brief?: boolean }>()
 const emits = defineEmits(["update:item"])
+
+const editor = useEditor()
 
 const renderer: { [id: string]: Component } = {
   article: ArticleContent,
   moment: MomentContent,
   comment: CommentContent
+}
+
+const isOwned = computed(() => props.item?.author_id === id.userinfo.data.id)
+
+function editPost() {
+  editor.related.edit_to = props.item
+  if(editor.show.hasOwnProperty(props.item.model_type)) {
+    // @ts-ignore
+    editor.show[props.item.model_type] = true
+  }
 }
 
 function updateReactions(symbol: string, num: number) {

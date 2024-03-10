@@ -83,6 +83,16 @@ func (v *PostTypeContext) GetViaAlias(alias string) (models.Feed, error) {
 		return item, err
 	}
 
+	var attachments []models.Attachment
+	if err := database.C.
+		Model(&models.Attachment{}).
+		Where(v.ColumnName+"_id = ?", item.ID).
+		Scan(&attachments).Error; err != nil {
+		return item, err
+	} else {
+		item.Attachments = attachments
+	}
+
 	return item, nil
 }
 
@@ -94,6 +104,16 @@ func (v *PostTypeContext) Get(id uint, noComments ...bool) (models.Feed, error) 
 		Select("*, ? as model_type", v.ColumnName).
 		Where("id = ?", id).First(&item).Error; err != nil {
 		return item, err
+	}
+
+	var attachments []models.Attachment
+	if err := database.C.
+		Model(&models.Attachment{}).
+		Where(v.ColumnName+"_id = ?", id).
+		Scan(&attachments).Error; err != nil {
+		return item, err
+	} else {
+		item.Attachments = attachments
 	}
 
 	return item, nil
@@ -180,6 +200,41 @@ func (v *PostTypeContext) List(take int, offset int, noReact ...bool) ([]*models
 		for k, v := range list {
 			if post, ok := itemMap[k]; ok {
 				post.ReactionList = v
+			}
+		}
+	}
+
+	{
+		var attachments []struct {
+			models.Attachment
+
+			PostID uint `json:"post_id"`
+		}
+
+		itemMap := lo.SliceToMap(items, func(item *models.Feed) (uint, *models.Feed) {
+			return item.ID, item
+		})
+
+		idx := lo.Map(items, func(item *models.Feed, index int) uint {
+			return item.ID
+		})
+
+		if err := database.C.
+			Model(&models.Attachment{}).
+			Select(v.ColumnName+"_id as post_id, *").
+			Where(v.ColumnName+"_id IN (?)", idx).
+			Scan(&attachments).Error; err != nil {
+			return items, err
+		}
+
+		list := map[uint][]models.Attachment{}
+		for _, info := range attachments {
+			list[info.PostID] = append(list[info.PostID], info.Attachment)
+		}
+
+		for k, v := range list {
+			if post, ok := itemMap[k]; ok {
+				post.Attachments = v
 			}
 		}
 	}

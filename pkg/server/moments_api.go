@@ -26,7 +26,7 @@ func createMoment(c *fiber.Ctx) error {
 
 	var data struct {
 		Alias       string              `json:"alias" form:"alias"`
-		Content     string              `json:"content" form:"content" validate:"required"`
+		Content     string              `json:"content" form:"content" validate:"required,max=1024"`
 		Hashtags    []models.Tag        `json:"hashtags" form:"hashtags"`
 		Categories  []models.Category   `json:"categories" form:"categories"`
 		Attachments []models.Attachment `json:"attachments" form:"attachments"`
@@ -89,7 +89,7 @@ func editMoment(c *fiber.Ctx) error {
 
 	var data struct {
 		Alias       string              `json:"alias" form:"alias" validate:"required"`
-		Content     string              `json:"content" form:"content" validate:"required"`
+		Content     string              `json:"content" form:"content" validate:"required,max=1024"`
 		PublishedAt *time.Time          `json:"published_at" form:"published_at"`
 		Hashtags    []models.Tag        `json:"hashtags" form:"hashtags"`
 		Categories  []models.Category   `json:"categories" form:"categories"`

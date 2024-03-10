@@ -15,8 +15,8 @@
 
             <div class="px-3">
               <post-reaction
+                model="articles"
                 :item="post"
-                :model="route.params.postType"
                 :reactions="post?.reaction_list ?? {}"
                 @update="updateReactions"
               />
@@ -32,9 +32,9 @@
           <comment-list
             model="article"
             dataset="articles"
-            v-model:comments="comments"
             :item="post"
             :alias="route.params.alias"
+            v-model:comments="comments"
           />
         </div>
       </v-card>

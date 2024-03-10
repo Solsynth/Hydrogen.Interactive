@@ -22,6 +22,7 @@
     "universal-cookie": "^7.1.0",
     "unocss": "^0.58.5",
     "vue": "^3.4.15",
+    "vue-easy-lightbox": "next",
     "vue-router": "^4.2.5",
     "vuetify": "^3.5.7"
   },

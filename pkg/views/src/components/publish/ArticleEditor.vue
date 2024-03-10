@@ -21,6 +21,10 @@
 
       <v-card-text>
         <v-container class="article-container">
+          <v-alert v-if="editor.related.edit_to" class="mb-3" type="info" variant="tonal">
+            You are editing a post with alias <b class="font-mono">{{ editor.related.edit_to?.alias }}</b>
+          </v-alert>
+
           <v-textarea
             required
             class="mb-3"
@@ -40,6 +44,7 @@
                     variant="solo-filled"
                     density="comfortable"
                     label="Title"
+                    :loading="reverting"
                     v-model="data.title"
                   />
 
@@ -103,7 +108,7 @@
 import { request } from "@/scripts/request"
 import { useEditor } from "@/stores/editor"
 import { getAtk } from "@/stores/userinfo"
-import { reactive, ref } from "vue"
+import { reactive, ref, watch } from "vue"
 import { useRouter } from "vue-router"
 import PlannedPublish from "@/components/publish/parts/PlannedPublish.vue"
 import Media from "@/components/publish/parts/Media.vue"
@@ -116,11 +121,11 @@ const dialogs = reactive({
   media: false
 })
 
-const data = reactive<any>({
+const data = ref<any>({
   title: "",
   content: "",
   description: "",
-  publishedAt: null,
+  published_at: null,
   attachments: []
 })
 
@@ -128,6 +133,7 @@ const router = useRouter()
 
 const error = ref<string | null>(null)
 const success = ref(false)
+const reverting = ref(false)
 const loading = ref(false)
 const uploading = ref(false)
 
@@ -136,15 +142,20 @@ async function postArticle(evt: SubmitEvent) {
 
   if (uploading.value) return
 
-  if (!data.content) return
-  if (!data.title || !data.description) return
-  if (!data.publishedAt) data.publishedAt = new Date().toISOString()
+  const payload = data.value
+  console.log(payload)
+  if (!payload.content) return
+  if (!payload.title || !payload.description) return
+  if (!payload.publishedAt) payload.publishedAt = new Date().toISOString()
+
+  const url = editor.related.edit_to ? `/api/p/articles/${editor.related.edit_to?.id}` : "/api/p/articles"
+  const method = editor.related.edit_to ? "PUT" : "POST"
 
   loading.value = true
-  const res = await request("/api/p/articles", {
-    method: "POST",
+  const res = await request(url, {
+    method: method,
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${getAtk()}` },
-    body: JSON.stringify(data)
+    body: JSON.stringify(payload)
   })
   if (res.status === 200) {
     const data = await res.json()
@@ -166,13 +177,22 @@ function pasteMedia(evt: ClipboardEvent) {
     Array.from(files).forEach((item) => {
       media.value.upload(item).then((meta: any) => {
         if (meta) {
-          data.content += `\n![${item.name}](/api/attachments/o/${meta.info.file_id})`
+          data.value.content += `\n![${item.name}](/api/attachments/o/${meta.info.file_id})`
         }
       })
     })
     evt.preventDefault()
   }
 }
+
+watch(editor.related, (val) => {
+  if (val.edit_to && val.edit_to.model_type === "article") {
+    request(`/api/p/articles/${val.edit_to.alias}`).then(async (res) => {
+      data.value = await res.json()
+      data.value.attachments = data.value.attachments ?? []
+    })
+  }
+})
 </script>
 
 <style scoped>

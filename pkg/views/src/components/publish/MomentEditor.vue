@@ -2,9 +2,20 @@
   <v-card title="Record a moment" :loading="loading">
     <v-form @submit.prevent="postMoment">
       <v-card-text>
-        <v-textarea required hide-details name="content" variant="outlined" label="What's happened?!" />
+        <v-alert v-if="editor.related.edit_to" class="mb-3" type="info" variant="tonal">
+          You are editing a post with alias <b class="font-mono">{{ editor.related.edit_to?.alias }}</b>
+        </v-alert>
 
-        <div class="flex mt-1">
+        <v-textarea
+          required
+          persistent-counter
+          variant="outlined"
+          label="What's happened?!"
+          counter="1024"
+          v-model="data.content"
+        />
+
+        <div class="flex mt-[-18px]">
           <v-tooltip text="Planned publish" location="start">
             <template #activator="{ props }">
               <v-btn
@@ -14,18 +25,6 @@
                 icon="mdi-calendar"
                 size="small"
                 @click="dialogs.plan = true"
-              />
-            </template>
-          </v-tooltip>
-          <v-tooltip text="Categories" location="start">
-            <template #activator="{ props }">
-              <v-btn
-                v-bind="props"
-                type="button"
-                variant="text"
-                icon="mdi-shape"
-                size="small"
-                @click="dialogs.categories = true"
               />
             </template>
           </v-tooltip>
@@ -53,8 +52,8 @@
     </v-form>
   </v-card>
 
-  <planned-publish v-model:show="dialogs.plan" v-model:value="extras.publishedAt" />
-  <media v-model:show="dialogs.media" v-model:uploading="uploading" v-model:value="extras.attachments" />
+  <planned-publish v-model:show="dialogs.plan" v-model:value="data.published_at" />
+  <media v-model:show="dialogs.media" v-model:uploading="uploading" v-model:value="data.attachments" />
 
   <v-snackbar v-model="success" :timeout="3000">Your post has been published.</v-snackbar>
   <v-snackbar v-model="uploading" :timeout="-1">
@@ -70,7 +69,7 @@
 import { request } from "@/scripts/request"
 import { useEditor } from "@/stores/editor"
 import { getAtk } from "@/stores/userinfo"
-import { reactive, ref } from "vue"
+import { reactive, ref, watch } from "vue"
 import PlannedPublish from "@/components/publish/parts/PlannedPublish.vue"
 import Media from "@/components/publish/parts/Media.vue"
 
@@ -78,12 +77,12 @@ const editor = useEditor()
 
 const dialogs = reactive({
   plan: false,
-  categories: false,
   media: false
 })
 
-const extras = reactive({
-  publishedAt: null,
+const data = ref<any>({
+  content: "",
+  published_at: null,
   attachments: []
 })
 
@@ -94,18 +93,18 @@ const uploading = ref(false)
 
 async function postMoment(evt: SubmitEvent) {
   const form = evt.target as HTMLFormElement
-  const data: any = Object.fromEntries(new FormData(form))
-  if (!data.hasOwnProperty("content")) return
-  if (!extras.publishedAt) data["published_at"] = new Date().toISOString()
-  else data["published_at"] = extras.publishedAt
+  const payload = data.value
+  if (!payload.content) return
+  if (!payload.published_at) payload.published_at = new Date().toISOString()
 
-  data["attachments"] = extras.attachments
+  const url = editor.related.edit_to ? `/api/p/moments/${editor.related.edit_to?.id}` : "/api/p/moments"
+  const method = editor.related.edit_to ? "PUT" : "POST"
 
   loading.value = true
-  const res = await request("/api/p/moments", {
-    method: "POST",
+  const res = await request(url, {
+    method: method,
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${getAtk()}` },
-    body: JSON.stringify(data)
+    body: JSON.stringify(payload)
   })
   if (res.status === 200) {
     form.reset()
@@ -116,6 +115,12 @@ async function postMoment(evt: SubmitEvent) {
   }
   loading.value = false
 }
+
+watch(editor.related, (val) => {
+  if (val.edit_to) {
+    data.value = val.edit_to
+  }
+})
 </script>
 
 <style>
