@@ -94,18 +94,18 @@ const uploading = ref(false)
 
 async function postMoment(evt: SubmitEvent) {
   const form = evt.target as HTMLFormElement
-  const data = new FormData(form)
-  if (!data.has("content")) return
-  if (!extras.publishedAt) data.set("published_at", new Date().toISOString())
-  else data.set("published_at", extras.publishedAt)
+  const data: any = Object.fromEntries(new FormData(form))
+  if (!data.hasOwnProperty("content")) return
+  if (!extras.publishedAt) data["published_at"] = new Date().toISOString()
+  else data["published_at"] = extras.publishedAt
 
-  extras.attachments.forEach((item) => data.append("attachments[]", item))
+  data["attachments"] = extras.attachments
 
   loading.value = true
   const res = await request("/api/p/moments", {
     method: "POST",
-    headers: { Authorization: `Bearer ${getAtk()}` },
-    body: data
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${getAtk()}` },
+    body: JSON.stringify(data)
   })
   if (res.status === 200) {
     form.reset()

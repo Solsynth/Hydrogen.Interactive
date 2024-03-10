@@ -18,7 +18,12 @@
 
       <component :is="renderer[props.item?.model_type]" v-bind="props" />
 
-      <post-attachment v-if="props.item?.attachments" :attachments="props.item?.attachments" />
+      <post-attachment
+        v-if="props.item?.attachments"
+        class="mt-1.5"
+        :overview="props.item?.model_type !== 'moment'"
+        :attachments="props.item?.attachments"
+      />
 
       <post-reaction
         size="small"
