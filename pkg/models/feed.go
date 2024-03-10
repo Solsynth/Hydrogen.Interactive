@@ -15,6 +15,8 @@ type Feed struct {
 	AuthorID uint  `json:"author_id"`
 	RealmID  *uint `json:"realm_id"`
 
-	Author       Account          `json:"author" gorm:"embedded"`
+	Author Account `json:"author" gorm:"embedded"`
+
+	Attachments  []Attachment     `json:"attachments" gorm:"-"`
 	ReactionList map[string]int64 `json:"reaction_list" gorm:"-"`
 }

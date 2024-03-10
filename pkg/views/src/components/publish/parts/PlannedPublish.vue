@@ -12,7 +12,7 @@
           class="mt-2"
           label="Publish date"
           hint="Your post will hidden for public before this time. Leave blank will publish immediately"
-          variant="outlined"
+          variant="solo-filled"
           type="datetime-local"
           :model-value="props.value"
           @update:model-value="(val) => emits('update:value', val)"

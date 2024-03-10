@@ -18,6 +18,8 @@
 
       <component :is="renderer[props.item?.model_type]" v-bind="props" />
 
+      <post-attachment v-if="props.item?.attachments" :attachments="props.item?.attachments" />
+
       <post-reaction
         size="small"
         :item="props.item"
@@ -34,6 +36,7 @@ import type { Component } from "vue"
 import ArticleContent from "@/components/posts/ArticleContent.vue"
 import MomentContent from "@/components/posts/MomentContent.vue"
 import CommentContent from "@/components/posts/CommentContent.vue"
+import PostAttachment from "./PostAttachment.vue"
 import PostReaction from "@/components/posts/PostReaction.vue"
 
 const props = defineProps<{ item: any; brief?: boolean }>()

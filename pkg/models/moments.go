@@ -3,14 +3,15 @@ package models
 type Moment struct {
 	PostBase
 
-	Content    string     `json:"content"`
-	Hashtags   []Tag      `json:"tags" gorm:"many2many:moment_tags"`
-	Categories []Category `json:"categories" gorm:"many2many:moment_categories"`
-	Reactions  []Reaction `json:"reactions"`
-	RealmID    *uint      `json:"realm_id"`
-	RepostID   *uint      `json:"repost_id"`
-	Realm      *Realm     `json:"realm"`
-	RepostTo   *Moment    `json:"repost_to" gorm:"foreignKey:RepostID"`
+	Content     string       `json:"content"`
+	Hashtags    []Tag        `json:"tags" gorm:"many2many:moment_tags"`
+	Categories  []Category   `json:"categories" gorm:"many2many:moment_categories"`
+	Reactions   []Reaction   `json:"reactions"`
+	Attachments []Attachment `json:"attachments"`
+	RealmID     *uint        `json:"realm_id"`
+	RepostID    *uint        `json:"repost_id"`
+	Realm       *Realm       `json:"realm"`
+	RepostTo    *Moment      `json:"repost_to" gorm:"foreignKey:RepostID"`
 
 	Comments []Comment `json:"comments" gorm:"foreignKey:MomentID"`
 }

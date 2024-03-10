@@ -15,9 +15,8 @@ type PostReactInfo struct {
 type PostBase struct {
 	BaseModel
 
-	Alias       string       `json:"alias" gorm:"uniqueIndex"`
-	Attachments []Attachment `json:"attachments"`
-	PublishedAt *time.Time   `json:"published_at"`
+	Alias       string     `json:"alias" gorm:"uniqueIndex"`
+	PublishedAt *time.Time `json:"published_at"`
 
 	AuthorID uint    `json:"author_id"`
 	Author   Account `json:"author"`

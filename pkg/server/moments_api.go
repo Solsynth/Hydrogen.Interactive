@@ -44,14 +44,14 @@ func createMoment(c *fiber.Ctx) error {
 	item := &models.Moment{
 		PostBase: models.PostBase{
 			Alias:       data.Alias,
-			Attachments: data.Attachments,
 			PublishedAt: data.PublishedAt,
 			AuthorID:    user.ID,
 		},
-		Hashtags:   data.Hashtags,
-		Categories: data.Categories,
-		Content:    data.Content,
-		RealmID:    data.RealmID,
+		Hashtags:    data.Hashtags,
+		Categories:  data.Categories,
+		Attachments: data.Attachments,
+		Content:     data.Content,
+		RealmID:     data.RealmID,
 	}
 
 	var relatedCount int64

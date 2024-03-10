@@ -1,11 +1,13 @@
 package services
 
 import (
+	"mime/multipart"
+	"net/http"
+	"strings"
+
 	"code.smartsheep.studio/hydrogen/interactive/pkg/database"
 	"code.smartsheep.studio/hydrogen/interactive/pkg/models"
 	"github.com/google/uuid"
-	"mime/multipart"
-	"net/http"
 )
 
 func NewAttachment(user models.Account, header *multipart.FileHeader) (models.Attachment, error) {
@@ -32,6 +34,17 @@ func NewAttachment(user models.Account, header *multipart.FileHeader) (models.At
 		return attachment, err
 	}
 	attachment.Mimetype = http.DetectContentType(fileHeader)
+
+	switch strings.Split(attachment.Mimetype, "/")[0] {
+	case "image":
+		attachment.Type = models.AttachmentPhoto
+	case "video":
+		attachment.Type = models.AttachmentVideo
+	case "audio":
+		attachment.Type = models.AttachmentAudio
+	default:
+		attachment.Type = models.AttachmentOthers
+	}
 
 	// Save into database
 	err = database.C.Save(&attachment).Error

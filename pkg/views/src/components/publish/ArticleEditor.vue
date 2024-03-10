@@ -67,6 +67,20 @@
                 </div>
               </template>
             </v-expansion-panel>
+
+            <v-expansion-panel title="Media">
+              <template #text>
+                <div class="flex justify-between items-center">
+                  <div>
+                    <p class="text-xs">This article attached</p>
+                    <p class="text-lg font-medium">
+                      {{ data.attachments.length }} attachment(s)
+                    </p>
+                  </div>
+                  <v-btn size="small" icon="mdi-camera-plus" variant="text" @click="dialogs.media = true" />
+                </div>
+              </template>
+            </v-expansion-panel>
           </v-expansion-panels>
         </v-container>
       </v-card-text>
@@ -74,8 +88,13 @@
   </v-card>
 
   <planned-publish v-model:show="dialogs.plan" v-model:value="data.publishedAt" />
+  <media v-model:show="dialogs.media" v-model:uploading="uploading" v-model:value="data.attachments" />
 
   <v-snackbar v-model="success" :timeout="3000">Your article has been published.</v-snackbar>
+  <v-snackbar v-model="uploading" :timeout="-1">
+    Uploading your media, please stand by...
+    <v-progress-linear class="snackbar-progress" indeterminate />
+  </v-snackbar>
 
   <!-- @vue-ignore -->
   <v-snackbar v-model="error" :timeout="5000">Something went wrong... {{ error }}</v-snackbar>
@@ -86,8 +105,9 @@ import { request } from "@/scripts/request"
 import { useEditor } from "@/stores/editor"
 import { getAtk } from "@/stores/userinfo"
 import { reactive, ref } from "vue"
-import PlannedPublish from "@/components/publish/parts/PlannedPublish.vue"
 import { useRouter } from "vue-router"
+import PlannedPublish from "@/components/publish/parts/PlannedPublish.vue"
+import Media from "@/components/publish/parts/Media.vue"
 
 const editor = useEditor()
 
@@ -101,7 +121,8 @@ const data = reactive<any>({
   title: "",
   content: "",
   description: "",
-  publishedAt: null
+  publishedAt: null,
+  attachments: []
 })
 
 const router = useRouter()
@@ -109,9 +130,12 @@ const router = useRouter()
 const error = ref<string | null>(null)
 const success = ref(false)
 const loading = ref(false)
+const uploading = ref(false)
 
 async function postArticle(evt: SubmitEvent) {
   const form = evt.target as HTMLFormElement
+
+  if (uploading.value) return
 
   if (!data.content) return
   if (!data.title || !data.description) return
@@ -120,7 +144,7 @@ async function postArticle(evt: SubmitEvent) {
   loading.value = true
   const res = await request("/api/p/articles", {
     method: "POST",
-    headers: { "Content-Type": "application/json",  Authorization: `Bearer ${getAtk()}` },
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${getAtk()}` },
     body: JSON.stringify(data)
   })
   if (res.status === 200) {
@@ -148,5 +172,13 @@ async function postArticle(evt: SubmitEvent) {
 
 .article-container {
   max-width: 720px;
+}
+
+.snackbar-progress {
+  margin-left: -16px;
+  margin-right: -16px;
+  margin-bottom: -14px;
+  margin-top: 12px;
+  width: calc(100% + 64px);
 }
 </style>

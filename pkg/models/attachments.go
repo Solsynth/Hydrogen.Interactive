@@ -2,8 +2,9 @@ package models
 
 import (
 	"fmt"
-	"github.com/spf13/viper"
 	"path/filepath"
+
+	"github.com/spf13/viper"
 )
 
 type AttachmentType = uint8

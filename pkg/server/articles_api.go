@@ -45,12 +45,12 @@ func createArticle(c *fiber.Ctx) error {
 	item := &models.Article{
 		PostBase: models.PostBase{
 			Alias:       data.Alias,
-			Attachments: data.Attachments,
 			PublishedAt: data.PublishedAt,
 			AuthorID:    user.ID,
 		},
 		Hashtags:    data.Hashtags,
 		Categories:  data.Categories,
+		Attachments: data.Attachments,
 		Title:       data.Title,
 		Description: data.Description,
 		Content:     data.Content,

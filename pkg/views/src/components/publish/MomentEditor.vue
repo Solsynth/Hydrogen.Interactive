@@ -54,8 +54,13 @@
   </v-card>
 
   <planned-publish v-model:show="dialogs.plan" v-model:value="extras.publishedAt" />
+  <media v-model:show="dialogs.media" v-model:uploading="uploading" v-model:value="extras.attachments" />
 
   <v-snackbar v-model="success" :timeout="3000">Your post has been published.</v-snackbar>
+  <v-snackbar v-model="uploading" :timeout="-1">
+    Uploading your media, please stand by...
+    <v-progress-linear class="snackbar-progress" indeterminate />
+  </v-snackbar>
 
   <!-- @vue-ignore -->
   <v-snackbar v-model="error" :timeout="5000">Something went wrong... {{ error }}</v-snackbar>
@@ -67,6 +72,7 @@ import { useEditor } from "@/stores/editor"
 import { getAtk } from "@/stores/userinfo"
 import { reactive, ref } from "vue"
 import PlannedPublish from "@/components/publish/parts/PlannedPublish.vue"
+import Media from "@/components/publish/parts/Media.vue"
 
 const editor = useEditor()
 
@@ -77,12 +83,14 @@ const dialogs = reactive({
 })
 
 const extras = reactive({
-  publishedAt: null
+  publishedAt: null,
+  attachments: []
 })
 
 const error = ref<string | null>(null)
 const success = ref(false)
 const loading = ref(false)
+const uploading = ref(false)
 
 async function postMoment(evt: SubmitEvent) {
   const form = evt.target as HTMLFormElement
@@ -90,6 +98,8 @@ async function postMoment(evt: SubmitEvent) {
   if (!data.has("content")) return
   if (!extras.publishedAt) data.set("published_at", new Date().toISOString())
   else data.set("published_at", extras.publishedAt)
+
+  extras.attachments.forEach((item) => data.append("attachments[]", item))
 
   loading.value = true
   const res = await request("/api/p/moments", {

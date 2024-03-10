@@ -17,7 +17,7 @@
       <div>
         <v-alert type="info" variant="tonal" class="text-sm">
           We just released the brand new design system and user interface!
-          <a class="underline" href="https://forms.office.com/r/Uh8vYmRQ8f" target="_blank">Contribute our survey</a>
+          <a class="underline" href="https://tally.so/r/w2NM7g" target="_blank">Take a survey</a>
         </v-alert>
       </div>
     </div>

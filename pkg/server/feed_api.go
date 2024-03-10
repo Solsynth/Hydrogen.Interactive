@@ -47,22 +47,28 @@ func listFeed(c *fiber.Ctx) error {
 	commentTable := viper.GetString("database.prefix") + "comments"
 	reactionTable := viper.GetString("database.prefix") + "reactions"
 
-	database.C.Raw(fmt.Sprintf(`SELECT feed.*, author.*, 
-		COALESCE(comment_count, 0) as comment_count, 
-		COALESCE(reaction_count, 0) as reaction_count
-		FROM (? UNION ALL ?) as feed
-		INNER JOIN %s as author ON author_id = author.id
-		LEFT JOIN (SELECT article_id, moment_id, COUNT(*) as comment_count
+	database.C.Raw(
+		fmt.Sprintf(`SELECT feed.*, author.*,
+		COALESCE(comment_count, 0) AS comment_count, 
+		COALESCE(reaction_count, 0) AS reaction_count
+		FROM (? UNION ALL ?) AS feed
+		INNER JOIN %s AS author ON author_id = author.id
+		LEFT JOIN (SELECT article_id, moment_id, COUNT(*) AS comment_count
             FROM %s
-            GROUP BY article_id, moment_id) as comments
+            GROUP BY article_id, moment_id) AS comments
             ON (feed.model_type = 'article' AND feed.id = comments.article_id) OR 
 			   (feed.model_type = 'moment' AND feed.id = comments.moment_id)
-        LEFT JOIN (SELECT article_id, moment_id, COUNT(*) as reaction_count
+        LEFT JOIN (SELECT article_id, moment_id, COUNT(*) AS reaction_count
         	FROM %s
-            GROUP BY article_id, moment_id) as reactions
+            GROUP BY article_id, moment_id) AS reactions
             ON (feed.model_type = 'article' AND feed.id = reactions.article_id) OR 
 			   (feed.model_type = 'moment' AND feed.id = reactions.moment_id)
-		WHERE %s ORDER BY feed.created_at desc  LIMIT ? OFFSET ?`, userTable, commentTable, reactionTable, whereCondition),
+		WHERE %s ORDER BY feed.created_at desc  LIMIT ? OFFSET ?`,
+			userTable,
+			commentTable,
+			reactionTable,
+			whereCondition,
+		),
 		database.C.Select(queryArticle).Model(&models.Article{}),
 		database.C.Select(queryMoment).Model(&models.Moment{}),
 		take,
@@ -118,6 +124,56 @@ func listFeed(c *fiber.Ctx) error {
 			return err
 		}
 		if err := revertReaction("moment"); err != nil {
+			return err
+		}
+	}
+
+	if !c.QueryBool("noAttachment", false) {
+		revertAttachment := func(dataset string) error {
+			var attachments []struct {
+				models.Attachment
+
+				PostID uint `json:"post_id"`
+			}
+
+			itemMap := lo.SliceToMap(lo.FilterMap(result, func(item *models.Feed, index int) (*models.Feed, bool) {
+				return item, item.ModelType == dataset
+			}), func(item *models.Feed) (uint, *models.Feed) {
+				return item.ID, item
+			})
+
+			idx := lo.Map(lo.Filter(result, func(item *models.Feed, index int) bool {
+				return item.ModelType == dataset
+			}), func(item *models.Feed, index int) uint {
+				return item.ID
+			})
+
+			if err := database.C.
+				Model(&models.Attachment{}).
+				Select(dataset+"_id as post_id, *").
+				Where(dataset+"_id IN (?)", idx).
+				Scan(&attachments).Error; err != nil {
+				return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+			}
+
+			list := map[uint][]models.Attachment{}
+			for _, info := range attachments {
+				list[info.PostID] = append(list[info.PostID], info.Attachment)
+			}
+
+			for k, v := range list {
+				if post, ok := itemMap[k]; ok {
+					post.Attachments = v
+				}
+			}
+
+			return nil
+		}
+
+		if err := revertAttachment("article"); err != nil {
+			return err
+		}
+		if err := revertAttachment("moment"); err != nil {
 			return err
 		}
 	}
