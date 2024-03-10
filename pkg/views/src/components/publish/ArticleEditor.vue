@@ -28,6 +28,7 @@
             label="Content"
             hint="The content supports markdown syntax"
             v-model="data.content"
+            @paste="pasteMedia"
           />
 
           <v-expansion-panels>
@@ -73,9 +74,7 @@
                 <div class="flex justify-between items-center">
                   <div>
                     <p class="text-xs">This article attached</p>
-                    <p class="text-lg font-medium">
-                      {{ data.attachments.length }} attachment(s)
-                    </p>
+                    <p class="text-lg font-medium">{{ data.attachments.length }} attachment(s)</p>
                   </div>
                   <v-btn size="small" icon="mdi-camera-plus" variant="text" @click="dialogs.media = true" />
                 </div>
@@ -88,7 +87,7 @@
   </v-card>
 
   <planned-publish v-model:show="dialogs.plan" v-model:value="data.publishedAt" />
-  <media v-model:show="dialogs.media" v-model:uploading="uploading" v-model:value="data.attachments" />
+  <media ref="media" v-model:show="dialogs.media" v-model:uploading="uploading" v-model:value="data.attachments" />
 
   <v-snackbar v-model="success" :timeout="3000">Your article has been published.</v-snackbar>
   <v-snackbar v-model="uploading" :timeout="-1">
@@ -157,6 +156,22 @@ async function postArticle(evt: SubmitEvent) {
     error.value = await res.text()
   }
   loading.value = false
+}
+
+const media = ref<any>(null)
+
+function pasteMedia(evt: ClipboardEvent) {
+  const files = evt.clipboardData?.files
+  if (files) {
+    Array.from(files).forEach((item) => {
+      media.value.upload(item).then((meta: any) => {
+        if (meta) {
+          data.content += `\n![${item.name}](/api/attachments/o/${meta.info.file_id})`
+        }
+      })
+    })
+    evt.preventDefault()
+  }
 }
 </script>
 

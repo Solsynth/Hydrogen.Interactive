@@ -22,9 +22,7 @@
         <v-card variant="tonal">
           <v-list>
             <v-list-item v-for="item in props.value" :title="getFileName(item)">
-              <template #subtitle>
-                {{ getFileType(item) }} · {{ formatBytes(item.filesize) }}
-              </template>
+              <template #subtitle> {{ getFileType(item) }} · {{ formatBytes(item.filesize) }} </template>
               <template #append>
                 <v-btn icon="mdi-delete" size="small" variant="text" color="error" />
               </template>
@@ -68,15 +66,19 @@ async function upload(file?: any) {
     headers: { Authorization: `Bearer ${getAtk()}` },
     body: data
   })
+  let meta: any;
   if (res.status !== 200) {
     error.value = await res.text()
   } else {
-    const data = await res.json()
-    emits("update:value", props.value.concat([data.info]))
+    meta = await res.json()
+    emits("update:value", props.value.concat([meta.info]))
     picked.value = []
   }
   emits("update:uploading", false)
+  return meta
 }
+
+defineExpose({ upload })
 
 function getFileName(item: any) {
   return item.filename.replace(/\.[^/.]+$/, "")

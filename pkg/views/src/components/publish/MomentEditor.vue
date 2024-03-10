@@ -117,3 +117,13 @@ async function postMoment(evt: SubmitEvent) {
   loading.value = false
 }
 </script>
+
+<style>
+.snackbar-progress {
+  margin-left: -16px;
+  margin-right: -16px;
+  margin-bottom: -14px;
+  margin-top: 12px;
+  width: calc(100% + 64px);
+}
+</style>
