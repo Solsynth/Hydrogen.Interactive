@@ -2,7 +2,7 @@ name: release-nightly
 
 on:
   push:
-    branches: [ master ]
+    branches: [ refactor/v2 ]
 
 jobs:
   build-docker:
@@ -25,4 +25,4 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: xsheep2010/interactive:nightly
+          tags: xsheep2010/interactive:v2
