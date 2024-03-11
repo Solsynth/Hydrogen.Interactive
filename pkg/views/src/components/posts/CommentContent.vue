@@ -1,5 +1,5 @@
 <template>
-  <article class="prose prose-comment" v-html="parseContent(props.item.content)" />
+  <article class="prose prose-comment" v-html="parseContent(props.item?.content ?? '')" />
 </template>
 
 <script setup lang="ts">

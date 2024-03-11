@@ -4,30 +4,37 @@
       <v-card :loading="loading">
         <article>
           <v-card-text>
-            <div class="px-3">
-              <h1 class="text-lg font-medium">{{ post?.title }}</h1>
-              <p class="text-sm">{{ post?.description }}</p>
+            <div class="flex gap-2">
+              <v-avatar
+                color="grey-lighten-2"
+                icon="mdi-account-circle"
+                class="rounded-card"
+                :src="post?.author.avatar"
+              />
+
+              <div>
+                <p class="font-bold">{{ post?.author.nick }}</p>
+                <p class="opacity-80">
+                  {{ post?.author.description ? post?.author.description : "No description yet." }}
+                </p>
+              </div>
             </div>
 
-            <v-divider class="my-5 mx-[-16px] border-opacity-50" />
-
-            <div class="px-3 text-xs opacity-80 flex gap-1">
-              <span>Written by {{ post?.author?.nick }}</span>
-              <span>·</span>
-              <span>Published at {{ new Date(post?.created_at).toLocaleString() }}</span>
-            </div>
-
-            <v-divider class="mt-5 mx-[-16px] border-opacity-50" />
+            <v-divider class="mb-5 mt-3.5 mx-[-16px] border-opacity-50" />
 
             <div class="px-3">
-              <article-content :item="post" content-only />
+              <moment-content :item="post" content-only />
+            </div>
+
+            <div class="mt-3 px-2">
+              <post-attachment v-if="post?.attachments" :attachments="post?.attachments" />
             </div>
 
             <v-divider class="my-5 mx-[-16px] border-opacity-50" />
 
             <div class="px-3">
               <post-reaction
-                model="articles"
+                model="moments"
                 :item="post"
                 :reactions="post?.reaction_list ?? {}"
                 @update="updateReactions"
@@ -42,8 +49,8 @@
       <v-card title="Comments">
         <div class="px-[1rem] pb-[0.825rem] mt-[-12px]">
           <comment-list
-            model="article"
-            dataset="articles"
+            model="moment"
+            dataset="moments"
             :item="post"
             :alias="route.params.alias"
             v-model:comments="comments"
@@ -57,10 +64,11 @@
 <script setup lang="ts">
 import { ref } from "vue"
 import { request } from "@/scripts/request"
-import ArticleContent from "@/components/posts/ArticleContent.vue"
+import { useRoute } from "vue-router"
+import MomentContent from "@/components/posts/MomentContent.vue"
 import PostReaction from "@/components/posts/PostReaction.vue"
 import CommentList from "@/components/comments/CommentList.vue"
-import { useRoute } from "vue-router"
+import PostAttachment from "@/components/posts/PostAttachment.vue"
 
 const loading = ref(false)
 const error = ref<string | null>(null)
@@ -72,7 +80,7 @@ const route = useRoute()
 
 async function readPost() {
   loading.value = true
-  const res = await request(`/api/p/articles/${route.params.alias}`)
+  const res = await request(`/api/p/moments/${route.params.alias}`)
   if (res.status !== 200) {
     error.value = await res.text()
   } else {
@@ -92,3 +100,9 @@ function updateReactions(symbol: string, num: number) {
   }
 }
 </script>
+
+<style scoped>
+.rounded-card {
+  border-radius: 8px;
+}
+</style>

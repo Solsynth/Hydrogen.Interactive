@@ -70,6 +70,7 @@ import { request } from "@/scripts/request"
 import { useEditor } from "@/stores/editor"
 import { getAtk } from "@/stores/userinfo"
 import { reactive, ref, watch } from "vue"
+import { useRouter } from "vue-router"
 import PlannedPublish from "@/components/publish/parts/PlannedPublish.vue"
 import Media from "@/components/publish/parts/Media.vue"
 
@@ -91,6 +92,8 @@ const success = ref(false)
 const loading = ref(false)
 const uploading = ref(false)
 
+const router = useRouter()
+
 async function postMoment(evt: SubmitEvent) {
   const form = evt.target as HTMLFormElement
   const payload = data.value
@@ -108,8 +111,10 @@ async function postMoment(evt: SubmitEvent) {
   })
   if (res.status === 200) {
     form.reset()
+    const data = await res.json()
     success.value = true
     editor.show.moment = false
+    router.push({ name: "posts.details.moments", params: { alias: data.alias } })
   } else {
     error.value = await res.text()
   }

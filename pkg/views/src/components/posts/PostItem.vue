@@ -33,7 +33,7 @@
         @update="updateReactions"
       />
 
-      <div class="mt-1 text-xs text-opacity-60 flex gap-2 items-center">
+      <div class="mt-1 text-xs opacity-80 flex gap-2 items-center">
         <span>Posted at {{ new Date(props.item?.created_at).toLocaleString() }}</span>
       </div>
 

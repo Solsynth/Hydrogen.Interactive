@@ -75,9 +75,11 @@ func (v *PostTypeContext) SortCreatedAt(order string) *PostTypeContext {
 func (v *PostTypeContext) GetViaAlias(alias string) (models.Feed, error) {
 	var item models.Feed
 	table := viper.GetString("database.prefix") + v.TableName
+	userTable := viper.GetString("database.prefix") + "accounts"
 	if err := v.Tx.
 		Table(table).
 		Select("*, ? as model_type", v.ColumnName).
+		Joins(fmt.Sprintf("INNER JOIN %s AS author ON author_id = author.id", userTable)).
 		Where("alias = ?", alias).
 		First(&item).Error; err != nil {
 		return item, err
@@ -99,9 +101,11 @@ func (v *PostTypeContext) GetViaAlias(alias string) (models.Feed, error) {
 func (v *PostTypeContext) Get(id uint, noComments ...bool) (models.Feed, error) {
 	var item models.Feed
 	table := viper.GetString("database.prefix") + v.TableName
+	userTable := viper.GetString("database.prefix") + "accounts"
 	if err := v.Tx.
 		Table(table).
 		Select("*, ? as model_type", v.ColumnName).
+		Joins(fmt.Sprintf("INNER JOIN %s AS author ON author_id = author.id", userTable)).
 		Where("id = ?", id).First(&item).Error; err != nil {
 		return item, err
 	}

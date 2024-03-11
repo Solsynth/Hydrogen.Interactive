@@ -5,14 +5,16 @@
       <div class="text-sm">{{ props.item?.description }}</div>
     </section>
 
-    <div v-if="props.brief">
-      <router-link
-        :to="{ name: 'posts.details.articles', params: { alias: props.item?.alias ?? 'not-found' } }"
+    <div v-if="props.brief" class="mt-2">
+      <v-btn
         append-icon="mdi-arrow-right"
-        class="link underline text-primary font-medium"
+        variant="tonal"
+        size="small"
+        rounded="sm"
+        :to="{ name: 'posts.details.articles', params: { alias: props.item?.alias ?? 'not-found' } }"
       >
-        Read more...
-      </router-link>
+        Read more
+      </v-btn>
     </div>
 
     <div v-else>
@@ -22,12 +24,12 @@
 </template>
 
 <script setup lang="ts">
-import dompurify from "dompurify";
-import { parse } from "marked";
+import dompurify from "dompurify"
+import { parse } from "marked"
 
-const props = defineProps<{ item: any, brief?: boolean, contentOnly?: boolean }>();
+const props = defineProps<{ item: any; brief?: boolean; contentOnly?: boolean }>()
 
 function parseContent(src: string): string {
-  return dompurify().sanitize(parse(src) as string);
+  return dompurify().sanitize(parse(src) as string)
 }
 </script>
