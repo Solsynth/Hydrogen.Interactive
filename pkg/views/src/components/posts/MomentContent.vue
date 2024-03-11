@@ -3,7 +3,7 @@
     :is="props.brief ? RouterLink : 'div'"
     :to="{ name: 'posts.details.moments', params: { alias: props.item?.alias } }"
   >
-    <article class="prose prose-moment" v-html="parseContent(props.item?.content ?? '')" />
+    <article class="prose prose-moment max-w-none" v-html="parseContent(props.item?.content ?? '')" />
   </component>
 </template>
 

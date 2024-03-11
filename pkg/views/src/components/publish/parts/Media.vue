@@ -21,10 +21,10 @@
         <h2 class="px-2 mb-1">Media list</h2>
         <v-card variant="tonal">
           <v-list>
-            <v-list-item v-for="item in props.value" :title="getFileName(item)">
+            <v-list-item v-for="(item, idx) in props.value" :title="getFileName(item)">
               <template #subtitle> {{ getFileType(item) }} · {{ formatBytes(item.filesize) }} </template>
               <template #append>
-                <v-btn icon="mdi-delete" size="small" variant="text" color="error" />
+                <v-btn icon="mdi-delete" size="small" variant="text" color="error" @click="detach(idx)" />
               </template>
             </v-list-item>
           </v-list>
@@ -66,7 +66,7 @@ async function upload(file?: any) {
     headers: { Authorization: `Bearer ${getAtk()}` },
     body: data
   })
-  let meta: any;
+  let meta: any
   if (res.status !== 200) {
     error.value = await res.text()
   } else {
@@ -76,6 +76,12 @@ async function upload(file?: any) {
   }
   emits("update:uploading", false)
   return meta
+}
+
+function detach(idx: number) {
+  const media = JSON.parse(JSON.stringify(props.value))
+  media.splice(idx)
+  emits("update:value", media)
 }
 
 defineExpose({ upload })
