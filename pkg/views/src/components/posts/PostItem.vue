@@ -47,7 +47,7 @@
         <v-list density="compact" lines="one">
           <v-list-item disabled append-icon="mdi-flag" title="Report" />
           <v-list-item v-if="isOwned" append-icon="mdi-pencil" title="Edit" @click="editPost" />
-          <v-list-item v-if="isOwned" append-icon="mdi-delete" title="Delete" />
+          <v-list-item v-if="isOwned" append-icon="mdi-delete" title="Delete" @click="deletePost" />
         </v-list>
       </v-menu>
     </div>
@@ -81,10 +81,19 @@ const isOwned = computed(() => props.item?.author_id === id.userinfo.data.id)
 
 function editPost() {
   editor.related.edit_to = props.item
-  if(editor.show.hasOwnProperty(props.item.model_type)) {
+  if (editor.show.hasOwnProperty(props.item.model_type)) {
     // @ts-ignore
     editor.show[props.item.model_type] = true
   }
+  if (props.item.model_type === "comment") {
+    editor.related.comment_to = props.item
+  }
+}
+
+function deletePost() {
+  editor.related.delete_to = JSON.parse(JSON.stringify(props.item))
+  editor.related.delete_to.model_type = props.item.model_type + "s"
+  editor.show.delete = true
 }
 
 function updateReactions(symbol: string, num: number) {

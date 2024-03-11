@@ -1,6 +1,6 @@
 <template>
   <v-container class="flex max-md:flex-col gap-3 overflow-auto max-h-[calc(100vh-64px)] no-scrollbar">
-    <div class="timeline flex-grow-1">
+    <div class="content flex-grow-1">
       <v-card :loading="loading">
         <article>
           <v-card-text>
@@ -26,7 +26,7 @@
       </v-card>
     </div>
 
-    <div class="aside sticky top-0 w-full h-fit md:max-w-[360px] md:min-w-[280px]">
+    <div class="aside sticky top-0 w-full h-fit w-full md:max-w-[380px] md:min-w-[360px]">
       <v-card title="Comments">
         <div class="px-[1rem] pb-[0.825rem] mt-[-12px]">
           <comment-list

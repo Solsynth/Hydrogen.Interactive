@@ -2,7 +2,7 @@
   <v-card title="Record a moment" :loading="loading">
     <v-form @submit.prevent="postMoment">
       <v-card-text>
-        <v-alert v-if="editor.related.edit_to" class="mb-3" type="info" variant="tonal">
+        <v-alert v-if="editor.related.edit_to" class="mb-5" type="info" variant="tonal">
           You are editing a post with alias <b class="font-mono">{{ editor.related.edit_to?.alias }}</b>
         </v-alert>
 
@@ -117,7 +117,7 @@ async function postMoment(evt: SubmitEvent) {
 }
 
 watch(editor.related, (val) => {
-  if (val.edit_to) {
+  if (val.edit_to && val.edit_to.model_type === "moment") {
     data.value = val.edit_to
   }
 })

@@ -3,7 +3,7 @@
     <v-progress-circular indeterminate />
   </div>
 
-  <div v-else class="flex flex-col gap-2 mt-3">
+  <div v-else class="flex flex-col gap-5 mt-3">
     <div v-for="(item, idx) in props.comments" class="text-sm">
       <post-item :item="item" @update:item="(val) => updateItem(idx, val)" />
     </div>

@@ -2,7 +2,11 @@
   <v-card title="Leave your comment" :loading="loading">
     <v-form @submit.prevent="postComment">
       <v-card-text>
-        <v-textarea required hide-details name="content" variant="outlined" label="What do you want to say?" />
+        <v-alert v-if="editor.related.edit_to" class="mb-5" type="info" variant="tonal">
+          You are editing a comment with alias <b class="font-mono">{{ editor.related.edit_to?.alias }}</b>
+        </v-alert>
+
+        <v-textarea required hide-details variant="outlined" label="What do you want to say?" v-model="data.content" />
 
         <p class="px-2 mt-1 text-body-2 opacity-80">Your comment will leave below {{ postIdentifier }}</p>
       </v-card-text>
@@ -26,7 +30,7 @@
 import { request } from "@/scripts/request"
 import { useEditor } from "@/stores/editor"
 import { getAtk } from "@/stores/userinfo"
-import { computed, ref } from "vue"
+import { computed, ref, watch } from "vue"
 
 const editor = useEditor()
 
@@ -43,16 +47,26 @@ const error = ref<string | null>(null)
 const success = ref(false)
 const loading = ref(false)
 
+const data = ref<any>({
+  content: ""
+})
+
 async function postComment(evt: SubmitEvent) {
   const form = evt.target as HTMLFormElement
-  const data = new FormData(form)
-  if (!data.has("content")) return
+  const payload = data.value
+
+  if (!payload.content) return
+
+  const url = editor.related.edit_to
+    ? `/api/p/comments/${editor.related.edit_to?.id}`
+    : `/api/p/${target.value?.model_type}/${target.value?.alias}/comments`
+  const method = editor.related.edit_to ? "PUT" : "POST"
 
   loading.value = true
-  const res = await request(`/api/p/${target.value?.model_type}/${target.value?.alias}/comments`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${getAtk()}` },
-    body: data
+  const res = await request(url, {
+    method: method,
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${getAtk()}` },
+    body: JSON.stringify(payload)
   })
   if (res.status === 200) {
     form.reset()
@@ -64,4 +78,10 @@ async function postComment(evt: SubmitEvent) {
   loading.value = false
   editor.done = true
 }
+
+watch(editor.related, (val) => {
+  if (val.edit_to && val.edit_to.model_type === "comment") {
+    data.value = val.edit_to
+  }
+})
 </script>
