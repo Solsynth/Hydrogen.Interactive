@@ -1,31 +1,23 @@
 <template>
-  <div>
+  <component
+    :is="props.brief ? RouterLink : 'div'"
+    :to="{ name: 'posts.details.articles', params: { alias: props.item?.alias } }"
+  >
     <section v-if="!props.contentOnly" class="mb-2">
       <h1 class="text-lg font-bold">{{ props.item?.title }}</h1>
       <div class="text-sm">{{ props.item?.description }}</div>
     </section>
 
-    <div v-if="props.brief" class="mt-2">
-      <v-btn
-        append-icon="mdi-arrow-right"
-        variant="tonal"
-        size="small"
-        rounded="sm"
-        :to="{ name: 'posts.details.articles', params: { alias: props.item?.alias ?? 'not-found' } }"
-      >
-        Read more
-      </v-btn>
-    </div>
-
     <div v-else>
       <article class="prose max-w-none" v-html="parseContent(props.item?.content ?? '')" />
     </div>
-  </div>
+  </component>
 </template>
 
 <script setup lang="ts">
 import dompurify from "dompurify"
 import { parse } from "marked"
+import { RouterLink } from "vue-router"
 
 const props = defineProps<{ item: any; brief?: boolean; contentOnly?: boolean }>()
 
