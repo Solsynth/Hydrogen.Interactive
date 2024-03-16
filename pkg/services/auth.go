@@ -7,12 +7,16 @@ import (
 	"code.smartsheep.studio/hydrogen/interactive/pkg/models"
 	"context"
 	"errors"
+	"fmt"
 	"gorm.io/gorm"
 	"time"
 )
 
 func LinkAccount(userinfo *proto.Userinfo) (models.Account, error) {
 	var account models.Account
+	if userinfo == nil {
+		return account, fmt.Errorf("remote userinfo was not found")
+	}
 	if err := database.C.Where(&models.Account{
 		ExternalID: uint(userinfo.Id),
 	}).First(&account).Error; err != nil {

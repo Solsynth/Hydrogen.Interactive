@@ -2,22 +2,34 @@ package models
 
 import (
 	"fmt"
-	"github.com/spf13/viper"
 	"path/filepath"
+
+	"github.com/spf13/viper"
+)
+
+type AttachmentType = uint8
+
+const (
+	AttachmentOthers = AttachmentType(iota)
+	AttachmentPhoto
+	AttachmentVideo
+	AttachmentAudio
 )
 
 type Attachment struct {
 	BaseModel
 
-	FileID      string  `json:"file_id"`
-	Filesize    int64   `json:"filesize"`
-	Filename    string  `json:"filename"`
-	Mimetype    string  `json:"mimetype"`
-	ExternalUrl string  `json:"external_url"`
-	Post        *Post   `json:"post"`
-	Author      Account `json:"author"`
-	PostID      *uint   `json:"post_id"`
-	AuthorID    uint    `json:"author_id"`
+	FileID      string         `json:"file_id"`
+	Filesize    int64          `json:"filesize"`
+	Filename    string         `json:"filename"`
+	Mimetype    string         `json:"mimetype"`
+	Type        AttachmentType `json:"type"`
+	ExternalUrl string         `json:"external_url"`
+	Author      Account        `json:"author"`
+	ArticleID   *uint          `json:"article_id"`
+	MomentID    *uint          `json:"moment_id"`
+	CommentID   *uint          `json:"comment_id"`
+	AuthorID    uint           `json:"author_id"`
 }
 
 func (v Attachment) GetStoragePath() string {

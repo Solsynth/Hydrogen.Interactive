@@ -1,6 +1,6 @@
 debug = true
 
-name = "Goatplaza"
+name = "Solarplaza"
 maintainer = "SmartSheep Studio"
 
 bind = "0.0.0.0:8445"
@@ -10,7 +10,7 @@ secret = "LtTjzAGFLshwXhN4ZD4nG5KlMv1MWcsvfv03TSZYnT1VhiAnLIZFTnHUwR0XhGgi"
 content = "uploads"
 
 [identity]
-client_id = "goatplaza"
+client_id = "solarplaza"
 client_secret = "Z9k9AFTj^p"
 endpoint = "http://localhost:8444"
 grpc_endpoint = "127.0.0.1:7444"

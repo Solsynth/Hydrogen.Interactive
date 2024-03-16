@@ -1,3 +1,0 @@
-.description {
-    color: var(--fallback-bc, oklch(var(--bc)/.8));
-}

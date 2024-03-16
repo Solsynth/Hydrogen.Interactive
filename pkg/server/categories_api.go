@@ -6,7 +6,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func listCategroies(c *fiber.Ctx) error {
+func listCategories(c *fiber.Ctx) error {
 	categories, err := services.ListCategory()
 	if err != nil {
 		return fiber.NewError(fiber.StatusNotFound, err.Error())

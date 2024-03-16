@@ -1,32 +1,64 @@
 package models
 
-import "time"
+import (
+	"time"
+)
 
-type Post struct {
+type PostReactInfo struct {
+	PostID       uint  `json:"post_id"`
+	LikeCount    int64 `json:"like_count"`
+	DislikeCount int64 `json:"dislike_count"`
+	ReplyCount   int64 `json:"reply_count"`
+	RepostCount  int64 `json:"repost_count"`
+}
+
+type PostBase struct {
 	BaseModel
 
-	Alias            string        `json:"alias" gorm:"uniqueIndex"`
-	Title            string        `json:"title"`
-	Content          string        `json:"content"`
-	Tags             []Tag         `json:"tags" gorm:"many2many:post_tags"`
-	Categories       []Category    `json:"categories" gorm:"many2many:post_categories"`
-	Attachments      []Attachment  `json:"attachments"`
-	LikedAccounts    []PostLike    `json:"liked_accounts"`
-	DislikedAccounts []PostDislike `json:"disliked_accounts"`
-	RepostTo         *Post         `json:"repost_to" gorm:"foreignKey:RepostID"`
-	ReplyTo          *Post         `json:"reply_to" gorm:"foreignKey:ReplyID"`
-	PinnedAt         *time.Time    `json:"pinned_at"`
-	EditedAt         *time.Time    `json:"edited_at"`
-	PublishedAt      time.Time     `json:"published_at"`
-	RepostID         *uint         `json:"repost_id"`
-	ReplyID          *uint         `json:"reply_id"`
-	RealmID          *uint         `json:"realm_id"`
-	AuthorID         uint          `json:"author_id"`
-	Author           Account       `json:"author"`
+	Alias       string     `json:"alias" gorm:"uniqueIndex"`
+	PublishedAt *time.Time `json:"published_at"`
 
-	// Dynamic Calculating Values
-	LikeCount    int64 `json:"like_count" gorm:"-"`
-	DislikeCount int64 `json:"dislike_count" gorm:"-"`
-	ReplyCount   int64 `json:"reply_count" gorm:"-"`
-	RepostCount  int64 `json:"repost_count" gorm:"-"`
+	AuthorID uint    `json:"author_id"`
+	Author   Account `json:"author"`
+
+	// Dynamic Calculated Values
+	ReactionList map[string]int64 `json:"reaction_list" gorm:"-"`
+}
+
+func (p *PostBase) GetID() uint {
+	return p.ID
+}
+
+func (p *PostBase) GetReplyTo() PostInterface {
+	return nil
+}
+
+func (p *PostBase) GetRepostTo() PostInterface {
+	return nil
+}
+
+func (p *PostBase) GetAuthor() Account {
+	return p.Author
+}
+
+func (p *PostBase) GetRealm() *Realm {
+	return nil
+}
+
+func (p *PostBase) SetReactionList(list map[string]int64) {
+	p.ReactionList = list
+}
+
+type PostInterface interface {
+	GetID() uint
+	GetHashtags() []Tag
+	GetCategories() []Category
+	GetReplyTo() PostInterface
+	GetRepostTo() PostInterface
+	GetAuthor() Account
+	GetRealm() *Realm
+
+	SetHashtags([]Tag)
+	SetCategories([]Category)
+	SetReactionList(map[string]int64)
 }

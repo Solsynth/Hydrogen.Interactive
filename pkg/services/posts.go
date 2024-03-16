@@ -1,350 +1,364 @@
 package services
 
 import (
-	"code.smartsheep.studio/hydrogen/identity/pkg/grpc/proto"
 	"errors"
 	"fmt"
 	"time"
 
-	"github.com/rs/zerolog/log"
-
+	"code.smartsheep.studio/hydrogen/identity/pkg/grpc/proto"
 	"code.smartsheep.studio/hydrogen/interactive/pkg/database"
 	"code.smartsheep.studio/hydrogen/interactive/pkg/models"
+	"github.com/rs/zerolog/log"
 	"github.com/samber/lo"
 	"github.com/spf13/viper"
 	"gorm.io/gorm"
 )
 
-func PreloadRelatedPost(tx *gorm.DB) *gorm.DB {
-	return tx.
-		Preload("Author").
-		Preload("Attachments").
-		Preload("Categories").
-		Preload("Tags").
-		Preload("RepostTo").
-		Preload("ReplyTo").
-		Preload("RepostTo.Author").
-		Preload("ReplyTo.Author").
-		Preload("RepostTo.Attachments").
-		Preload("ReplyTo.Attachments").
-		Preload("RepostTo.Categories").
-		Preload("ReplyTo.Categories").
-		Preload("RepostTo.Tags").
-		Preload("ReplyTo.Tags")
+type PostTypeContext struct {
+	Tx *gorm.DB
+
+	TableName  string
+	ColumnName string
+	CanReply   bool
+	CanRepost  bool
 }
 
-func FilterPostWithCategory(tx *gorm.DB, alias string) *gorm.DB {
-	prefix := viper.GetString("database.prefix")
-	return tx.Joins(fmt.Sprintf("JOIN %spost_categories ON %sposts.id = %spost_categories.post_id", prefix, prefix, prefix)).
-		Joins(fmt.Sprintf("JOIN %scategories ON %scategories.id = %spost_categories.category_id", prefix, prefix, prefix)).
-		Where(fmt.Sprintf("%scategories.alias = ?", prefix), alias)
+func (v *PostTypeContext) FilterWithCategory(alias string) *PostTypeContext {
+	name := v.ColumnName
+	v.Tx.Joins(fmt.Sprintf("JOIN %s_categories ON %s.id = %s_categories.%s_id", name, v.TableName, name, name)).
+		Joins(fmt.Sprintf("JOIN %s_categories ON %s_categories.id = %s_categories.category_id", name, name, name)).
+		Where(name+"_categories.alias = ?", alias)
+	return v
 }
 
-func FilterPostWithTag(tx *gorm.DB, alias string) *gorm.DB {
-	prefix := viper.GetString("database.prefix")
-	return tx.Joins(fmt.Sprintf("JOIN %spost_tags ON %sposts.id = %spost_tags.post_id", prefix, prefix, prefix)).
-		Joins(fmt.Sprintf("JOIN %stags ON %stags.id = %spost_tags.tag_id", prefix, prefix, prefix)).
-		Where(fmt.Sprintf("%stags.alias = ?", prefix), alias)
+func (v *PostTypeContext) FilterWithTag(alias string) *PostTypeContext {
+	name := v.ColumnName
+	v.Tx.Joins(fmt.Sprintf("JOIN %s_tags ON %s.id = %s_tags.%s_id", name, v.TableName, name, name)).
+		Joins(fmt.Sprintf("JOIN %s_tags ON %s_tags.id = %s_tags.category_id", name, name, name)).
+		Where(name+"_tags.alias = ?", alias)
+	return v
 }
 
-func GetPost(tx *gorm.DB) (*models.Post, error) {
-	var post *models.Post
-	if err := PreloadRelatedPost(tx).First(&post).Error; err != nil {
-		return post, err
+func (v *PostTypeContext) FilterPublishedAt(date time.Time) *PostTypeContext {
+	v.Tx.Where("published_at <= ? AND published_at IS NULL", date)
+	return v
+}
+
+func (v *PostTypeContext) FilterRealm(id uint) *PostTypeContext {
+	if id > 0 {
+		v.Tx = v.Tx.Where("realm_id = ?", id)
+	} else {
+		v.Tx = v.Tx.Where("realm_id IS NULL")
+	}
+	return v
+}
+
+func (v *PostTypeContext) FilterAuthor(id uint) *PostTypeContext {
+	v.Tx = v.Tx.Where("author_id = ?", id)
+	return v
+}
+
+func (v *PostTypeContext) FilterReply(condition bool) *PostTypeContext {
+	if condition {
+		v.Tx = v.Tx.Where("reply_id IS NOT NULL")
+	} else {
+		v.Tx = v.Tx.Where("reply_id IS NULL")
+	}
+	return v
+}
+
+func (v *PostTypeContext) SortCreatedAt(order string) *PostTypeContext {
+	v.Tx.Order(fmt.Sprintf("created_at %s", order))
+	return v
+}
+
+func (v *PostTypeContext) GetViaAlias(alias string) (models.Feed, error) {
+	var item models.Feed
+	table := viper.GetString("database.prefix") + v.TableName
+	userTable := viper.GetString("database.prefix") + "accounts"
+	if err := v.Tx.
+		Table(table).
+		Select("*, ? as model_type", v.ColumnName).
+		Joins(fmt.Sprintf("INNER JOIN %s AS author ON author_id = author.id", userTable)).
+		Where("alias = ?", alias).
+		First(&item).Error; err != nil {
+		return item, err
 	}
 
-	var reactInfo struct {
-		PostID       uint  `json:"post_id"`
-		LikeCount    int64 `json:"like_count"`
-		DislikeCount int64 `json:"dislike_count"`
-		ReplyCount   int64 `json:"reply_count"`
-		RepostCount  int64 `json:"repost_count"`
+	var attachments []models.Attachment
+	if err := database.C.
+		Model(&models.Attachment{}).
+		Where(v.ColumnName+"_id = ?", item.ID).
+		Scan(&attachments).Error; err != nil {
+		return item, err
+	} else {
+		item.Attachments = attachments
 	}
 
-	prefix := viper.GetString("database.prefix")
-	database.C.Raw(fmt.Sprintf(`
-SELECT t.id                         as post_id,
-       COALESCE(l.like_count, 0)    AS like_count,
-       COALESCE(d.dislike_count, 0) AS dislike_count,
-       COALESCE(r.reply_count, 0)    AS reply_count,
-       COALESCE(rp.repost_count, 0)  AS repost_count
-FROM %sposts t
-         LEFT JOIN (SELECT post_id, COUNT(*) AS like_count
-                    FROM %spost_likes
-                    GROUP BY post_id) l ON t.id = l.post_id
-         LEFT JOIN (SELECT post_id, COUNT(*) AS dislike_count
-                    FROM %spost_dislikes
-                    GROUP BY post_id) d ON t.id = d.post_id
-         LEFT JOIN (SELECT reply_id, COUNT(*) AS reply_count
-                    FROM %sposts
-                    WHERE reply_id IS NOT NULL
-                    GROUP BY reply_id) r ON t.id = r.reply_id
-         LEFT JOIN (SELECT repost_id, COUNT(*) AS repost_count
-                    FROM %sposts
-                    WHERE repost_id IS NOT NULL
-                    GROUP BY repost_id) rp ON t.id = rp.repost_id
-WHERE t.id = ?`, prefix, prefix, prefix, prefix, prefix), post.ID).Scan(&reactInfo)
-
-	post.LikeCount = reactInfo.LikeCount
-	post.DislikeCount = reactInfo.DislikeCount
-	post.ReplyCount = reactInfo.ReplyCount
-	post.RepostCount = reactInfo.RepostCount
-
-	return post, nil
+	return item, nil
 }
 
-func ListPost(tx *gorm.DB, take int, offset int) ([]*models.Post, error) {
+func (v *PostTypeContext) Get(id uint, noComments ...bool) (models.Feed, error) {
+	var item models.Feed
+	table := viper.GetString("database.prefix") + v.TableName
+	userTable := viper.GetString("database.prefix") + "accounts"
+	if err := v.Tx.
+		Table(table).
+		Select("*, ? as model_type", v.ColumnName).
+		Joins(fmt.Sprintf("INNER JOIN %s AS author ON author_id = author.id", userTable)).
+		Where("id = ?", id).First(&item).Error; err != nil {
+		return item, err
+	}
+
+	var attachments []models.Attachment
+	if err := database.C.
+		Model(&models.Attachment{}).
+		Where(v.ColumnName+"_id = ?", id).
+		Scan(&attachments).Error; err != nil {
+		return item, err
+	} else {
+		item.Attachments = attachments
+	}
+
+	return item, nil
+}
+
+func (v *PostTypeContext) Count() (int64, error) {
+	var count int64
+	table := viper.GetString("database.prefix") + v.TableName
+	if err := v.Tx.Table(table).Count(&count).Error; err != nil {
+		return count, err
+	}
+
+	return count, nil
+}
+
+func (v *PostTypeContext) CountReactions(id uint) (map[string]int64, error) {
+	var reactions []struct {
+		Symbol string
+		Count  int64
+	}
+
+	if err := database.C.Model(&models.Reaction{}).
+		Select("symbol, COUNT(id) as count").
+		Where(v.ColumnName+"_id = ?", id).
+		Group("symbol").
+		Scan(&reactions).Error; err != nil {
+		return map[string]int64{}, err
+	}
+
+	return lo.SliceToMap(reactions, func(item struct {
+		Symbol string
+		Count  int64
+	},
+	) (string, int64) {
+		return item.Symbol, item.Count
+	}), nil
+}
+
+func (v *PostTypeContext) List(take int, offset int, noReact ...bool) ([]*models.Feed, error) {
 	if take > 20 {
 		take = 20
 	}
 
-	var posts []*models.Post
-	if err := PreloadRelatedPost(tx).
-		Limit(take).
-		Offset(offset).
-		Find(&posts).Error; err != nil {
-		return posts, err
+	var items []*models.Feed
+	table := viper.GetString("database.prefix") + v.TableName
+	if err := v.Tx.
+		Table(table).
+		Select("*, ? as model_type", v.ColumnName).
+		Limit(take).Offset(offset).Find(&items).Error; err != nil {
+		return items, err
 	}
 
-	postIds := lo.Map(posts, func(item *models.Post, _ int) uint {
+	idx := lo.Map(items, func(item *models.Feed, index int) uint {
 		return item.ID
 	})
 
-	var reactInfo []struct {
-		PostID       uint  `json:"post_id"`
-		LikeCount    int64 `json:"like_count"`
-		DislikeCount int64 `json:"dislike_count"`
-		ReplyCount   int64 `json:"reply_count"`
-		RepostCount  int64 `json:"repost_count"`
-	}
+	if len(noReact) <= 0 || !noReact[0] {
+		var reactions []struct {
+			PostID uint
+			Symbol string
+			Count  int64
+		}
 
-	prefix := viper.GetString("database.prefix")
-	database.C.Raw(fmt.Sprintf(`
-SELECT t.id                         as post_id,
-       COALESCE(l.like_count, 0)    AS like_count,
-       COALESCE(d.dislike_count, 0) AS dislike_count,
-       COALESCE(r.reply_count, 0)    AS reply_count,
-       COALESCE(rp.repost_count, 0)  AS repost_count
-FROM %sposts t
-         LEFT JOIN (SELECT post_id, COUNT(*) AS like_count
-                    FROM %spost_likes
-                    GROUP BY post_id) l ON t.id = l.post_id
-         LEFT JOIN (SELECT post_id, COUNT(*) AS dislike_count
-                    FROM %spost_dislikes
-                    GROUP BY post_id) d ON t.id = d.post_id
-         LEFT JOIN (SELECT reply_id, COUNT(*) AS reply_count
-                    FROM %sposts
-                    WHERE reply_id IS NOT NULL
-                    GROUP BY reply_id) r ON t.id = r.reply_id
-         LEFT JOIN (SELECT repost_id, COUNT(*) AS repost_count
-                    FROM %sposts
-                    WHERE repost_id IS NOT NULL
-                    GROUP BY repost_id) rp ON t.id = rp.repost_id
-WHERE t.id IN ?`, prefix, prefix, prefix, prefix, prefix), postIds).Scan(&reactInfo)
+		if err := database.C.Model(&models.Reaction{}).
+			Select(v.ColumnName+"_id as post_id, symbol, COUNT(id) as count").
+			Where(v.ColumnName+"_id IN (?)", idx).
+			Group("post_id, symbol").
+			Scan(&reactions).Error; err != nil {
+			return items, err
+		}
 
-	postMap := lo.SliceToMap(posts, func(item *models.Post) (uint, *models.Post) {
-		return item.ID, item
-	})
+		itemMap := lo.SliceToMap(items, func(item *models.Feed) (uint, *models.Feed) {
+			return item.ID, item
+		})
 
-	for _, info := range reactInfo {
-		if post, ok := postMap[info.PostID]; ok {
-			post.LikeCount = info.LikeCount
-			post.DislikeCount = info.DislikeCount
-			post.ReplyCount = info.ReplyCount
-			post.RepostCount = info.RepostCount
+		list := map[uint]map[string]int64{}
+		for _, info := range reactions {
+			if _, ok := list[info.PostID]; !ok {
+				list[info.PostID] = make(map[string]int64)
+			}
+			list[info.PostID][info.Symbol] = info.Count
+		}
+
+		for k, v := range list {
+			if post, ok := itemMap[k]; ok {
+				post.ReactionList = v
+			}
 		}
 	}
 
-	return posts, nil
+	{
+		var attachments []struct {
+			models.Attachment
+
+			PostID uint `json:"post_id"`
+		}
+
+		itemMap := lo.SliceToMap(items, func(item *models.Feed) (uint, *models.Feed) {
+			return item.ID, item
+		})
+
+		idx := lo.Map(items, func(item *models.Feed, index int) uint {
+			return item.ID
+		})
+
+		if err := database.C.
+			Model(&models.Attachment{}).
+			Select(v.ColumnName+"_id as post_id, *").
+			Where(v.ColumnName+"_id IN (?)", idx).
+			Scan(&attachments).Error; err != nil {
+			return items, err
+		}
+
+		list := map[uint][]models.Attachment{}
+		for _, info := range attachments {
+			list[info.PostID] = append(list[info.PostID], info.Attachment)
+		}
+
+		for k, v := range list {
+			if post, ok := itemMap[k]; ok {
+				post.Attachments = v
+			}
+		}
+	}
+
+	return items, nil
 }
 
-func NewPost(
-	user models.Account,
-	realm *models.Realm,
-	alias, title, content string,
-	attachments []models.Attachment,
-	categories []models.Category,
-	tags []models.Tag,
-	publishedAt *time.Time,
-	replyTo, repostTo *uint,
-) (models.Post, error) {
+func MapCategoriesAndTags[T models.PostInterface](item T) (T, error) {
 	var err error
-	var post models.Post
+	categories := item.GetCategories()
 	for idx, category := range categories {
 		categories[idx], err = GetCategory(category.Alias)
 		if err != nil {
-			return post, err
+			return item, err
 		}
 	}
+	item.SetCategories(categories)
+	tags := item.GetHashtags()
 	for idx, tag := range tags {
 		tags[idx], err = GetTagOrCreate(tag.Alias, tag.Name)
 		if err != nil {
-			return post, err
+			return item, err
 		}
 	}
+	item.SetHashtags(tags)
+	return item, nil
+}
 
-	var realmId *uint
-	if realm != nil {
-		if !realm.IsPublic {
+func NewPost[T models.PostInterface](item T) (T, error) {
+	item, err := MapCategoriesAndTags(item)
+	if err != nil {
+		return item, err
+	}
+
+	if item.GetRealm() != nil {
+		if !item.GetRealm().IsPublic {
 			var member models.RealmMember
 			if err := database.C.Where(&models.RealmMember{
-				RealmID:   realm.ID,
-				AccountID: user.ID,
+				RealmID:   item.GetRealm().ID,
+				AccountID: item.GetAuthor().ID,
 			}).First(&member).Error; err != nil {
-				return post, fmt.Errorf("you aren't a part of that realm")
+				return item, fmt.Errorf("you aren't a part of that realm")
 			}
 		}
-		realmId = &realm.ID
 	}
 
-	if publishedAt == nil {
-		publishedAt = lo.ToPtr(time.Now())
+	if err := database.C.Save(&item).Error; err != nil {
+		return item, err
 	}
 
-	post = models.Post{
-		Alias:       alias,
-		Title:       title,
-		Content:     content,
-		Attachments: attachments,
-		Tags:        tags,
-		Categories:  categories,
-		AuthorID:    user.ID,
-		RealmID:     realmId,
-		PublishedAt: *publishedAt,
-		RepostID:    repostTo,
-		ReplyID:     replyTo,
+	if item.GetReplyTo() != nil {
+		go func() {
+			var op models.Moment
+			if err := database.C.Where("id = ?", item.GetReplyTo()).Preload("Author").First(&op).Error; err == nil {
+				if op.Author.ID != item.GetAuthor().ID {
+					postUrl := fmt.Sprintf("https://%s/posts/%d", viper.GetString("domain"), item.GetID())
+					err := NotifyAccount(
+						op.Author,
+						fmt.Sprintf("%s replied you", item.GetAuthor().Name),
+						fmt.Sprintf("%s replied your post. Check it out!", item.GetAuthor().Name),
+						&proto.NotifyLink{Label: "Related post", Url: postUrl},
+					)
+					if err != nil {
+						log.Error().Err(err).Msg("An error occurred when notifying user...")
+					}
+				}
+			}
+		}()
 	}
 
-	if err := database.C.Save(&post).Error; err != nil {
-		return post, err
-	}
+	var subscribers []models.AccountMembership
+	if err := database.C.Where(&models.AccountMembership{
+		FollowingID: item.GetAuthor().ID,
+	}).Preload("Follower").Find(&subscribers).Error; err == nil && len(subscribers) > 0 {
+		go func() {
+			accounts := lo.Map(subscribers, func(item models.AccountMembership, index int) models.Account {
+				return item.Follower
+			})
 
-	if post.ReplyID != nil {
-		var op models.Post
-		if err := database.C.Where(&models.Post{
-			BaseModel: models.BaseModel{ID: *post.ReplyID},
-		}).Preload("Author").First(&op).Error; err == nil {
-			if op.Author.ID != user.ID {
-				postUrl := fmt.Sprintf("https://%s/posts/%s", viper.GetString("domain"), post.Alias)
+			for _, account := range accounts {
+				postUrl := fmt.Sprintf("https://%s/posts/%d", viper.GetString("domain"), item.GetID())
 				err := NotifyAccount(
-					op.Author,
-					fmt.Sprintf("%s replied you", user.Name),
-					fmt.Sprintf("%s replied your post. Check it out!", user.Name),
+					account,
+					fmt.Sprintf("%s just posted a post", item.GetAuthor().Name),
+					"Account you followed post a brand new post. Check it out!",
 					&proto.NotifyLink{Label: "Related post", Url: postUrl},
 				)
 				if err != nil {
 					log.Error().Err(err).Msg("An error occurred when notifying user...")
 				}
 			}
-		}
+		}()
 	}
 
-	go func() {
-		var subscribers []models.AccountMembership
-		if err := database.C.Where(&models.AccountMembership{
-			FollowingID: user.ID,
-		}).Preload("Follower").Find(&subscribers).Error; err != nil {
-			return
-		}
-
-		accounts := lo.Map(subscribers, func(item models.AccountMembership, index int) models.Account {
-			return item.Follower
-		})
-
-		for _, account := range accounts {
-			postUrl := fmt.Sprintf("https://%s/posts/%s", viper.GetString("domain"), post.Alias)
-			err := NotifyAccount(
-				account,
-				fmt.Sprintf("%s just posted a post", user.Name),
-				"Account you followed post a brand new post. Check it out!",
-				&proto.NotifyLink{Label: "Related post", Url: postUrl},
-			)
-			if err != nil {
-				log.Error().Err(err).Msg("An error occurred when notifying user...")
-			}
-		}
-	}()
-
-	return post, nil
+	return item, nil
 }
 
-func EditPost(
-	post models.Post,
-	alias, title, content string,
-	publishedAt *time.Time,
-	categories []models.Category,
-	tags []models.Tag,
-	attachments []models.Attachment,
-) (models.Post, error) {
-	var err error
-	for idx, category := range categories {
-		categories[idx], err = GetCategory(category.Alias)
-		if err != nil {
-			return post, err
-		}
-	}
-	for idx, tag := range tags {
-		tags[idx], err = GetTagOrCreate(tag.Alias, tag.Name)
-		if err != nil {
-			return post, err
-		}
+func EditPost[T models.PostInterface](item T) (T, error) {
+	item, err := MapCategoriesAndTags(item)
+	if err != nil {
+		return item, err
 	}
 
-	if publishedAt == nil {
-		publishedAt = lo.ToPtr(time.Now())
-	}
+	err = database.C.Save(&item).Error
 
-	post.Alias = alias
-	post.Title = title
-	post.Content = content
-	post.PublishedAt = *publishedAt
-	post.Tags = tags
-	post.Categories = categories
-	post.Attachments = attachments
-
-	err = database.C.Save(&post).Error
-
-	return post, err
+	return item, err
 }
 
-func LikePost(user models.Account, post models.Post) (bool, error) {
-	var like models.PostLike
-	if err := database.C.Where(&models.PostLike{
-		AccountID: user.ID,
-		PostID:    post.ID,
-	}).First(&like).Error; err != nil {
-		if !errors.Is(err, gorm.ErrRecordNotFound) {
-			return true, err
+func DeletePost[T models.PostInterface](item T) error {
+	return database.C.Delete(&item).Error
+}
+
+func (v *PostTypeContext) React(reaction models.Reaction) (bool, models.Reaction, error) {
+	if err := database.C.Where(reaction).First(&reaction).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return true, reaction, database.C.Save(&reaction).Error
+		} else {
+			return true, reaction, err
 		}
-		like = models.PostLike{
-			AccountID: user.ID,
-			PostID:    post.ID,
-		}
-		return true, database.C.Save(&like).Error
 	} else {
-		return false, database.C.Delete(&like).Error
+		return false, reaction, database.C.Delete(&reaction).Error
 	}
-}
-
-func DislikePost(user models.Account, post models.Post) (bool, error) {
-	var dislike models.PostDislike
-	if err := database.C.Where(&models.PostDislike{
-		AccountID: user.ID,
-		PostID:    post.ID,
-	}).First(&dislike).Error; err != nil {
-		if !errors.Is(err, gorm.ErrRecordNotFound) {
-			return true, err
-		}
-		dislike = models.PostDislike{
-			AccountID: user.ID,
-			PostID:    post.ID,
-		}
-		return true, database.C.Save(&dislike).Error
-	} else {
-		return false, database.C.Delete(&dislike).Error
-	}
-}
-
-func DeletePost(post models.Post) error {
-	return database.C.Delete(&post).Error
 }

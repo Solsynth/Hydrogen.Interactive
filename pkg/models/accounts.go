@@ -14,10 +14,10 @@ type Account struct {
 	Description     string        `json:"description"`
 	EmailAddress    string        `json:"email_address"`
 	PowerLevel      int           `json:"power_level"`
-	Posts           []Post        `json:"posts" gorm:"foreignKey:AuthorID"`
+	Moments         []Moment      `json:"moments" gorm:"foreignKey:AuthorID"`
+	Articles        []Article     `json:"articles" gorm:"foreignKey:AuthorID"`
 	Attachments     []Attachment  `json:"attachments" gorm:"foreignKey:AuthorID"`
-	LikedPosts      []PostLike    `json:"liked_posts"`
-	DislikedPosts   []PostDislike `json:"disliked_posts"`
+	Reactions       []Reaction    `json:"reactions"`
 	RealmIdentities []RealmMember `json:"identities"`
 	Realms          []Realm       `json:"realms"`
 	ExternalID      uint          `json:"external_id"`

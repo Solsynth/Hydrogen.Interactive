@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"code.smartsheep.studio/hydrogen/interactive/pkg/view"
+	"code.smartsheep.studio/hydrogen/interactive/pkg/views"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cache"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -69,20 +69,41 @@ func NewServer() {
 		}), openAttachment)
 		api.Post("/attachments", authMiddleware, uploadAttachment)
 
-		api.Get("/posts", listPost)
-		api.Get("/posts/:postId", getPost)
-		api.Post("/posts", authMiddleware, createPost)
-		api.Post("/posts/:postId/react/:reactType", authMiddleware, reactPost)
-		api.Put("/posts/:postId", authMiddleware, editPost)
-		api.Delete("/posts/:postId", authMiddleware, deletePost)
+		api.Get("/feed", listFeed)
 
-		api.Get("/categories", listCategroies)
+		posts := api.Group("/p/:postType").Use(useDynamicContext).Name("Dataset Universal API")
+		{
+			posts.Get("/", listPost)
+			posts.Get("/:postId", getPost)
+			posts.Post("/:postId/react", authMiddleware, reactPost)
+			posts.Get("/:postId/comments", listComment)
+			posts.Post("/:postId/comments", authMiddleware, createComment)
+		}
+
+		moments := api.Group("/p/moments").Name("Moments API")
+		{
+			moments.Post("/", authMiddleware, createMoment)
+			moments.Put("/:momentId", authMiddleware, editMoment)
+			moments.Delete("/:momentId", authMiddleware, deleteMoment)
+		}
+
+		articles := api.Group("/p/articles").Name("Articles API")
+		{
+			articles.Post("/", authMiddleware, createArticle)
+			articles.Put("/:articleId", authMiddleware, editArticle)
+			articles.Delete("/:articleId", authMiddleware, deleteArticle)
+		}
+
+		comments := api.Group("/p/comments").Name("Comments API")
+		{
+			comments.Put("/:commentId", authMiddleware, editComment)
+			comments.Delete("/:commentId", authMiddleware, deleteComment)
+		}
+
+		api.Get("/categories", listCategories)
 		api.Post("/categories", authMiddleware, newCategory)
 		api.Put("/categories/:categoryId", authMiddleware, editCategory)
 		api.Delete("/categories/:categoryId", authMiddleware, deleteCategory)
-
-		api.Get("/creators/posts", authMiddleware, listOwnPost)
-		api.Get("/creators/posts/:postId", authMiddleware, getOwnPost)
 
 		api.Get("/realms", listRealm)
 		api.Get("/realms/me", authMiddleware, listOwnedRealm)
@@ -99,7 +120,7 @@ func NewServer() {
 		Expiration:   24 * time.Hour,
 		CacheControl: true,
 	}), filesystem.New(filesystem.Config{
-		Root:         http.FS(view.FS),
+		Root:         http.FS(views.FS),
 		PathPrefix:   "dist",
 		Index:        "index.html",
 		NotFoundFile: "dist/index.html",
