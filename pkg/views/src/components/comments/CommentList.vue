@@ -11,15 +11,19 @@
 
   <v-divider class="mt-2 mb-3 border-opacity-50 mx-[-1rem]" />
 
-  <v-btn block prepend-icon="mdi-pencil" variant="plain" @click="leaveComment">Leave your comment</v-btn>
+  <v-btn block prepend-icon="mdi-pencil" variant="plain" :disabled="!id.userinfo.isLoggedIn" @click="leaveComment">
+    Leave your comment
+  </v-btn>
 </template>
 
 <script setup lang="ts">
 import { request } from "@/scripts/request"
 import { reactive, ref, watch } from "vue"
 import { useEditor } from "@/stores/editor"
+import { useUserinfo } from "@/stores/userinfo"
 import PostItem from "@/components/posts/PostItem.vue"
 
+const id = useUserinfo()
 const editor = useEditor()
 
 const props = defineProps<{

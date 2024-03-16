@@ -9,7 +9,7 @@
                 color="grey-lighten-2"
                 icon="mdi-account-circle"
                 class="rounded-card"
-                :src="post?.author.avatar"
+                :image="post?.author.avatar"
               />
 
               <div>

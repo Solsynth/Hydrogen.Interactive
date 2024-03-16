@@ -12,7 +12,9 @@
 
     <v-menu v-if="!props.readonly" location="bottom center">
       <template v-slot:activator="{ props: binding }">
-        <v-chip v-bind="binding" :size="props.size" prepend-icon="mdi-emoticon-plus"> React </v-chip>
+        <v-chip v-if="id.userinfo.isLoggedIn" v-bind="binding" :size="props.size" prepend-icon="mdi-emoticon-plus">
+          React
+        </v-chip>
       </template>
 
       <v-list density="compact" lines="one">
@@ -35,8 +37,10 @@
 
 <script setup lang="ts">
 import { request } from "@/scripts/request"
-import { getAtk } from "@/stores/userinfo"
+import { getAtk, useUserinfo } from "@/stores/userinfo"
 import { reactive, ref } from "vue"
+
+const id = useUserinfo()
 
 const emits = defineEmits(["update"])
 const props = defineProps<{

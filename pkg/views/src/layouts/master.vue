@@ -4,16 +4,31 @@
       <v-list>
         <v-list-item :subtitle="username" :title="nickname">
           <template #prepend>
-            <v-avatar icon="mdi-account-circle" :src="id.userinfo.data?.avatar" />
+            <v-avatar icon="mdi-account-circle" :image="id.userinfo.data?.avatar" />
           </template>
           <template #append>
-            <v-btn icon="mdi-menu-down" size="small" variant="text"></v-btn>
+            <v-menu v-if="id.userinfo.isLoggedIn">
+              <template #activator="{ props }">
+                <v-btn v-bind="props" icon="mdi-menu-down" size="small" variant="text" />
+              </template>
+
+              <v-list density="compact">
+                <v-list-item
+                  title="Solarpass"
+                  prepend-icon="mdi-passport-biometric"
+                  target="_blank"
+                  :href="passportUrl"
+                />
+              </v-list>
+            </v-menu>
+
+            <v-btn v-else icon="mdi-login-variant" size="small" variant="text" :href="signinUrl" />
           </template>
         </v-list-item>
       </v-list>
-  
+
       <v-list density="compact" class="flex-grow-1" nav> </v-list>
-  
+
       <div>
         <v-alert type="info" variant="tonal" class="text-sm">
           We just released the brand new design system and user interface!
@@ -28,7 +43,7 @@
       <v-app-bar-nav-icon variant="text" @click.stop="toggleDrawer" />
 
       <router-link :to="{ name: 'explore' }">
-        <h2 class="ml-2 text-lg font-500">Goatplaza</h2>
+        <h2 class="ml-2 text-lg font-500">Solarplaza</h2>
       </router-link>
 
       <v-spacer />
@@ -54,7 +69,15 @@
     transition="scroll-y-reverse-transition"
   >
     <template v-slot:activator="{ props }">
-      <v-fab v-bind="props" class="editor-fab" icon="mdi-pencil" color="primary" size="64" appear />
+      <v-fab
+        v-bind="props"
+        appear
+        class="editor-fab"
+        icon="mdi-pencil"
+        color="primary"
+        size="64"
+        :active="id.userinfo.isLoggedIn"
+      />
     </template>
 
     <div class="flex flex-col items-center gap-4 mb-4">
@@ -70,6 +93,7 @@
 import { computed, ref } from "vue"
 import { useEditor } from "@/stores/editor"
 import { useUserinfo } from "@/stores/userinfo"
+import { useWellKnown } from "@/stores/wellKnown"
 import PostAction from "@/components/publish/PostAction.vue"
 
 const id = useUserinfo()
@@ -92,6 +116,17 @@ const nickname = computed(() => {
 })
 
 id.readProfiles()
+
+const meta = useWellKnown()
+
+const signinUrl = computed(() => {
+  return meta.wellKnown?.components?.identity + `/auth/sign-in?redirect_uri=${encodeURIComponent(location.href)}`
+})
+const passportUrl = computed(() => {
+  return meta.wellKnown?.components?.identity
+})
+
+meta.readWellKnown()
 
 const drawerOpen = ref(true)
 

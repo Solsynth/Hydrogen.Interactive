@@ -5,7 +5,7 @@
         color="grey-lighten-2"
         icon="mdi-account-circle"
         class="rounded-card"
-        :src="props.item?.author.avatar"
+        :image="props.item?.author.avatar"
       />
     </div>
 
