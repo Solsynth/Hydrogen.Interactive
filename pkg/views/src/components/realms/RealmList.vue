@@ -1,7 +1,13 @@
 <template>
   <v-list density="comfortable">
     <v-list-subheader>Realms</v-list-subheader>
-    <v-list-item v-for="item in realms" prepend-icon="mdi-account-multiple" :title="item.name" />
+    <v-list-item
+      v-for="item in realms"
+      exact
+      prepend-icon="mdi-account-multiple"
+      :to="{ name: 'realms.details', params: { id: item.id } }"
+      :title="item.name"
+    />
 
     <v-divider v-if="realms.length > 0" class="border-opacity-75 my-2" />
 
@@ -54,12 +60,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { getAtk, useUserinfo } from "@/stores/userinfo";
+import { useEditor } from "@/stores/editor";
 
 const id = useUserinfo();
+const editor = useEditor();
 
-const realms = ref<any[]>([]);
+const realms = computed(() => editor.availableRealms);
 const requestData = ref({
   name: "",
   description: "",
@@ -80,13 +88,10 @@ const loading = ref(false);
 
 async function list() {
   reverting.value = true;
-  const res = await fetch("/api/realms/me/available", {
-    headers: { Authorization: `Bearer ${getAtk()}` }
-  });
-  if (res.status !== 200) {
-    error.value = await res.text();
-  } else {
-    realms.value = await res.json();
+  try {
+    await editor.listRealms();
+  } catch (err) {
+    error.value = (err as Error).message;
   }
   reverting.value = false;
 }
@@ -111,6 +116,4 @@ async function submit(evt: SubmitEvent) {
   }
   loading.value = false;
 }
-
-list();
 </script>

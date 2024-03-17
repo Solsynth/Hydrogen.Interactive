@@ -5,29 +5,51 @@
     </div>
 
     <div class="aside sticky top-0 w-full h-fit md:min-w-[280px] md:max-w-[320px] max-md:order-first">
-      <v-card title="Categories">
-        <v-list density="compact">
-          <v-list-item title="All" prepend-icon="mdi-apps" active></v-list-item>
-        </v-list>
+      <v-card title="Realm Info" :loading="loading">
+        <template #text>
+          <h2 class="font-medium">Name</h2>
+          <p>{{ metadata?.name }}</p>
+
+          <h2 class="font-medium mt-2">Description</h2>
+          <p>{{ metadata?.description }}</p>
+        </template>
       </v-card>
     </div>
   </v-container>
 </template>
 
 <script setup lang="ts">
-import PostList from "@/components/posts/PostList.vue";
 import { reactive, ref } from "vue";
 import { request } from "@/scripts/request";
+import { useRoute } from "vue-router";
+import PostList from "@/components/posts/PostList.vue";
 
+const route = useRoute();
+
+const loading = ref(false);
 const error = ref<string | null>(null);
 const pagination = reactive({ page: 1, pageSize: 10, total: 0 });
 
+const metadata = ref<any>(null);
 const posts = ref<any[]>([]);
+
+async function readMetadata() {
+  loading.value = true;
+  const res = await request(`/api/realms/${route.params.realmId}`);
+  if (res.status !== 200) {
+    error.value = await res.text();
+  } else {
+    error.value = null;
+    metadata.value = await res.json();
+  }
+  loading.value = false;
+}
 
 async function readPosts() {
   const res = await request(`/api/feed?` + new URLSearchParams({
     take: pagination.pageSize.toString(),
-    offset: ((pagination.page - 1) * pagination.pageSize).toString()
+    offset: ((pagination.page - 1) * pagination.pageSize).toString(),
+    realmId: route.params.realmId as string
   }));
   if (res.status !== 200) {
     error.value = await res.text();
@@ -56,5 +78,6 @@ async function readMore({ done }: any) {
   }
 }
 
+readMetadata();
 readPosts();
 </script>

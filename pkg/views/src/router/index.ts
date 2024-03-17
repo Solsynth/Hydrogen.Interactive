@@ -1,5 +1,5 @@
-import { createRouter, createWebHistory } from "vue-router"
-import MasterLayout from "@/layouts/master.vue"
+import { createRouter, createWebHistory } from "vue-router";
+import MasterLayout from "@/layouts/master.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -24,10 +24,16 @@ const router = createRouter({
           path: "/p/articles/:alias",
           name: "posts.details.articles",
           component: () => import("@/views/posts/articles.vue")
+        },
+
+        {
+          path: "/realms/:realmId",
+          name: "realms.details",
+          component: () => import("@/views/realms/details.vue")
         }
       ]
     }
   ]
-})
+});
 
-export default router
+export default router;
