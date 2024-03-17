@@ -1,11 +1,19 @@
 <template>
   <v-list density="comfortable">
-    <v-list-subheader>Realms</v-list-subheader>
+    <v-list-subheader>
+      Realms
+      <v-badge
+        color="warning"
+        content="Alpha"
+        inline
+      />
+    </v-list-subheader>
+
     <v-list-item
       v-for="item in realms"
       exact
       prepend-icon="mdi-account-multiple"
-      :to="{ name: 'realms.details', params: { id: item.id } }"
+      :to="{ name: 'realms.details', params: { realmId: item.id } }"
       :title="item.name"
     />
 

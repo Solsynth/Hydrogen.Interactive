@@ -66,7 +66,7 @@
                   <div>
                     <p class="text-xs">Your content will visible for public at</p>
                     <p class="text-lg font-medium">
-                      {{ data.publishedAt ? new Date(data.publishedAt).toLocaleString() : new Date().toLocaleString() }}
+                      {{ data.published_at ? new Date(data.published_at).toLocaleString() : new Date().toLocaleString() }}
                     </p>
                   </div>
                   <v-btn size="small" icon="mdi-pencil" variant="text" @click="dialogs.plan = true" />
@@ -85,14 +85,27 @@
                 </div>
               </template>
             </v-expansion-panel>
+
+            <v-expansion-panel title="Publish area">
+              <template #text>
+                <div class="flex justify-between items-center">
+                  <div>
+                    <p class="text-xs">This article will publish in</p>
+                    <p class="text-lg font-medium">{{ currentRealm?.name ?? "No realm" }}</p>
+                  </div>
+                  <v-btn size="small" icon="mdi-account-group" variant="text" @click="dialogs.area = true" />
+                </div>
+              </template>
+            </v-expansion-panel>
           </v-expansion-panels>
         </v-container>
       </v-card-text>
     </v-form>
   </v-card>
 
-  <planned-publish v-model:show="dialogs.plan" v-model:value="data.publishedAt" />
+  <planned-publish v-model:show="dialogs.plan" v-model:value="data.published_at" />
   <media ref="media" v-model:show="dialogs.media" v-model:uploading="uploading" v-model:value="data.attachments" />
+  <publish-area v-model:show="dialogs.area" v-model:value="data.realm_id" />
 
   <v-snackbar v-model="success" :timeout="3000">Your article has been published.</v-snackbar>
   <v-snackbar v-model="uploading" :timeout="-1">
@@ -108,25 +121,36 @@
 import { request } from "@/scripts/request"
 import { useEditor } from "@/stores/editor"
 import { getAtk } from "@/stores/userinfo"
-import { reactive, ref, watch } from "vue"
+import { computed, reactive, ref, watch } from "vue";
 import { useRouter } from "vue-router"
 import PlannedPublish from "@/components/publish/parts/PlannedPublish.vue"
 import Media from "@/components/publish/parts/Media.vue"
+import PublishArea from "@/components/publish/parts/PublishArea.vue";
 
 const editor = useEditor()
 
 const dialogs = reactive({
   plan: false,
   categories: false,
-  media: false
+  media: false,
+  area: false,
 })
 
 const data = ref<any>({
   title: "",
   content: "",
   description: "",
+  realm_id: null,
   published_at: null,
   attachments: []
+})
+
+const currentRealm = computed(() => {
+  if(data.value.realm_id) {
+    return editor.availableRealms.find((e) => e.id === data.value.realm_id)
+  } else {
+    return null
+  }
 })
 
 const router = useRouter()
@@ -146,7 +170,8 @@ async function postArticle(evt: SubmitEvent) {
   console.log(payload)
   if (!payload.content) return
   if (!payload.title || !payload.description) return
-  if (!payload.publishedAt) payload.publishedAt = new Date().toISOString()
+  if (!payload.published_at) payload.published_at = new Date().toISOString()
+  if (!payload.realm_id) payload.realm_id = undefined
 
   const url = editor.related.edit_to ? `/api/p/articles/${editor.related.edit_to?.id}` : "/api/p/articles"
   const method = editor.related.edit_to ? "PUT" : "POST"

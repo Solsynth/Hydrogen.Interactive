@@ -40,6 +40,18 @@
               />
             </template>
           </v-tooltip>
+          <v-tooltip text="Publish area" location="start">
+            <template #activator="{ props }">
+              <v-btn
+                v-bind="props"
+                type="button"
+                variant="text"
+                icon="mdi-account-group"
+                size="small"
+                @click="dialogs.area = true"
+              />
+            </template>
+          </v-tooltip>
         </div>
       </v-card-text>
 
@@ -54,6 +66,7 @@
 
   <planned-publish v-model:show="dialogs.plan" v-model:value="data.published_at" />
   <media v-model:show="dialogs.media" v-model:uploading="uploading" v-model:value="data.attachments" />
+  <publish-area v-model:show="dialogs.area" v-model:value="data.realm_id" />
 
   <v-snackbar v-model="success" :timeout="3000">Your post has been published.</v-snackbar>
   <v-snackbar v-model="uploading" :timeout="-1">
@@ -66,66 +79,70 @@
 </template>
 
 <script setup lang="ts">
-import { request } from "@/scripts/request"
-import { useEditor } from "@/stores/editor"
-import { getAtk } from "@/stores/userinfo"
-import { reactive, ref, watch } from "vue"
-import { useRouter } from "vue-router"
-import PlannedPublish from "@/components/publish/parts/PlannedPublish.vue"
-import Media from "@/components/publish/parts/Media.vue"
+import { request } from "@/scripts/request";
+import { useEditor } from "@/stores/editor";
+import { getAtk } from "@/stores/userinfo";
+import { reactive, ref, watch } from "vue";
+import { useRouter } from "vue-router";
+import PlannedPublish from "@/components/publish/parts/PlannedPublish.vue";
+import Media from "@/components/publish/parts/Media.vue";
+import PublishArea from "@/components/publish/parts/PublishArea.vue";
 
-const editor = useEditor()
+const editor = useEditor();
 
 const dialogs = reactive({
   plan: false,
-  media: false
-})
+  media: false,
+  area: false
+});
 
 const data = ref<any>({
   content: "",
+  realm_id: null,
   published_at: null,
   attachments: []
-})
+});
 
-const error = ref<string | null>(null)
-const success = ref(false)
-const loading = ref(false)
-const uploading = ref(false)
+const error = ref<string | null>(null);
+const success = ref(false);
+const loading = ref(false);
+const uploading = ref(false);
 
-const router = useRouter()
+const router = useRouter();
 
 async function postMoment(evt: SubmitEvent) {
-  const form = evt.target as HTMLFormElement
-  const payload = data.value
-  if (!payload.content) return
-  if (!payload.published_at) payload.published_at = new Date().toISOString()
+  const form = evt.target as HTMLFormElement;
+  const payload = data.value;
+  if (!payload.content) return;
+  if (!payload.published_at) payload.published_at = new Date().toISOString();
+  if (!payload.realm_id) payload.realm_id = undefined;
 
-  const url = editor.related.edit_to ? `/api/p/moments/${editor.related.edit_to?.id}` : "/api/p/moments"
-  const method = editor.related.edit_to ? "PUT" : "POST"
+  const url = editor.related.edit_to ? `/api/p/moments/${editor.related.edit_to?.id}` : "/api/p/moments";
+  const method = editor.related.edit_to ? "PUT" : "POST";
 
-  loading.value = true
+  loading.value = true;
   const res = await request(url, {
     method: method,
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${getAtk()}` },
     body: JSON.stringify(payload)
-  })
+  });
   if (res.status === 200) {
-    form.reset()
-    const data = await res.json()
-    success.value = true
-    editor.show.moment = false
-    router.push({ name: "posts.details.moments", params: { alias: data.alias } })
+    form.reset();
+    const data = await res.json();
+    success.value = true;
+    editor.show.moment = false;
+    router.push({ name: "posts.details.moments", params: { alias: data.alias } });
   } else {
-    error.value = await res.text()
+    error.value = await res.text();
   }
-  loading.value = false
+  loading.value = false;
 }
 
 watch(editor.related, (val) => {
   if (val.edit_to && val.edit_to.model_type === "moment") {
-    data.value = val.edit_to
+    data.value = val.edit_to;
   }
-})
+});
 </script>
 
 <style>
