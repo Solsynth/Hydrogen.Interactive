@@ -1,5 +1,13 @@
 package models
 
+type RealmType = int
+
+const (
+	RealmTypePublic = RealmType(iota)
+	RealmTypeRestricted
+	RealmTypePrivate
+)
+
 type Realm struct {
 	BaseModel
 
@@ -8,7 +16,7 @@ type Realm struct {
 	Articles    []Article     `json:"article"`
 	Moments     []Moment      `json:"moments"`
 	Members     []RealmMember `json:"members"`
-	IsPublic    bool          `json:"is_public"`
+	RealmType   RealmType     `json:"realm_type"`
 	AccountID   uint          `json:"account_id"`
 }
 

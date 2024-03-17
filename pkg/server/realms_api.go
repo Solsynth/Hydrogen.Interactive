@@ -60,14 +60,14 @@ func createRealm(c *fiber.Ctx) error {
 	var data struct {
 		Name        string `json:"name" validate:"required"`
 		Description string `json:"description"`
-		IsPublic    bool   `json:"is_public"`
+		RealmType   int    `json:"realm_type"`
 	}
 
 	if err := BindAndValidate(c, &data); err != nil {
 		return err
 	}
 
-	realm, err := services.NewRealm(user, data.Name, data.Description, data.IsPublic)
+	realm, err := services.NewRealm(user, data.Name, data.Description, data.RealmType)
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
@@ -150,7 +150,7 @@ func editRealm(c *fiber.Ctx) error {
 	var data struct {
 		Name        string `json:"name" validate:"required"`
 		Description string `json:"description"`
-		IsPublic    bool   `json:"is_public"`
+		RealmType   int    `json:"realm_type"`
 	}
 
 	if err := BindAndValidate(c, &data); err != nil {
@@ -165,7 +165,7 @@ func editRealm(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusNotFound, err.Error())
 	}
 
-	realm, err := services.EditRealm(realm, data.Name, data.Description, data.IsPublic)
+	realm, err := services.EditRealm(realm, data.Name, data.Description, data.RealmType)
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}

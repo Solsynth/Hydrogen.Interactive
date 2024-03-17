@@ -38,7 +38,7 @@ func ListRealmIsAvailable(user models.Account) ([]models.Realm, error) {
 	})
 
 	if err := database.C.Where(&models.Realm{
-		IsPublic: true,
+		RealmType: models.RealmTypePublic,
 	}).Or("id IN ?", idx).Find(&realms).Error; err != nil {
 		return realms, err
 	}
@@ -46,12 +46,12 @@ func ListRealmIsAvailable(user models.Account) ([]models.Realm, error) {
 	return realms, nil
 }
 
-func NewRealm(user models.Account, name, description string, isPublic bool) (models.Realm, error) {
+func NewRealm(user models.Account, name, description string, realmType int) (models.Realm, error) {
 	realm := models.Realm{
 		Name:        name,
 		Description: description,
 		AccountID:   user.ID,
-		IsPublic:    isPublic,
+		RealmType:   realmType,
 		Members: []models.RealmMember{
 			{AccountID: user.ID},
 		},
@@ -86,10 +86,10 @@ func KickRealmMember(user models.Account, target models.Realm) error {
 	return database.C.Delete(&member).Error
 }
 
-func EditRealm(realm models.Realm, name, description string, isPublic bool) (models.Realm, error) {
+func EditRealm(realm models.Realm, name, description string, realmType int) (models.Realm, error) {
 	realm.Name = name
 	realm.Description = description
-	realm.IsPublic = isPublic
+	realm.RealmType = realmType
 
 	err := database.C.Save(&realm).Error
 

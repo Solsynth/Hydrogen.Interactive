@@ -274,7 +274,7 @@ func NewPost[T models.PostInterface](item T) (T, error) {
 	}
 
 	if item.GetRealm() != nil {
-		if !item.GetRealm().IsPublic {
+		if item.GetRealm().RealmType != models.RealmTypePublic {
 			var member models.RealmMember
 			if err := database.C.Where(&models.RealmMember{
 				RealmID:   item.GetRealm().ID,

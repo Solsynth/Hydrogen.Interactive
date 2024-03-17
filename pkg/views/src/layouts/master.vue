@@ -1,7 +1,7 @@
 <template>
   <v-navigation-drawer v-model="drawerOpen" color="grey-lighten-5" floating>
     <div class="flex flex-col h-full">
-      <v-list>
+      <v-list class="border-b border-opacity-15 h-[64px]" style="border-bottom-width: thin">
         <v-list-item :subtitle="username" :title="nickname">
           <template #prepend>
             <v-avatar icon="mdi-account-circle" :image="id.userinfo.data?.avatar" />
@@ -27,7 +27,9 @@
         </v-list-item>
       </v-list>
 
-      <v-list density="compact" class="flex-grow-1" nav> </v-list>
+      <div class="flex-grow-1">
+        <realm-list />
+      </div>
 
       <div>
         <v-alert type="info" variant="tonal" class="text-sm">
@@ -95,6 +97,7 @@ import { useEditor } from "@/stores/editor"
 import { useUserinfo } from "@/stores/userinfo"
 import { useWellKnown } from "@/stores/wellKnown"
 import PostAction from "@/components/publish/PostAction.vue"
+import RealmList from "@/components/realms/RealmList.vue";
 
 const id = useUserinfo()
 const editor = useEditor()
