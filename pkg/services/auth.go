@@ -56,6 +56,8 @@ func Authenticate(atk, rtk string) (models.Account, string, string, error) {
 	})
 	if err != nil {
 		return user, reply.GetAccessToken(), reply.GetRefreshToken(), err
+	} else if !reply.IsValid {
+		return user, reply.GetAccessToken(), reply.GetRefreshToken(), fmt.Errorf("invalid authorization context")
 	}
 
 	user, err = LinkAccount(reply.Userinfo)

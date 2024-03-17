@@ -46,6 +46,6 @@ func authFunc(c *fiber.Ctx, overrides ...string) error {
 		c.Locals("principal", user)
 		return nil
 	} else {
-		return err
+		return fiber.NewError(fiber.StatusUnauthorized, err.Error())
 	}
 }
