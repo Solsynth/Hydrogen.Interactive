@@ -1,6 +1,5 @@
 import { defineStore } from "pinia"
 import { reactive, ref } from "vue"
-import { checkLoggedIn, getAtk } from "@/stores/userinfo"
 
 export const useEditor = defineStore("editor", () => {
   const done = ref(false)
@@ -26,22 +25,5 @@ export const useEditor = defineStore("editor", () => {
     delete_to: null
   })
 
-  const availableRealms = ref<any[]>([])
-
-  async function listRealms() {
-    if (!checkLoggedIn()) return
-
-    const res = await fetch("/api/realms/me/available", {
-      headers: { Authorization: `Bearer ${getAtk()}` }
-    })
-    if (res.status !== 200) {
-      throw new Error(await res.text())
-    } else {
-      availableRealms.value = await res.json()
-    }
-  }
-
-  listRealms().then(() => console.log("[STARTUP HOOK] Fetch available realm successes."))
-
-  return { show, related, availableRealms, listRealms, done }
+  return { show, related, done }
 })

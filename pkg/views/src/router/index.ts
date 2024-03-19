@@ -28,8 +28,8 @@ const router = createRouter({
 
         {
           path: "/realms/:realmId",
-          name: "realms.details",
-          component: () => import("@/views/realms/details.vue")
+          name: "realms.page",
+          component: () => import("@/views/realms/page.vue")
         }
       ]
     }

@@ -88,7 +88,8 @@
     </div>
   </v-menu>
 
-  <post-action />
+  <post-tools />
+  <realm-tools />
 </template>
 
 <script setup lang="ts">
@@ -96,7 +97,8 @@ import { computed, ref } from "vue"
 import { useEditor } from "@/stores/editor"
 import { useUserinfo } from "@/stores/userinfo"
 import { useWellKnown } from "@/stores/wellKnown"
-import PostAction from "@/components/publish/PostAction.vue"
+import PostTools from "@/components/publish/PostTools.vue"
+import RealmTools from "@/components/realms/RealmTools.vue"
 import RealmList from "@/components/realms/RealmList.vue";
 
 const id = useUserinfo()

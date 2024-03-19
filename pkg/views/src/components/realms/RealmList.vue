@@ -6,52 +6,34 @@
     </v-list-subheader>
 
     <v-list-item
-      v-for="item in realms"
+      v-for="item in realms.available"
       exact
       prepend-icon="mdi-account-multiple"
-      :to="{ name: 'realms.details', params: { realmId: item.id } }"
+      :to="{ name: 'realms.page', params: { realmId: item.id } }"
       :title="item.name"
     />
 
-    <v-divider v-if="realms.length > 0" class="border-opacity-75 my-2" />
+    <v-divider v-if="realms.available.length > 0" class="border-opacity-75 my-2" />
 
     <v-list-item
       prepend-icon="mdi-plus"
       title="Create a realm"
       :disabled="!id.userinfo.isLoggedIn"
-      @click="creating = true"
+      @click="createRealm"
     />
   </v-list>
-
-  <realm-editor v-model:show="creating" @relist="list" />
-
-  <!-- @vue-ignore -->
-  <v-snackbar v-model="error" :timeout="5000">Something went wrong... {{ error }}</v-snackbar>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue"
 import { useUserinfo } from "@/stores/userinfo"
-import { useEditor } from "@/stores/editor"
-import RealmEditor from "@/components/realms/RealmEditor.vue"
+import { useRealms } from "@/stores/realms"
 
 const id = useUserinfo()
-const editor = useEditor()
+const realms = useRealms()
 
-const realms = computed(() => editor.availableRealms)
-
-const creating = ref(false)
-
-const error = ref<string | null>(null)
-const reverting = ref(false)
-
-async function list() {
-  reverting.value = true
-  try {
-    await editor.listRealms()
-  } catch (err) {
-    error.value = (err as Error).message
-  }
-  reverting.value = false
+function createRealm() {
+  realms.related.edit_to = null
+  realms.related.delete_to = null
+  realms.show.editor = true
 }
 </script>
