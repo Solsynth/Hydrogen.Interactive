@@ -95,8 +95,15 @@ async function readMore({ done }: any) {
   }
 }
 
-readMetadata()
-readPosts()
+watch(
+  () => route.params.realmId,
+  () => {
+    posts.value = []
+    readMetadata()
+    readPosts()
+  },
+  { immediate: true }
+)
 
 watch(realms, (val) => {
   if (val.done) {

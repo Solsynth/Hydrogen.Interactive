@@ -31,7 +31,10 @@
 import { ref, watch } from "vue"
 import { getAtk } from "@/stores/userinfo"
 import { useRealms } from "@/stores/realms"
+import { useRoute, useRouter } from "vue-router"
 
+const route = useRoute()
+const router = useRouter()
 const emits = defineEmits(["relist"])
 
 const realms = useRealms()
@@ -56,8 +59,8 @@ async function submit(evt: SubmitEvent) {
   const payload = data.value
   if (!payload.name) return
 
-  const url = realms.related.edit_to ? `/api/realms/${realms.related.edit_to?.id}` : "/api/moments";
-  const method = realms.related.edit_to ? "PUT" : "POST";
+  const url = realms.related.edit_to ? `/api/realms/${realms.related.edit_to?.id}` : "/api/realms"
+  const method = realms.related.edit_to ? "PUT" : "POST"
 
   loading.value = true
   const res = await fetch(url, {
@@ -72,6 +75,11 @@ async function submit(evt: SubmitEvent) {
     form.reset()
     realms.done = true
     realms.show.editor = false
+    realms.related.edit_to = null
+
+    if (route.name?.toString()?.startsWith("realm")) {
+      router.push({ name: "explore" })
+    }
   }
   loading.value = false
 }
