@@ -31,10 +31,7 @@
 import { ref, watch } from "vue"
 import { getAtk } from "@/stores/userinfo"
 import { useRealms } from "@/stores/realms"
-import { useRoute, useRouter } from "vue-router"
 
-const route = useRoute()
-const router = useRouter()
 const emits = defineEmits(["relist"])
 
 const realms = useRealms()
@@ -76,10 +73,6 @@ async function submit(evt: SubmitEvent) {
     realms.done = true
     realms.show.editor = false
     realms.related.edit_to = null
-
-    if (route.name?.toString()?.startsWith("realm")) {
-      router.push({ name: "explore" })
-    }
   }
   loading.value = false
 }

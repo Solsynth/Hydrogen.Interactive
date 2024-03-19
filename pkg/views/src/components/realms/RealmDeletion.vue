@@ -23,7 +23,10 @@
 import { useRealms } from "@/stores/realms"
 import { getAtk } from "@/stores/userinfo"
 import { ref } from "vue"
+import { useRoute, useRouter } from "vue-router"
 
+const route = useRoute()
+const router = useRouter()
 const realms = useRealms()
 
 const emits = defineEmits(["relist"])
@@ -48,6 +51,9 @@ async function deletePost() {
     realms.show.delete = false
     realms.related.delete_to = null
     emits("relist")
+    if (route.name?.toString()?.startsWith("realm")) {
+      router.push({ name: "explore" })
+    }
   }
   loading.value = false
 }
