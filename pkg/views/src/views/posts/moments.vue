@@ -4,19 +4,25 @@
       <v-card :loading="loading">
         <article>
           <v-card-text>
-            <div class="flex gap-2">
-              <v-avatar
-                color="grey-lighten-2"
-                icon="mdi-account-circle"
-                class="rounded-card"
-                :image="post?.author.avatar"
-              />
+            <div class="flex justify-between px-3">
+              <div class="flex gap-1">
+                <v-avatar
+                  color="grey-lighten-2"
+                  icon="mdi-account-circle"
+                  class="rounded-card me-2"
+                  :image="post?.author.avatar"
+                />
+
+                <div>
+                  <p class="font-bold">{{ post?.author.nick }}</p>
+                  <p class="opacity-80">
+                    {{ post?.author.description ? post?.author.description : "No description yet." }}
+                  </p>
+                </div>
+              </div>
 
               <div>
-                <p class="font-bold">{{ post?.author.nick }}</p>
-                <p class="opacity-80">
-                  {{ post?.author.description ? post?.author.description : "No description yet." }}
-                </p>
+                <post-action :item="post" />
               </div>
             </div>
 
@@ -69,6 +75,7 @@ import MomentContent from "@/components/posts/MomentContent.vue"
 import PostReaction from "@/components/posts/PostReaction.vue"
 import CommentList from "@/components/comments/CommentList.vue"
 import PostAttachment from "@/components/posts/PostAttachment.vue"
+import PostAction from "@/components/posts/PostAction.vue"
 
 const loading = ref(false)
 const error = ref<string | null>(null)

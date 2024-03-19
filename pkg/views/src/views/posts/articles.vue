@@ -4,9 +4,15 @@
       <v-card :loading="loading">
         <article>
           <v-card-text>
-            <div class="px-3">
-              <h1 class="text-lg font-medium">{{ post?.title }}</h1>
-              <p class="text-sm">{{ post?.description }}</p>
+            <div class="flex justify-between px-3">
+              <div>
+                <h1 class="text-lg font-medium">{{ post?.title }}</h1>
+                <p class="text-sm">{{ post?.description }}</p>
+              </div>
+
+              <div>
+                <post-action :item="post" />
+              </div>
             </div>
 
             <v-divider class="my-5 mx-[-16px] border-opacity-50" />
@@ -56,11 +62,12 @@
 
 <script setup lang="ts">
 import { ref } from "vue"
+import { useRoute } from "vue-router"
 import { request } from "@/scripts/request"
 import ArticleContent from "@/components/posts/ArticleContent.vue"
 import PostReaction from "@/components/posts/PostReaction.vue"
+import PostAction from "@/components/posts/PostAction.vue"
 import CommentList from "@/components/comments/CommentList.vue"
-import { useRoute } from "vue-router"
 
 const loading = ref(false)
 const error = ref<string | null>(null)
