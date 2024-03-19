@@ -15,7 +15,7 @@
           variant="solo-filled"
           item-title="name"
           item-value="id"
-          :items="editor.availableRealms"
+          :items="realms.available"
           :model-value="props.value"
           @update:model-value="(val) => emits('update:value', val)"
         />
@@ -29,7 +29,9 @@
 
 <script setup lang="ts">
 import { useEditor } from "@/stores/editor";
+import { useRealms } from "@/stores/realms";
 
+const realms = useRealms();
 const editor = useEditor();
 
 const props = defineProps<{ show: boolean; value: string | null }>();

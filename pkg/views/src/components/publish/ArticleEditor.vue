@@ -121,12 +121,14 @@
 import { request } from "@/scripts/request"
 import { useEditor } from "@/stores/editor"
 import { getAtk } from "@/stores/userinfo"
+import { useRealms } from "@/stores/realms";
 import { computed, reactive, ref, watch } from "vue";
 import { useRouter } from "vue-router"
 import PlannedPublish from "@/components/publish/parts/PlannedPublish.vue"
 import Media from "@/components/publish/parts/Media.vue"
 import PublishArea from "@/components/publish/parts/PublishArea.vue";
 
+const realms = useRealms()
 const editor = useEditor()
 
 const dialogs = reactive({
@@ -147,7 +149,7 @@ const data = ref<any>({
 
 const currentRealm = computed(() => {
   if(data.value.realm_id) {
-    return editor.availableRealms.find((e) => e.id === data.value.realm_id)
+    return realms.available.find((e: any) => e.id === data.value.realm_id)
   } else {
     return null
   }
