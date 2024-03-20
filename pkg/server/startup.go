@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"code.smartsheep.studio/hydrogen/interactive/pkg/views"
+	"git.solsynth.dev/hydrogen/interactive/pkg/views"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cache"
 	"github.com/gofiber/fiber/v2/middleware/cors"

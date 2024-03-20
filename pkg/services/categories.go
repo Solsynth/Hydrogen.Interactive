@@ -3,8 +3,8 @@ package services
 import (
 	"errors"
 
-	"code.smartsheep.studio/hydrogen/interactive/pkg/database"
-	"code.smartsheep.studio/hydrogen/interactive/pkg/models"
+	"git.solsynth.dev/hydrogen/interactive/pkg/database"
+	"git.solsynth.dev/hydrogen/interactive/pkg/models"
 	"gorm.io/gorm"
 )
 

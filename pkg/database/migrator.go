@@ -1,7 +1,7 @@
 package database
 
 import (
-	"code.smartsheep.studio/hydrogen/interactive/pkg/models"
+	"git.solsynth.dev/hydrogen/interactive/pkg/models"
 	"gorm.io/gorm"
 )
 

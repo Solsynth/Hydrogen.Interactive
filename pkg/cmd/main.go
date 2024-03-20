@@ -1,14 +1,14 @@
 package main
 
 import (
-	"code.smartsheep.studio/hydrogen/interactive/pkg/grpc"
-	"code.smartsheep.studio/hydrogen/interactive/pkg/server"
+	"git.solsynth.dev/hydrogen/interactive/pkg/grpc"
+	"git.solsynth.dev/hydrogen/interactive/pkg/server"
 	"os"
 	"os/signal"
 	"syscall"
 
-	interactive "code.smartsheep.studio/hydrogen/interactive/pkg"
-	"code.smartsheep.studio/hydrogen/interactive/pkg/database"
+	interactive "git.solsynth.dev/hydrogen/interactive/pkg"
+	"git.solsynth.dev/hydrogen/interactive/pkg/database"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"

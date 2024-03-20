@@ -1,4 +1,4 @@
-module code.smartsheep.studio/hydrogen/interactive
+module git.solsynth.dev/hydrogen/interactive
 
 go 1.21.6
 
@@ -20,7 +20,7 @@ require (
 )
 
 require (
-	code.smartsheep.studio/hydrogen/identity v0.0.0-20240221130517-c169ffdacda8 // indirect
+	git.solsynth.dev/hydrogen/identity v0.0.0-20240221130517-c169ffdacda8 // indirect
 	github.com/andybalholm/brotli v1.0.5 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect

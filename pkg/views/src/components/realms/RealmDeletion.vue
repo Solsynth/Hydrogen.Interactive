@@ -22,8 +22,8 @@
 <script setup lang="ts">
 import { useRealms } from "@/stores/realms"
 import { getAtk } from "@/stores/userinfo"
-import { ref } from "vue"
 import { useRoute, useRouter } from "vue-router"
+import { ref } from "vue"
 
 const route = useRoute()
 const router = useRouter()

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"code.smartsheep.studio/hydrogen/interactive/pkg/database"
-	"code.smartsheep.studio/hydrogen/interactive/pkg/models"
+	"git.solsynth.dev/hydrogen/interactive/pkg/database"
+	"git.solsynth.dev/hydrogen/interactive/pkg/models"
 	"github.com/samber/lo"
 	"github.com/spf13/viper"
 )

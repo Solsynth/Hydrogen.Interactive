@@ -1,8 +1,8 @@
 package server
 
 import (
-	"code.smartsheep.studio/hydrogen/interactive/pkg/models"
-	"code.smartsheep.studio/hydrogen/interactive/pkg/services"
+	"git.solsynth.dev/hydrogen/interactive/pkg/models"
+	"git.solsynth.dev/hydrogen/interactive/pkg/services"
 	"github.com/gofiber/fiber/v2"
 )
 

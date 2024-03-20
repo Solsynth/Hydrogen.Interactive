@@ -1,9 +1,9 @@
-code.smartsheep.studio/hydrogen/identity v0.0.0-20240220134615-3b0cbbb6c9ed h1:/3rRncEKlN1GYWjUSJF8bUkwnCkTFon2opa+tGUTwEQ=
-code.smartsheep.studio/hydrogen/identity v0.0.0-20240220134615-3b0cbbb6c9ed/go.mod h1:db+/Y/fLPSOu1JlsCoXEYPD26644S0S3Bg/1XNLtlHQ=
-code.smartsheep.studio/hydrogen/identity v0.0.0-20240221124039-3393f751a072 h1:T3pP/cWpfHoxA6VrhFPq0EcrDVnUVXtfwQSzM3jFRfo=
-code.smartsheep.studio/hydrogen/identity v0.0.0-20240221124039-3393f751a072/go.mod h1:db+/Y/fLPSOu1JlsCoXEYPD26644S0S3Bg/1XNLtlHQ=
-code.smartsheep.studio/hydrogen/identity v0.0.0-20240221130517-c169ffdacda8 h1:WBi14r+jomgixVDFa8pPecrQshhlyJKBT51VZNs+PBY=
-code.smartsheep.studio/hydrogen/identity v0.0.0-20240221130517-c169ffdacda8/go.mod h1:db+/Y/fLPSOu1JlsCoXEYPD26644S0S3Bg/1XNLtlHQ=
+git.solsynth.dev/hydrogen/identity v0.0.0-20240220134615-3b0cbbb6c9ed h1:/3rRncEKlN1GYWjUSJF8bUkwnCkTFon2opa+tGUTwEQ=
+git.solsynth.dev/hydrogen/identity v0.0.0-20240220134615-3b0cbbb6c9ed/go.mod h1:db+/Y/fLPSOu1JlsCoXEYPD26644S0S3Bg/1XNLtlHQ=
+git.solsynth.dev/hydrogen/identity v0.0.0-20240221124039-3393f751a072 h1:T3pP/cWpfHoxA6VrhFPq0EcrDVnUVXtfwQSzM3jFRfo=
+git.solsynth.dev/hydrogen/identity v0.0.0-20240221124039-3393f751a072/go.mod h1:db+/Y/fLPSOu1JlsCoXEYPD26644S0S3Bg/1XNLtlHQ=
+git.solsynth.dev/hydrogen/identity v0.0.0-20240221130517-c169ffdacda8 h1:WBi14r+jomgixVDFa8pPecrQshhlyJKBT51VZNs+PBY=
+git.solsynth.dev/hydrogen/identity v0.0.0-20240221130517-c169ffdacda8/go.mod h1:db+/Y/fLPSOu1JlsCoXEYPD26644S0S3Bg/1XNLtlHQ=
 github.com/andybalholm/brotli v1.0.5 h1:8uQZIdzKmjc/iuPu7O2ioW48L81FgatrcpfFmiq/cCs=
 github.com/andybalholm/brotli v1.0.5/go.mod h1:fO7iG3H7G2nSZ7m0zPUDn85XEX2GTukHGRSepvi9Eig=
 github.com/coreos/go-systemd/v22 v22.5.0/go.mod h1:Y58oyj3AT4RCenI/lSvhwexgC+NSVTIJ3seZv2GcEnc=

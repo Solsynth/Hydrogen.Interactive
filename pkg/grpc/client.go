@@ -1,7 +1,7 @@
 package grpc
 
 import (
-	pwpb "code.smartsheep.studio/hydrogen/identity/pkg/grpc/proto"
+	pwpb "git.solsynth.dev/hydrogen/identity/pkg/grpc/proto"
 	"google.golang.org/grpc/credentials/insecure"
 
 	"github.com/spf13/viper"
