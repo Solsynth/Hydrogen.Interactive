@@ -11,6 +11,7 @@ type Account struct {
 	Name            string        `json:"name"`
 	Nick            string        `json:"nick"`
 	Avatar          string        `json:"avatar"`
+	Banner          string        `json:"banner"`
 	Description     string        `json:"description"`
 	EmailAddress    string        `json:"email_address"`
 	PowerLevel      int           `json:"power_level"`

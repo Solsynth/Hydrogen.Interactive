@@ -1,15 +1,16 @@
 package services
 
 import (
+	"context"
+	"errors"
+	"fmt"
+	"time"
+
 	"git.solsynth.dev/hydrogen/identity/pkg/grpc/proto"
 	"git.solsynth.dev/hydrogen/interactive/pkg/database"
 	"git.solsynth.dev/hydrogen/interactive/pkg/grpc"
 	"git.solsynth.dev/hydrogen/interactive/pkg/models"
-	"context"
-	"errors"
-	"fmt"
 	"gorm.io/gorm"
-	"time"
 )
 
 func LinkAccount(userinfo *proto.Userinfo) (models.Account, error) {
@@ -25,6 +26,8 @@ func LinkAccount(userinfo *proto.Userinfo) (models.Account, error) {
 				Name:         userinfo.Name,
 				Nick:         userinfo.Nick,
 				Avatar:       userinfo.Avatar,
+				Banner:       userinfo.Banner,
+				Description:  userinfo.GetDescription(),
 				EmailAddress: userinfo.Email,
 				PowerLevel:   0,
 				ExternalID:   uint(userinfo.Id),
@@ -37,6 +40,8 @@ func LinkAccount(userinfo *proto.Userinfo) (models.Account, error) {
 	account.Name = userinfo.Name
 	account.Nick = userinfo.Nick
 	account.Avatar = userinfo.Avatar
+	account.Banner = userinfo.Banner
+	account.Description = userinfo.GetDescription()
 	account.EmailAddress = userinfo.Email
 
 	err := database.C.Save(&account).Error
