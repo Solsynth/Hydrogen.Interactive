@@ -51,7 +51,7 @@
       </v-card>
     </div>
 
-    <div class="aside sticky top-0 w-full h-fit w-full md:max-w-[380px] md:min-w-[360px]">
+    <div class="aside md:sticky top-0 w-full h-fit w-full md:max-w-[380px] md:min-w-[360px]">
       <v-card title="Comments">
         <div class="px-[1rem] pb-[0.825rem] mt-[-12px]">
           <comment-list
