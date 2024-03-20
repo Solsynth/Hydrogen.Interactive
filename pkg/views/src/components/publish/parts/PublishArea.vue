@@ -28,11 +28,9 @@
 </template>
 
 <script setup lang="ts">
-import { useEditor } from "@/stores/editor";
 import { useRealms } from "@/stores/realms";
 
 const realms = useRealms();
-const editor = useEditor();
 
 const props = defineProps<{ show: boolean; value: string | null }>();
 const emits = defineEmits(["update:show", "update:value"]);

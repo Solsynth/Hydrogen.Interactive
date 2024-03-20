@@ -32,36 +32,31 @@
           <v-tooltip text="Media" location="start">
             <template #activator="{ props }">
               <v-btn
-                v-if="data.attachments.length <= 0"
                 v-bind="props"
+                icon
+                class="text-none"
                 type="button"
                 variant="text"
-                icon="mdi-camera"
                 size="small"
                 @click="dialogs.media = true"
-              />
-              <v-badge v-else size="small" color="red" :content="data.attachments.length">
-                <v-btn
-                  v-bind="props"
-                  type="button"
-                  variant="text"
-                  icon="mdi-camera"
-                  size="small"
-                  @click="dialogs.media = true"
-                />
-              </v-badge>
+              >
+                <v-badge v-if="data.attachments.length > 0" :content="data.attachments.length">
+                  <v-icon icon="mdi-camera" />
+                </v-badge>
+
+                <v-icon v-else icon="mdi-camera" />
+              </v-btn>
             </template>
           </v-tooltip>
           <v-tooltip text="Publish area" location="start">
             <template #activator="{ props }">
-              <v-btn
-                v-bind="props"
-                type="button"
-                variant="text"
-                icon="mdi-account-group"
-                size="small"
-                @click="dialogs.area = true"
-              />
+              <v-btn v-bind="props" icon type="button" variant="text" size="small" @click="dialogs.area = true">
+                <v-badge v-if="data.realm_id" dot>
+                  <v-icon icon="mdi-account-group" />
+                </v-badge>
+
+                <v-icon v-else icon="mdi-account-group" />
+              </v-btn>
             </template>
           </v-tooltip>
         </div>
@@ -95,11 +90,12 @@ import { request } from "@/scripts/request"
 import { useEditor } from "@/stores/editor"
 import { getAtk } from "@/stores/userinfo"
 import { reactive, ref, watch } from "vue"
-import { useRouter } from "vue-router"
+import { useRoute, useRouter } from "vue-router"
 import PlannedPublish from "@/components/publish/parts/PlannedPublish.vue"
 import Media from "@/components/publish/parts/Media.vue"
 import PublishArea from "@/components/publish/parts/PublishArea.vue"
 
+const route = useRoute()
 const editor = useEditor()
 
 const dialogs = reactive({
@@ -167,6 +163,16 @@ watch(editor.related, (val) => {
     data.value = val.edit_to
   }
 })
+
+watch(
+  () => route.params.realmId,
+  (val) => {
+    if (val) {
+      data.value.realm_id = parseInt(val as string)
+    }
+  },
+  { deep: true, immediate: true }
+)
 </script>
 
 <style>
