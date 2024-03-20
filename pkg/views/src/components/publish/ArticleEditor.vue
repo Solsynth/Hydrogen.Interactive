@@ -209,7 +209,6 @@ function pasteMedia(evt: ClipboardEvent) {
         }
       })
     })
-    evt.preventDefault()
   }
 }
 

@@ -154,7 +154,6 @@ function pasteMedia(evt: ClipboardEvent) {
     Array.from(files).forEach((item) => {
       media.value.upload(item)
     })
-    evt.preventDefault()
   }
 }
 

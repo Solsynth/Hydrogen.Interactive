@@ -25,13 +25,13 @@ const props = defineProps<{ item: any }>()
 const isOwned = computed(() => props.item?.author_id === id.userinfo.data.id)
 
 function editPost() {
-  editor.related.edit_to = props.item
+  editor.related.edit_to = JSON.parse(JSON.stringify(props.item))
   if (editor.show.hasOwnProperty(props.item.model_type)) {
     // @ts-ignore
     editor.show[props.item.model_type] = true
   }
   if (props.item.model_type === "comment") {
-    editor.related.comment_to = props.item
+    editor.related.comment_to = JSON.parse(JSON.stringify(props.item))
   }
 }
 

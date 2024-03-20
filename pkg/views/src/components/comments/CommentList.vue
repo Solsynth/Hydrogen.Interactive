@@ -75,7 +75,7 @@ watch(editor, (val) => {
 })
 
 function leaveComment() {
-  editor.related.comment_to = props.item
+  editor.related.comment_to = JSON.parse(JSON.stringify(props.item))
   editor.related.comment_to.model_type = props.dataset
   editor.show.comment = true
 }
