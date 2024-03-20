@@ -66,7 +66,7 @@ func NewServer() {
 		api.Get("/attachments/o/:fileId", cache.New(cache.Config{
 			Expiration:   365 * 24 * time.Hour,
 			CacheControl: true,
-		}), openAttachment)
+		}), readAttachment)
 		api.Post("/attachments", authMiddleware, uploadAttachment)
 
 		api.Get("/feed", listFeed)

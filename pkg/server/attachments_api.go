@@ -1,14 +1,15 @@
 package server
 
 import (
+	"path/filepath"
+
 	"git.solsynth.dev/hydrogen/interactive/pkg/models"
 	"git.solsynth.dev/hydrogen/interactive/pkg/services"
 	"github.com/gofiber/fiber/v2"
 	"github.com/spf13/viper"
-	"path/filepath"
 )
 
-func openAttachment(c *fiber.Ctx) error {
+func readAttachment(c *fiber.Ctx) error {
 	id := c.Params("fileId")
 	basepath := viper.GetString("content")
 
