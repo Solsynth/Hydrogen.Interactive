@@ -56,7 +56,6 @@ func createComment(c *fiber.Ctx) error {
 	user := c.Locals("principal").(models.Account)
 
 	var data struct {
-		Alias       string            `json:"alias" form:"alias"`
 		Content     string            `json:"content" form:"content" validate:"required"`
 		PublishedAt *time.Time        `json:"published_at" form:"published_at"`
 		Hashtags    []models.Tag      `json:"hashtags" form:"hashtags"`
@@ -66,13 +65,11 @@ func createComment(c *fiber.Ctx) error {
 
 	if err := BindAndValidate(c, &data); err != nil {
 		return err
-	} else if len(data.Alias) == 0 {
-		data.Alias = strings.ReplaceAll(uuid.NewString(), "-", "")
 	}
 
 	item := &models.Comment{
 		PostBase: models.PostBase{
-			Alias:       data.Alias,
+			Alias:       strings.ReplaceAll(uuid.NewString(), "-", ""),
 			PublishedAt: data.PublishedAt,
 			AuthorID:    user.ID,
 		},
@@ -131,7 +128,6 @@ func editComment(c *fiber.Ctx) error {
 	id, _ := c.ParamsInt("commentId", 0)
 
 	var data struct {
-		Alias       string            `json:"alias" form:"alias" validate:"required"`
 		Content     string            `json:"content" form:"content" validate:"required"`
 		PublishedAt *time.Time        `json:"published_at" form:"published_at"`
 		Hashtags    []models.Tag      `json:"hashtags" form:"hashtags"`
@@ -152,7 +148,6 @@ func editComment(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusNotFound, err.Error())
 	}
 
-	item.Alias = data.Alias
 	item.Content = data.Content
 	item.PublishedAt = data.PublishedAt
 	item.Hashtags = data.Hashtags
