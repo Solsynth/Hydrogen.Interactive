@@ -21,7 +21,7 @@ func NewSource() error {
 	}, Logger: logger.New(&log.Logger, logger.Config{
 		Colorful:                  true,
 		IgnoreRecordNotFoundError: true,
-		LogLevel:                  lo.Ternary(viper.GetBool("debug"), logger.Info, logger.Silent),
+		LogLevel:                  lo.Ternary(viper.GetBool("debug.database"), logger.Info, logger.Silent),
 	})})
 
 	return err

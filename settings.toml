@@ -1,5 +1,3 @@
-debug = true
-
 name = "Solarplaza"
 maintainer = "SmartSheep Studio"
 
@@ -8,6 +6,10 @@ domain = "feed.smartsheep.studio"
 secret = "LtTjzAGFLshwXhN4ZD4nG5KlMv1MWcsvfv03TSZYnT1VhiAnLIZFTnHUwR0XhGgi"
 
 content = "uploads"
+
+[debug]
+database = false
+print_routes = false
 
 [identity]
 client_id = "solarplaza"

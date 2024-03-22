@@ -29,7 +29,7 @@ func NewServer() {
 		JSONEncoder:           jsoniter.ConfigCompatibleWithStandardLibrary.Marshal,
 		JSONDecoder:           jsoniter.ConfigCompatibleWithStandardLibrary.Unmarshal,
 		BodyLimit:             50 * 1024 * 1024,
-		EnablePrintRoutes:     viper.GetBool("debug"),
+		EnablePrintRoutes:     viper.GetBool("debug.print_routes"),
 	})
 
 	A.Use(idempotency.New())
