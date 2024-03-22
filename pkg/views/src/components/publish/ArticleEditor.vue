@@ -25,37 +25,18 @@
             You are editing a post with alias <b class="font-mono">{{ editor.related.edit_to?.alias }}</b>
           </v-alert>
 
-          <v-textarea
-            required
-            class="mb-3"
-            variant="outlined"
-            label="Content"
-            hint="The content supports markdown syntax"
-            v-model="data.content"
-            @paste="pasteMedia"
-          />
+          <v-textarea required class="mb-3" variant="outlined" label="Content"
+            hint="The content supports markdown syntax" v-model="data.content" @paste="pasteMedia" />
 
           <v-expansion-panels>
             <v-expansion-panel title="Brief describe">
               <template #text>
                 <div class="mt-1">
-                  <v-text-field
-                    required
-                    variant="solo-filled"
-                    density="comfortable"
-                    label="Title"
-                    :loading="reverting"
-                    v-model="data.title"
-                  />
+                  <v-text-field required variant="solo-filled" density="comfortable" label="Title" :loading="reverting"
+                    v-model="data.title" />
 
-                  <v-textarea
-                    required
-                    auto-grow
-                    variant="solo-filled"
-                    density="comfortable"
-                    label="Description"
-                    v-model="data.description"
-                  />
+                  <v-textarea required auto-grow variant="solo-filled" density="comfortable" label="Description"
+                    v-model="data.description" />
                 </div>
               </template>
             </v-expansion-panel>
@@ -66,7 +47,8 @@
                   <div>
                     <p class="text-xs">Your content will visible for public at</p>
                     <p class="text-lg font-medium">
-                      {{ data.published_at ? new Date(data.published_at).toLocaleString() : new Date().toLocaleString() }}
+                      {{ data.published_at ? new Date(data.published_at).toLocaleString() : new Date().toLocaleString()
+                      }}
                     </p>
                   </div>
                   <v-btn size="small" icon="mdi-pencil" variant="text" @click="dialogs.plan = true" />
@@ -149,7 +131,7 @@ const data = ref<any>({
 })
 
 const currentRealm = computed(() => {
-  if(data.value.realm_id) {
+  if (data.value.realm_id) {
     return realms.available.find((e: any) => e.id === data.value.realm_id)
   } else {
     return null
@@ -187,14 +169,27 @@ async function postArticle(evt: SubmitEvent) {
   })
   if (res.status === 200) {
     const data = await res.json()
-    form.reset()
-    router.push({ name: "posts.details.articles", params: { alias: data.alias } })
     success.value = true
     editor.show.article = false
+
+    resetEditor(form)
+    router.push({ name: "posts.details.articles", params: { alias: data.alias } })
   } else {
     error.value = await res.text()
   }
   loading.value = false
+}
+
+function resetEditor(target: HTMLFormElement) {
+  target.reset()
+  data.value = {
+    title: "",
+    content: "",
+    description: "",
+    realm_id: null,
+    published_at: null,
+    attachments: []
+  }
 }
 
 const media = ref<any>(null)
