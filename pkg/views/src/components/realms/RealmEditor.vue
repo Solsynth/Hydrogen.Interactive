@@ -4,8 +4,15 @@
       <v-card-text>
         <v-text-field label="Name" variant="outlined" density="comfortable" v-model="data.name" />
         <v-textarea label="Description" variant="outlined" density="comfortable" v-model="data.description" />
-        <v-select label="Realm type" item-title="label" item-value="value" variant="outlined" density="comfortable"
-          :items="realmTypeOptions" v-model="data.realm_type" />
+        <v-select
+          label="Realm type"
+          item-title="label"
+          item-value="value"
+          variant="outlined"
+          density="comfortable"
+          :items="realmTypeOptions"
+          v-model="data.realm_type"
+        />
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
@@ -24,6 +31,7 @@
 import { ref, watch } from "vue"
 import { getAtk } from "@/stores/userinfo"
 import { useRealms } from "@/stores/realms"
+import { request } from "@/scripts/request"
 
 const emits = defineEmits(["relist"])
 
@@ -53,7 +61,7 @@ async function submit(evt: SubmitEvent) {
   const method = realms.related.edit_to ? "PUT" : "POST"
 
   loading.value = true
-  const res = await fetch(url, {
+  const res = await request(url, {
     method: method,
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${getAtk()}` },
     body: JSON.stringify(payload)

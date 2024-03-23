@@ -20,6 +20,7 @@
 </template>
 
 <script setup lang="ts">
+import { request } from "@/scripts/request"
 import { useEditor } from "@/stores/editor"
 import { getAtk } from "@/stores/userinfo"
 import { ref } from "vue"
@@ -35,7 +36,7 @@ async function deletePost() {
   const url = `/api/p/${target.model_type}/${target.id}`
 
   loading.value = true
-  const res = await fetch(url, {
+  const res = await request(url, {
     method: "DELETE",
     headers: { Authorization: `Bearer ${getAtk()}` }
   })

@@ -31,25 +31,25 @@ export const useUserinfo = defineStore("userinfo", () => {
 
   async function readProfiles() {
     if (!checkLoggedIn()) {
-        isReady.value = true;
-      }
-  
-      const res = await request("/api/users/me", {
-        headers: { "Authorization": `Bearer ${getAtk()}` }
-      });
-  
-      if (res.status !== 200) {
-        return;
-      }
-  
-      const data = await res.json();
-  
-      userinfo.value = {
-        isReady: true,
-        isLoggedIn: true,
-        displayName: data["nick"],
-        data: data
-      };
+      isReady.value = true
+    }
+
+    const res = await request("/api/users/me", {
+      headers: { Authorization: `Bearer ${getAtk()}` }
+    })
+
+    if (res.status !== 200) {
+      return
+    }
+
+    const data = await res.json()
+
+    userinfo.value = {
+      isReady: true,
+      isLoggedIn: true,
+      displayName: data["nick"],
+      data: data
+    }
   }
 
   return { userinfo, isReady, readProfiles }

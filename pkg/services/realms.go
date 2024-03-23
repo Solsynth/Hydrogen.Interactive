@@ -65,9 +65,10 @@ func NewRealm(user models.Account, name, description string, realmType int) (mod
 func ListRealmMember(realmId uint) ([]models.RealmMember, error) {
 	var members []models.RealmMember
 
-	if err := database.C.Where(&models.RealmMember{
-		RealmID: realmId,
-	}).Find(&members).Error; err != nil {
+	if err := database.C.
+		Where(&models.RealmMember{RealmID: realmId}).
+		Preload("Account").
+		Find(&members).Error; err != nil {
 		return members, err
 	}
 

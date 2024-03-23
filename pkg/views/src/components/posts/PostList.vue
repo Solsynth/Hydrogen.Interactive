@@ -5,7 +5,7 @@
         <div class="mb-3 px-1">
           <v-card>
             <template #text>
-              <post-item brief :item="item" @update:item="val => updateItem(idx, val)" />
+              <post-item brief :item="item" @update:item="(val) => updateItem(idx, val)" />
             </template>
           </v-card>
         </div>
@@ -15,14 +15,14 @@
 </template>
 
 <script setup lang="ts">
-import PostItem from "@/components/posts/PostItem.vue";
+import PostItem from "@/components/posts/PostItem.vue"
 
-const props = defineProps<{ posts: any[], loader: (opts: any) => Promise<any> }>();
-const emits = defineEmits(["update:posts"]);
+const props = defineProps<{ posts: any[]; loader: (opts: any) => Promise<any> }>()
+const emits = defineEmits(["update:posts"])
 
 function updateItem(idx: number, data: any) {
-  const posts = JSON.parse(JSON.stringify(props.posts));
-  posts[idx] = data;
-  emits("update:posts", posts);
+  const posts = JSON.parse(JSON.stringify(props.posts))
+  posts[idx] = data
+  emits("update:posts", posts)
 }
 </script>

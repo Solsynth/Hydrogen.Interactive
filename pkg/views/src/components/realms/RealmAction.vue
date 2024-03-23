@@ -13,8 +13,8 @@
 </template>
 
 <script setup lang="ts">
-import { useRealms } from "@/stores/realms";
-import { useUserinfo } from "@/stores/userinfo";
+import { useRealms } from "@/stores/realms"
+import { useUserinfo } from "@/stores/userinfo"
 import { computed } from "vue"
 
 const id = useUserinfo()

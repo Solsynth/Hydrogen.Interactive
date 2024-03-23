@@ -6,20 +6,40 @@
           You are editing a post with alias <b class="font-mono">{{ editor.related.edit_to?.alias }}</b>
         </v-alert>
 
-        <v-textarea required persistent-counter variant="outlined" label="What's happened?!" counter="1024"
-          v-model="data.content" @paste="pasteMedia" />
+        <v-textarea
+          required
+          persistent-counter
+          variant="outlined"
+          label="What's happened?!"
+          counter="1024"
+          v-model="data.content"
+          @paste="pasteMedia"
+        />
 
         <div class="flex mt-[-18px]">
           <v-tooltip text="Planned publish" location="start">
             <template #activator="{ props }">
-              <v-btn v-bind="props" type="button" variant="text" icon="mdi-calendar" size="small"
-                @click="dialogs.plan = true" />
+              <v-btn
+                v-bind="props"
+                type="button"
+                variant="text"
+                icon="mdi-calendar"
+                size="small"
+                @click="dialogs.plan = true"
+              />
             </template>
           </v-tooltip>
           <v-tooltip text="Media" location="start">
             <template #activator="{ props }">
-              <v-btn v-bind="props" icon class="text-none" type="button" variant="text" size="small"
-                @click="dialogs.media = true">
+              <v-btn
+                v-bind="props"
+                icon
+                class="text-none"
+                type="button"
+                variant="text"
+                size="small"
+                @click="dialogs.media = true"
+              >
                 <v-badge v-if="data.attachments.length > 0" :content="data.attachments.length">
                   <v-icon icon="mdi-camera" />
                 </v-badge>

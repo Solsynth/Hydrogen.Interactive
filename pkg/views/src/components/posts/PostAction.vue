@@ -14,7 +14,7 @@
 
 <script setup lang="ts">
 import { useEditor } from "@/stores/editor"
-import { useUserinfo } from "@/stores/userinfo";
+import { useUserinfo } from "@/stores/userinfo"
 import { computed } from "vue"
 
 const id = useUserinfo()

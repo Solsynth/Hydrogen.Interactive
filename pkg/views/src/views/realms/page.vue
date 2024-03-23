@@ -5,7 +5,7 @@
     </div>
 
     <div class="aside md:sticky top-0 w-full h-fit md:min-w-[280px] md:max-w-[320px] max-md:order-first">
-      <v-card title="Realm Info" :loading="loading">
+      <v-card :loading="loading">
         <template #title>
           <div class="flex justify-between">
             <span>Realm Info</span>
@@ -23,6 +23,10 @@
           </div>
         </template>
       </v-card>
+
+      <v-card class="mt-3 pb-3" title="Realm Members">
+        <realm-members :item="metadata" />
+      </v-card>
     </div>
   </v-container>
 </template>
@@ -36,6 +40,7 @@ import { parse } from "marked"
 import dompurify from "dompurify"
 import PostList from "@/components/posts/PostList.vue"
 import RealmAction from "@/components/realms/RealmAction.vue"
+import RealmMembers from "@/components/realms/RealmMembers.vue"
 
 const route = useRoute()
 const realms = useRealms()

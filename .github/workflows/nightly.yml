@@ -2,7 +2,7 @@ name: release-nightly
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
   build-docker:

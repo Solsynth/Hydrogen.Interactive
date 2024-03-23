@@ -1,6 +1,7 @@
 import { reactive, ref } from "vue"
 import { defineStore } from "pinia"
 import { checkLoggedIn, getAtk } from "@/stores/userinfo"
+import { request } from "@/scripts/request"
 
 export const useRealms = defineStore("realms", () => {
   const done = ref(false)
@@ -20,7 +21,7 @@ export const useRealms = defineStore("realms", () => {
   async function list() {
     if (!checkLoggedIn()) return
 
-    const res = await fetch("/api/realms/me/available", {
+    const res = await request("/api/realms/me/available", {
       headers: { Authorization: `Bearer ${getAtk()}` }
     })
     if (res.status !== 200) {

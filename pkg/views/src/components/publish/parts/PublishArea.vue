@@ -28,10 +28,10 @@
 </template>
 
 <script setup lang="ts">
-import { useRealms } from "@/stores/realms";
+import { useRealms } from "@/stores/realms"
 
-const realms = useRealms();
+const realms = useRealms()
 
-const props = defineProps<{ show: boolean; value: string | null }>();
-const emits = defineEmits(["update:show", "update:value"]);
+const props = defineProps<{ show: boolean; value: string | null }>()
+const emits = defineEmits(["update:show", "update:value"])
 </script>

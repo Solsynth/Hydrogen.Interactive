@@ -3,13 +3,13 @@
 </template>
 
 <script setup lang="ts">
-import dompurify from "dompurify";
-import { parse } from "marked";
+import dompurify from "dompurify"
+import { parse } from "marked"
 
-const props = defineProps<{ item: any }>();
+const props = defineProps<{ item: any }>()
 
 function parseContent(src: string): string {
-  return dompurify().sanitize(parse(src) as string);
+  return dompurify().sanitize(parse(src) as string)
 }
 </script>
 

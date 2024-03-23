@@ -99,7 +99,7 @@ import { useUserinfo } from "@/stores/userinfo"
 import { useWellKnown } from "@/stores/wellKnown"
 import PostTools from "@/components/publish/PostTools.vue"
 import RealmTools from "@/components/realms/RealmTools.vue"
-import RealmList from "@/components/realms/RealmList.vue";
+import RealmList from "@/components/realms/RealmList.vue"
 
 const id = useUserinfo()
 const editor = useEditor()
