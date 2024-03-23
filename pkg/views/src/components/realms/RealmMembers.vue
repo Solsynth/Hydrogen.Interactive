@@ -2,6 +2,7 @@
   <div>
     <v-list density="comfortable" lines="one">
       <v-list-item v-for="item in members" :title="item.account.nick">
+        <template #subtitle>@{{ item.account.name }}</template>
         <template #prepend>
           <v-avatar
             color="grey-lighten-2"
@@ -11,7 +12,16 @@
             :image="item?.account.avatar"
           />
         </template>
-        <template #subtitle>@{{ item.account.name }}</template>
+        <template #append>
+          <v-btn
+            icon="mdi-account-remove"
+            size="x-small"
+            color="error"
+            variant="text"
+            :disabled="!checkKickable(item)"
+            @click="kickMember(item)"
+          />
+        </template>
       </v-list-item>
     </v-list>
 
@@ -25,25 +35,12 @@
           </template>
 
           <template #default="{ isActive }">
-            <v-card prepend-icon="mdi-account-plus" title="Invite someone">
-              <v-form @submit.prevent="inviteMember">
-                <v-card-text>
-                  <v-text-field
-                    label="Username"
-                    variant="outlined"
-                    density="comfortable"
-                    hint="Require username not the nickname"
-                    v-model="data.account_name"
-                  />
-                </v-card-text>
-                <v-card-actions>
-                  <v-spacer></v-spacer>
-
-                  <v-btn type="reset" color="grey-darken-3" @click="isActive.value = false">Cancel</v-btn>
-                  <v-btn type="submit" :disabled="loading">Invite</v-btn>
-                </v-card-actions>
-              </v-form>
-            </v-card>
+            <realm-invitation
+              :item="props.item"
+              @relist="listMembers"
+              @error="(val) => (error = val)"
+              @close="isActive.value = false"
+            />
           </template>
         </v-dialog>
       </div>
@@ -59,14 +56,11 @@ import { ref, watch } from "vue"
 import { request } from "@/scripts/request"
 import { getAtk, useUserinfo } from "@/stores/userinfo"
 import { computed } from "vue"
+import RealmInvitation from "@/components/realms/RealmInvitation.vue"
 
 const id = useUserinfo()
 
 const props = defineProps<{ item: any }>()
-
-const data = ref<any>({
-  account_name: ""
-})
 
 const members = ref<any[]>([])
 
@@ -99,23 +93,27 @@ async function listMembers(id: number) {
   loading.value = false
 }
 
-async function inviteMember(evt: SubmitEvent) {
-  const form = evt.target as HTMLFormElement
-  const payload = data.value
-
+async function kickMember(item: any) {
   loading.value = true
-  const res = await request(`/api/realms/${props.item?.id}/invite`, {
+  const res = await request(`/api/realms/${props.item?.id}/kick`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${getAtk()}` },
-    body: JSON.stringify(payload)
+    body: JSON.stringify({
+        account_name: item.account.name
+    })
   })
   if (res.status !== 200) {
     error.value = await res.text()
   } else {
-    form.reset()
     await listMembers(props.item?.id)
   }
   loading.value = false
+}
+
+function checkKickable(item: any) {
+  if (item.account?.id === id.userinfo.data?.id) return false
+  if (item.account?.id === props.item?.account_id) return false
+  return true
 }
 </script>
 

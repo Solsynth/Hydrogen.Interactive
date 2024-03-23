@@ -25,7 +25,7 @@
       </v-card>
 
       <v-card class="mt-3 pb-3" title="Realm Members">
-        <realm-members :item="metadata" />
+        <realm-members class="mt-[-8px]" :item="metadata" />
       </v-card>
     </div>
   </v-container>
