@@ -105,15 +105,19 @@ func NewServer() {
 		api.Put("/categories/:categoryId", authMiddleware, editCategory)
 		api.Delete("/categories/:categoryId", authMiddleware, deleteCategory)
 
-		api.Get("/realms", listRealm)
-		api.Get("/realms/me", authMiddleware, listOwnedRealm)
-		api.Get("/realms/me/available", authMiddleware, listAvailableRealm)
-		api.Get("/realms/:realmId", getRealm)
-		api.Post("/realms", authMiddleware, createRealm)
-		api.Post("/realms/:realmId/invite", authMiddleware, inviteRealm)
-		api.Post("/realms/:realmId/kick", authMiddleware, kickRealm)
-		api.Put("/realms/:realmId", authMiddleware, editRealm)
-		api.Delete("/realms/:realmId", authMiddleware, deleteRealm)
+		realms := api.Group("/realms").Name("Realms API")
+		{
+			realms.Get("/", listRealm)
+			realms.Get("/me", authMiddleware, listOwnedRealm)
+			realms.Get("/me/available", authMiddleware, listAvailableRealm)
+			realms.Get("/:realmId", getRealm)
+			realms.Get("/:realmId/members", listRealmMembers)
+			realms.Post("/", authMiddleware, createRealm)
+			realms.Post("/:realmId/invite", authMiddleware, inviteRealm)
+			realms.Post("/:realmId/kick", authMiddleware, kickRealm)
+			realms.Put("/:realmId", authMiddleware, editRealm)
+			realms.Delete("/:realmId", authMiddleware, deleteRealm)
+		}
 	}
 
 	A.Use("/", cache.New(cache.Config{

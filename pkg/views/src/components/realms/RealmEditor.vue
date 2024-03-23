@@ -4,15 +4,8 @@
       <v-card-text>
         <v-text-field label="Name" variant="outlined" density="comfortable" v-model="data.name" />
         <v-textarea label="Description" variant="outlined" density="comfortable" v-model="data.description" />
-        <v-select
-          label="Realm type"
-          item-title="label"
-          item-value="value"
-          variant="outlined"
-          density="comfortable"
-          :items="realmTypeOptions"
-          v-model="data.realm_type"
-        />
+        <v-select label="Realm type" item-title="label" item-value="value" variant="outlined" density="comfortable"
+          :items="realmTypeOptions" v-model="data.realm_type" />
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>

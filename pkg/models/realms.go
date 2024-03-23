@@ -23,6 +23,8 @@ type Realm struct {
 type RealmMember struct {
 	BaseModel
 
-	RealmID   uint `json:"realm_id"`
-	AccountID uint `json:"account_id"`
+	RealmID   uint    `json:"realm_id"`
+	AccountID uint    `json:"account_id"`
+	Realm     Realm   `json:"realm"`
+	Account   Account `json:"account"`
 }

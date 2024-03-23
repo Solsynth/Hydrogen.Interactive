@@ -62,6 +62,18 @@ func NewRealm(user models.Account, name, description string, realmType int) (mod
 	return realm, err
 }
 
+func ListRealmMember(realmId uint) ([]models.RealmMember, error) {
+	var members []models.RealmMember
+
+	if err := database.C.Where(&models.RealmMember{
+		RealmID: realmId,
+	}).Find(&members).Error; err != nil {
+		return members, err
+	}
+
+	return members, nil
+}
+
 func InviteRealmMember(user models.Account, target models.Realm) error {
 	member := models.RealmMember{
 		RealmID:   target.ID,
