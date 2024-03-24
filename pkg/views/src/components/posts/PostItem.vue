@@ -46,15 +46,12 @@
 
 <script setup lang="ts">
 import { type Component } from "vue"
-import { useUserinfo } from "@/stores/userinfo"
 import ArticleContent from "@/components/posts/ArticleContent.vue"
 import MomentContent from "@/components/posts/MomentContent.vue"
 import CommentContent from "@/components/posts/CommentContent.vue"
 import PostAttachment from "@/components/posts/PostAttachment.vue"
 import PostReaction from "@/components/posts/PostReaction.vue"
 import PostAction from "@/components/posts/PostAction.vue"
-
-const id = useUserinfo()
 
 const props = defineProps<{ item: any; brief?: boolean }>()
 const emits = defineEmits(["update:item"])

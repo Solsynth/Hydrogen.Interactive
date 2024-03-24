@@ -3,21 +3,18 @@
     Attached {{ props.attachments.length }} attachment(s)
   </v-chip>
 
-  <v-card v-else variant="outlined" class="max-w-[540px]" :ripple="canLightbox" @click="openLightbox">
-    <div class="content">
-      <img v-if="current.type === 1" :src="getUrl(current)" />
-      <video v-if="current.type === 2" controls class="w-full">
-        <source :src="getUrl(current)" />
-      </video>
-    </div>
-
-    <div v-if="props.attachments.length > 1" class="switcher flex justify-between items-center px-5 py-2">
-      <div>{{ focus + 1 }} of {{ props.attachments.length }}</div>
-      <div>
-        <v-btn icon="mdi-arrow-left" variant="text" size="small" @click.stop="focusPrev" />
-        <v-btn icon="mdi-arrow-right" variant="text" size="small" @click.stop="focusNext" />
-      </div>
-    </div>
+  <v-card v-else variant="outlined" class="max-w-[540px]">
+    <v-carousel hide-delimiters progress="primary" show-arrows="hover" height="100%">
+      <v-carousel-item v-for="item in attachments">
+        <img v-if="item.type === 1" :src="getUrl(item)" class="cursor-zoom-in" @click="openLightbox" />
+        <video v-if="item.type === 2" controls class="w-full">
+          <source :src="getUrl(item)" />
+        </video>
+        <div v-if="item.type === 3" class="w-full px-7 py-12">
+          <audio controls :src="getUrl(item)" class="mx-auto"></audio>
+        </div>
+      </v-carousel-item>
+    </v-carousel>
 
     <vue-easy-lightbox teleport="#app" :visible="lightbox" :imgs="[getUrl(current)]" @hide="lightbox = false">
       <template v-slot:close-btn="{ close }">
@@ -46,18 +43,6 @@ function getUrl(item: any) {
 function openLightbox() {
   if (canLightbox.value) {
     lightbox.value = true
-  }
-}
-
-function focusNext() {
-  if (focus.value + 1 < props.attachments.length) {
-    focus.value++
-  }
-}
-
-function focusPrev() {
-  if (focus.value - 1 >= 0) {
-    focus.value--
   }
 }
 </script>

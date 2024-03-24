@@ -13,7 +13,7 @@
           variant="solo-filled"
           label="File Picker"
           v-model="picked"
-          :accept="['image/*', 'video/*']"
+          :accept="['image/*', 'video/*', 'audio/*']"
           :loading="props.uploading"
           @click:append="upload()"
         />
