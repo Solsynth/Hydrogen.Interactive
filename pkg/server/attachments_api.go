@@ -37,3 +37,21 @@ func uploadAttachment(c *fiber.Ctx) error {
 		"url":  attachment.GetAccessPath(),
 	})
 }
+
+func deleteAttachment(c *fiber.Ctx) error {
+	id := c.Params("fileId")
+	user := c.Locals("principal").(models.Account)
+
+	attachment, err := services.GetAttachmentByUUID(id)
+	if err != nil {
+		return fiber.NewError(fiber.StatusNotFound, err.Error())
+	} else if attachment.AuthorID != user.ID {
+		return fiber.NewError(fiber.StatusNotFound, "record not created by you")
+	}
+
+	if err := services.DeleteAttachment(attachment); err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	} else {
+		return c.SendStatus(fiber.StatusOK)
+	}
+}

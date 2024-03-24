@@ -24,7 +24,7 @@
             <v-list-item v-for="(item, idx) in props.value" :title="getFileName(item)">
               <template #subtitle> {{ getFileType(item) }} · {{ formatBytes(item.filesize) }} </template>
               <template #append>
-                <v-btn icon="mdi-delete" size="small" variant="text" color="error" @click="detach(idx)" />
+                <v-btn icon="mdi-delete" size="small" variant="text" color="error" @click="dispose(idx)" />
               </template>
             </v-list-item>
           </v-list>
@@ -78,10 +78,18 @@ async function upload(file?: any) {
   return meta
 }
 
-function detach(idx: number) {
+async function dispose(idx: number) {
   const media = JSON.parse(JSON.stringify(props.value))
-  media.splice(idx)
+  const item = media.splice(idx)[0]
   emits("update:value", media)
+
+  const res = await request(`/api/attachments/${item.file_id}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${getAtk()}` },
+  })
+  if (res.status !== 200) {
+    error.value = await res.text()
+  }
 }
 
 defineExpose({ upload })
