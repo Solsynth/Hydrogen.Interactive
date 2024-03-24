@@ -13,6 +13,16 @@ import (
 	"github.com/spf13/viper"
 )
 
+func GetAttachmentByID(id uint) (models.Attachment, error) {
+	var attachment models.Attachment
+	if err := database.C.Where(models.Attachment{
+		BaseModel: models.BaseModel{ID: id},
+	}).First(&attachment).Error; err != nil {
+		return attachment, err
+	}
+	return attachment, nil
+}
+
 func GetAttachmentByUUID(fileId string) (models.Attachment, error) {
 	var attachment models.Attachment
 	if err := database.C.Where(models.Attachment{
@@ -23,40 +33,67 @@ func GetAttachmentByUUID(fileId string) (models.Attachment, error) {
 	return attachment, nil
 }
 
-func NewAttachment(user models.Account, header *multipart.FileHeader) (models.Attachment, error) {
-	attachment := models.Attachment{
-		FileID:   uuid.NewString(),
-		Filesize: header.Size,
-		Filename: header.Filename,
-		Mimetype: "unknown/unknown",
-		Type:     models.AttachmentOthers,
-		AuthorID: user.ID,
-	}
-
-	// Open file
-	file, err := header.Open()
-	if err != nil {
+func GetAttachmentByHashcode(hashcode string) (models.Attachment, error) {
+	var attachment models.Attachment
+	if err := database.C.Where(models.Attachment{
+		Hashcode: hashcode,
+	}).First(&attachment).Error; err != nil {
 		return attachment, err
 	}
-	defer file.Close()
+	return attachment, nil
+}
 
-	// Detect mimetype
-	fileHeader := make([]byte, 512)
-	_, err = file.Read(fileHeader)
+func NewAttachment(user models.Account, header *multipart.FileHeader, hashcode string) (models.Attachment, error) {
+	var attachment models.Attachment
+	existsAttachment, err := GetAttachmentByHashcode(hashcode)
 	if err != nil {
-		return attachment, err
-	}
-	attachment.Mimetype = http.DetectContentType(fileHeader)
+		// Upload the new file
+		attachment = models.Attachment{
+			FileID:   uuid.NewString(),
+			Filesize: header.Size,
+			Filename: header.Filename,
+			Hashcode: hashcode,
+			Mimetype: "unknown/unknown",
+			Type:     models.AttachmentOthers,
+			AuthorID: user.ID,
+		}
 
-	switch strings.Split(attachment.Mimetype, "/")[0] {
-	case "image":
-		attachment.Type = models.AttachmentPhoto
-	case "video":
-		attachment.Type = models.AttachmentVideo
-	case "audio":
-		attachment.Type = models.AttachmentAudio
-	default:
-		attachment.Type = models.AttachmentOthers
+		// Open file
+		file, err := header.Open()
+		if err != nil {
+			return attachment, err
+		}
+		defer file.Close()
+
+		// Detect mimetype
+		fileHeader := make([]byte, 512)
+		_, err = file.Read(fileHeader)
+		if err != nil {
+			return attachment, err
+		}
+		attachment.Mimetype = http.DetectContentType(fileHeader)
+
+		switch strings.Split(attachment.Mimetype, "/")[0] {
+		case "image":
+			attachment.Type = models.AttachmentPhoto
+		case "video":
+			attachment.Type = models.AttachmentVideo
+		case "audio":
+			attachment.Type = models.AttachmentAudio
+		default:
+			attachment.Type = models.AttachmentOthers
+		}
+	} else {
+		// Instant upload, build link with the exists file
+		attachment = models.Attachment{
+			FileID:   existsAttachment.FileID,
+			Filesize: header.Size,
+			Filename: header.Filename,
+			Hashcode: hashcode,
+			Mimetype: existsAttachment.Mimetype,
+			Type:     existsAttachment.Type,
+			AuthorID: user.ID,
+		}
 	}
 
 	// Save into database
@@ -66,9 +103,20 @@ func NewAttachment(user models.Account, header *multipart.FileHeader) (models.At
 }
 
 func DeleteAttachment(item models.Attachment) error {
+	var dupeCount int64
+	if err := database.C.
+		Where(&models.Attachment{Hashcode: item.Hashcode}).
+		Model(&models.Attachment{}).
+		Count(&dupeCount).Error; err != nil {
+		dupeCount = -1
+	}
+
 	if err := database.C.Delete(&item).Error; err != nil {
 		return err
-	} else {
+	}
+
+	if dupeCount != -1 && dupeCount <= 1 {
+		// Safe for deletion the physics file
 		basepath := viper.GetString("content")
 		fullpath := filepath.Join(basepath, item.FileID)
 

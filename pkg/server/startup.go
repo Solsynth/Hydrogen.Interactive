@@ -68,7 +68,7 @@ func NewServer() {
 			CacheControl: true,
 		}), readAttachment)
 		api.Post("/attachments", authMiddleware, uploadAttachment)
-		api.Delete("/attachments/:fileId", authMiddleware, deleteAttachment)
+		api.Delete("/attachments/:id", authMiddleware, deleteAttachment)
 
 		api.Get("/feed", listFeed)
 

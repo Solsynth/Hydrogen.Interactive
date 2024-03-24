@@ -171,6 +171,7 @@ function pasteMedia(evt: ClipboardEvent) {
 watch(editor.related, (val) => {
   if (val.edit_to && val.edit_to.model_type === "moment") {
     data.value = val.edit_to
+    data.value.attachments = val.edit_to.attachments ?? []
   }
 })
 

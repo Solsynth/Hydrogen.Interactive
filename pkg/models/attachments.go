@@ -23,6 +23,7 @@ type Attachment struct {
 	Filesize    int64          `json:"filesize"`
 	Filename    string         `json:"filename"`
 	Mimetype    string         `json:"mimetype"`
+	Hashcode    string         `json:"hashcode"`
 	Type        AttachmentType `json:"type"`
 	ExternalUrl string         `json:"external_url"`
 	Author      Account        `json:"author"`

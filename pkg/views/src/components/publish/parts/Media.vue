@@ -60,6 +60,8 @@ async function upload(file?: any) {
     data.set("attachment", file)
   }
 
+  data.set("hashcode", await calculateHashCode(picked.value[0]))
+
   emits("update:uploading", true)
   const res = await request("/api/attachments", {
     method: "POST",
@@ -83,16 +85,33 @@ async function dispose(idx: number) {
   const item = media.splice(idx)[0]
   emits("update:value", media)
 
-  const res = await request(`/api/attachments/${item.file_id}`, {
+  const res = await request(`/api/attachments/${item.id}`, {
     method: "DELETE",
-    headers: { Authorization: `Bearer ${getAtk()}` },
+    headers: { Authorization: `Bearer ${getAtk()}` }
   })
   if (res.status !== 200) {
     error.value = await res.text()
   }
 }
 
-defineExpose({ upload })
+defineExpose({ upload, dispose })
+
+async function calculateHashCode(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = async () => {
+      const buffer = reader.result as ArrayBuffer
+      const hashBuffer = await crypto.subtle.digest("SHA-256", buffer)
+      const hashArray = Array.from(new Uint8Array(hashBuffer))
+      const hashHex = hashArray.map((byte) => byte.toString(16).padStart(2, "0")).join("")
+      resolve(hashHex)
+    }
+    reader.onerror = () => {
+      reject(reader.error)
+    }
+    reader.readAsArrayBuffer(file)
+  })
+}
 
 function getFileName(item: any) {
   return item.filename.replace(/\.[^/.]+$/, "")
