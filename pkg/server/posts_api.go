@@ -40,7 +40,9 @@ func getPost(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusNotFound, err.Error())
 	}
 
-	item.ReactionList, err = mx.CountReactions(item.ID)
+	item.CommentCount = mx.CountComments(item.ID)
+	item.ReactionCount = mx.CountReactions(item.ID)
+	item.ReactionList, err = mx.ListReactions(item.ID)
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}

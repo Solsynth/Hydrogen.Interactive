@@ -133,7 +133,29 @@ func (v *PostTypeContext) Count() (int64, error) {
 	return count, nil
 }
 
-func (v *PostTypeContext) CountReactions(id uint) (map[string]int64, error) {
+func (v *PostTypeContext) CountComments(id uint) int64 {
+	var count int64
+	if err := database.C.Model(&models.Comment{}).
+		Where(v.ColumnName+"_id = ?", id).
+		Count(&count).Error; err != nil {
+		return 0
+	}
+
+	return count
+}
+
+func (v *PostTypeContext) CountReactions(id uint) int64 {
+	var count int64
+	if err := database.C.Model(&models.Reaction{}).
+		Where(v.ColumnName+"_id = ?", id).
+		Count(&count).Error; err != nil {
+		return 0
+	}
+
+	return count
+}
+
+func (v *PostTypeContext) ListReactions(id uint) (map[string]int64, error) {
 	var reactions []struct {
 		Symbol string
 		Count  int64
