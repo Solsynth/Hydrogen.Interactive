@@ -26,6 +26,7 @@ const isOwned = computed(() => props.item?.author_id === id.userinfo.data.id)
 
 function editPost() {
   editor.related.edit_to = JSON.parse(JSON.stringify(props.item))
+  // eslint-disable-next-line
   if (editor.show.hasOwnProperty(props.item.model_type)) {
     // @ts-ignore
     editor.show[props.item.model_type] = true

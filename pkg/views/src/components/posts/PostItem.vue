@@ -33,8 +33,11 @@
         @update="updateReactions"
       />
 
-      <div class="mt-1 text-xs opacity-80 flex gap-2 items-center">
+      <div class="mt-3 text-xs opacity-80 flex items-center">
         <span>Posted at {{ new Date(props.item?.created_at).toLocaleString() }}</span>
+        <section v-if="props.item?.realm_id">
+          &nbsp;·&nbsp;<span>In realm #{{ props.item?.realm_id }}</span>
+        </section>
       </div>
     </div>
 
@@ -67,6 +70,7 @@ function updateReactions(symbol: string, num: number) {
   if (item.reaction_list == null) {
     item.reaction_list = {}
   }
+  // eslint-disable-next-line
   if (item.reaction_list.hasOwnProperty(symbol)) {
     item.reaction_list[symbol] += num
   } else {

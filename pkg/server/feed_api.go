@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"strings"
 
 	"git.solsynth.dev/hydrogen/interactive/pkg/database"
 	"git.solsynth.dev/hydrogen/interactive/pkg/models"
@@ -24,12 +25,12 @@ func listFeed(c *fiber.Ctx) error {
 		take = 20
 	}
 
-	var whereCondition string
+	var whereConditions []string
 
-	if realmId > 0 {
-		whereCondition += fmt.Sprintf("feed.realm_id = %d", realmId)
-	} else {
-		whereCondition += "feed.realm_id IS NULL"
+	if realmId < 0 {
+		whereConditions = append(whereConditions, "feed.realm_id IS NULL")
+	} else if realmId > 0 {
+		whereConditions = append(whereConditions, fmt.Sprintf("feed.realm_id = %d", realmId))
 	}
 
 	var author models.Account
@@ -37,8 +38,13 @@ func listFeed(c *fiber.Ctx) error {
 		if err := database.C.Where(&models.Account{Name: c.Query("authorId")}).First(&author).Error; err != nil {
 			return fiber.NewError(fiber.StatusNotFound, err.Error())
 		} else {
-			whereCondition += fmt.Sprintf("AND feed.author_id = %d", author.ID)
+			whereConditions = append(whereConditions, fmt.Sprintf("feed.author_id = %d", author.ID))
 		}
+	}
+
+	var whereStatement string
+	if len(whereConditions) > 0 {
+		whereStatement += "WHERE " + strings.Join(whereConditions, " AND ")
 	}
 
 	var result []*models.Feed
@@ -63,11 +69,11 @@ func listFeed(c *fiber.Ctx) error {
             GROUP BY article_id, moment_id) AS reactions
             ON (feed.model_type = 'article' AND feed.id = reactions.article_id) OR 
 			   (feed.model_type = 'moment' AND feed.id = reactions.moment_id)
-		WHERE %s ORDER BY feed.created_at desc  LIMIT ? OFFSET ?`,
+		%s ORDER BY feed.created_at desc  LIMIT ? OFFSET ?`,
 			userTable,
 			commentTable,
 			reactionTable,
-			whereCondition,
+			whereStatement,
 		),
 		database.C.Select(queryArticle).Model(&models.Article{}),
 		database.C.Select(queryMoment).Model(&models.Moment{}),

@@ -100,6 +100,7 @@ async function readPost() {
 readPost()
 
 function updateReactions(symbol: string, num: number) {
+  // eslint-disable-next-line
   if (post.value.reaction_list.hasOwnProperty(symbol)) {
     post.value.reaction_list[symbol] += num
   } else {

@@ -8,7 +8,7 @@ secret = "LtTjzAGFLshwXhN4ZD4nG5KlMv1MWcsvfv03TSZYnT1VhiAnLIZFTnHUwR0XhGgi"
 content = "uploads"
 
 [debug]
-database = false
+database = true
 print_routes = false
 
 [identity]
