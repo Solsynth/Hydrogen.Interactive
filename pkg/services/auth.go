@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
 	"time"
 
 	"git.solsynth.dev/hydrogen/identity/pkg/grpc/proto"
@@ -37,6 +38,7 @@ func LinkAccount(userinfo *proto.Userinfo) (models.Account, error) {
 		return account, err
 	}
 
+	prev := account
 	account.Name = userinfo.Name
 	account.Nick = userinfo.Nick
 	account.Avatar = userinfo.Avatar
@@ -44,7 +46,10 @@ func LinkAccount(userinfo *proto.Userinfo) (models.Account, error) {
 	account.Description = userinfo.GetDescription()
 	account.EmailAddress = userinfo.Email
 
-	err := database.C.Save(&account).Error
+	var err error
+	if !reflect.DeepEqual(prev, account) {
+		err = database.C.Save(&account).Error
+	}
 
 	return account, err
 }
