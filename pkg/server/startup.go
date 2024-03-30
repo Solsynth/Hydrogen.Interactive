@@ -1,17 +1,18 @@
 package server
 
 import (
+	"git.solsynth.dev/hydrogen/interactive/pkg"
+	"github.com/gofiber/fiber/v2/middleware/favicon"
 	"net/http"
 	"strings"
 	"time"
 
-	"git.solsynth.dev/hydrogen/interactive/pkg/views"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cache"
 	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/gofiber/fiber/v2/middleware/filesystem"
 	"github.com/gofiber/fiber/v2/middleware/idempotency"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/template/html/v2"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
@@ -20,6 +21,8 @@ import (
 var A *fiber.App
 
 func NewServer() {
+	templates := html.NewFileSystem(http.FS(pkg.FS), ".gohtml")
+
 	A = fiber.New(fiber.Config{
 		DisableStartupMessage: true,
 		EnableIPValidation:    true,
@@ -30,6 +33,8 @@ func NewServer() {
 		JSONDecoder:           jsoniter.ConfigCompatibleWithStandardLibrary.Unmarshal,
 		BodyLimit:             50 * 1024 * 1024,
 		EnablePrintRoutes:     viper.GetBool("debug.print_routes"),
+		Views:                 templates,
+		ViewsLayout:           "views/index",
 	})
 
 	A.Use(idempotency.New())
@@ -121,15 +126,17 @@ func NewServer() {
 		}
 	}
 
-	A.Use("/", cache.New(cache.Config{
-		Expiration:   24 * time.Hour,
-		CacheControl: true,
-	}), filesystem.New(filesystem.Config{
-		Root:         http.FS(views.FS),
-		PathPrefix:   "dist",
-		Index:        "index.html",
-		NotFoundFile: "dist/index.html",
+	A.Use(favicon.New(favicon.Config{
+		FileSystem: http.FS(pkg.FS),
+		File:       "views/favicon.png",
+		URL:        "/favicon.png",
 	}))
+
+	A.Get("/", func(c *fiber.Ctx) error {
+		return c.Render("views/open", fiber.Map{
+			"frontend": viper.GetString("frontend"),
+		})
+	})
 }
 
 func Listen() {

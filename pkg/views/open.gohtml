@@ -1,0 +1,60 @@
+<div class="container">
+    <div>
+        <img src="/favicon.png" width="128" height="128" alt="Icon"/>
+
+        <p class="caption text-blinking">Launching Solian... 🚀</p>
+        <p class="description">
+            Hold on a second... <br/>
+            We are redirecting you to our application...
+        </p>
+    </div>
+</div>
+
+<script>
+    function redirect() {
+        window.location.href = {{ .frontend }}
+    }
+
+    setTimeout(() => redirect(), 1850)
+</script>
+
+<style>
+    .container {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+
+    .caption {
+        margin-top: 4px;
+        font-weight: 600;
+    }
+
+    .text-blinking {
+        animation: text-blinking ease-in-out infinite 1.5s;
+    }
+
+    .description {
+        margin-top: 4px;
+        font-size: 0.85rem;
+    }
+
+    p {
+        margin: 0;
+    }
+
+    @keyframes text-blinking {
+        0% {
+            opacity: 100%;
+        }
+        50% {
+            opacity: 10%;
+        }
+        100% {
+            opacity: 100%;
+        }
+    }
+</style>

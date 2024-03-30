@@ -1,6 +1,8 @@
 name = "Solarplaza"
 maintainer = "SmartSheep Studio"
 
+frontend = "https://lian.solsynth.dev"
+
 bind = "0.0.0.0:8445"
 domain = "feed.smartsheep.studio"
 secret = "LtTjzAGFLshwXhN4ZD4nG5KlMv1MWcsvfv03TSZYnT1VhiAnLIZFTnHUwR0XhGgi"
