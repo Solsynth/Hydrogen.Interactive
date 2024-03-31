@@ -44,7 +44,7 @@ func NotifyAccount(user models.Account, subject, content string, realtime bool, 
 		Subject:      subject,
 		Content:      content,
 		Links:        links,
-		RecipientId:  uint64(user.ID),
+		RecipientId:  uint64(user.ExternalID),
 		IsRealtime:   realtime,
 		IsImportant:  false,
 	})
