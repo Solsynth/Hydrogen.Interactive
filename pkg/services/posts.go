@@ -321,6 +321,7 @@ func NewPost[T models.PostInterface](item T) (T, error) {
 						op.Author,
 						fmt.Sprintf("%s replied you", item.GetAuthor().Name),
 						fmt.Sprintf("%s replied your post. Check it out!", item.GetAuthor().Name),
+						false,
 						&proto.NotifyLink{Label: "Related post", Url: postUrl},
 					)
 					if err != nil {
@@ -345,7 +346,8 @@ func NewPost[T models.PostInterface](item T) (T, error) {
 				err := NotifyAccount(
 					account,
 					fmt.Sprintf("%s just posted a post", item.GetAuthor().Name),
-					"Account you followed post a brand new post. Check it out!",
+					"Someone you followed post a brand new post. Check it out!",
+					false,
 					&proto.NotifyLink{Label: "Related post", Url: postUrl},
 				)
 				if err != nil {

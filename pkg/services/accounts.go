@@ -1,11 +1,11 @@
 package services
 
 import (
+	"context"
 	"git.solsynth.dev/hydrogen/identity/pkg/grpc/proto"
 	"git.solsynth.dev/hydrogen/interactive/pkg/database"
 	"git.solsynth.dev/hydrogen/interactive/pkg/grpc"
 	"git.solsynth.dev/hydrogen/interactive/pkg/models"
-	"context"
 	"github.com/spf13/viper"
 	"time"
 )
@@ -34,7 +34,7 @@ func GetAccountFollowed(user models.Account, target models.Account) (models.Acco
 	return relationship, err == nil
 }
 
-func NotifyAccount(user models.Account, subject, content string, links ...*proto.NotifyLink) error {
+func NotifyAccount(user models.Account, subject, content string, realtime bool, links ...*proto.NotifyLink) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
@@ -45,6 +45,7 @@ func NotifyAccount(user models.Account, subject, content string, links ...*proto
 		Content:      content,
 		Links:        links,
 		RecipientId:  uint64(user.ID),
+		IsRealtime:   realtime,
 		IsImportant:  false,
 	})
 

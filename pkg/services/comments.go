@@ -2,6 +2,8 @@ package services
 
 import (
 	"fmt"
+	"git.solsynth.dev/hydrogen/identity/pkg/grpc/proto"
+	"github.com/rs/zerolog/log"
 	"time"
 
 	"git.solsynth.dev/hydrogen/interactive/pkg/database"
@@ -79,4 +81,23 @@ func (v *PostTypeContext) CountComment(id uint) (int64, error) {
 	}
 
 	return count, nil
+}
+
+func CommentNotify(this models.PostInterface, original models.Feed, columnName, tableName string) {
+	var op models.Feed
+	if err := database.C.Where(columnName+"_id = ?", original.ID).Preload("Author").Table(tableName).First(&op).Error; err == nil {
+		if op.Author.ID != this.GetAuthor().ID {
+			postUrl := fmt.Sprintf("https://%s/posts/%d", viper.GetString("domain"), this.GetID())
+			err := NotifyAccount(
+				op.Author,
+				fmt.Sprintf("%s commented you", this.GetAuthor().Name),
+				fmt.Sprintf("%s commented your post. Check it out!", this.GetAuthor().Name),
+				false,
+				&proto.NotifyLink{Label: "Related post", Url: postUrl},
+			)
+			if err != nil {
+				log.Error().Err(err).Msg("An error occurred when notifying user...")
+			}
+		}
+	}
 }

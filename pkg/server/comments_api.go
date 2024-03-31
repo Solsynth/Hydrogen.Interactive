@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"github.com/spf13/viper"
 	"strings"
 	"time"
 
@@ -84,10 +85,17 @@ func createComment(c *fiber.Ctx) error {
 	var err error
 	var res models.Feed
 
+	var columnName string
+	var tableName string
+
 	switch postType {
 	case "moments":
+		columnName = "moment"
+		tableName = viper.GetString("database.table_prefix") + "moments"
 		err = database.C.Model(&models.Moment{}).Where("alias = ?", alias).Select("id").First(&res).Error
 	case "articles":
+		columnName = "article"
+		tableName = viper.GetString("database.table_prefix") + "articles"
 		err = database.C.Model(&models.Article{}).Where("alias = ?", alias).Select("id").First(&res).Error
 	default:
 		return fiber.NewError(fiber.StatusBadRequest, "comment must belongs to a resource")
@@ -116,11 +124,15 @@ func createComment(c *fiber.Ctx) error {
 		}
 	}
 
-	if item, err := services.NewPost(item); err != nil {
+	item, err = services.NewPost(item)
+	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
-	} else {
-		return c.JSON(item)
 	}
+
+	// Notify the original poster their post is commented by someone
+	go services.CommentNotify(item, res, columnName, tableName)
+
+	return c.JSON(item)
 }
 
 func editComment(c *fiber.Ctx) error {
