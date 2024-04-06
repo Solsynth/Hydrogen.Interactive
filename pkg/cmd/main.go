@@ -3,6 +3,8 @@ package main
 import (
 	"git.solsynth.dev/hydrogen/interactive/pkg/grpc"
 	"git.solsynth.dev/hydrogen/interactive/pkg/server"
+	"git.solsynth.dev/hydrogen/interactive/pkg/services"
+	"github.com/robfig/cron/v3"
 	"os"
 	"os/signal"
 	"syscall"
@@ -45,6 +47,11 @@ func main() {
 		}
 	}()
 
+	// Configure timed tasks
+	quartz := cron.New(cron.WithLogger(cron.VerbosePrintfLogger(&log.Logger)))
+	quartz.AddFunc("@every 60m", services.DoAutoDatabaseCleanup)
+	quartz.Start()
+
 	// Server
 	server.NewServer()
 	go server.Listen()
@@ -57,4 +64,6 @@ func main() {
 	<-quit
 
 	log.Info().Msgf("Interactive v%s is quitting...", interactive.AppVersion)
+
+	quartz.Stop()
 }
