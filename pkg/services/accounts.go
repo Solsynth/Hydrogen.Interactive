@@ -34,6 +34,17 @@ func GetAccountFollowed(user models.Account, target models.Account) (models.Acco
 	return relationship, err == nil
 }
 
+func GetAccountFriend(userId, relatedId uint, status int) (*proto.FriendshipResponse, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	return grpc.Friendships.GetFriendship(ctx, &proto.FriendshipTwoSideLookupRequest{
+		AccountId: uint64(userId),
+		RelatedId: uint64(relatedId),
+		Status:    uint32(status),
+	})
+}
+
 func NotifyAccount(user models.Account, subject, content string, realtime bool, links ...*proto.NotifyLink) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()

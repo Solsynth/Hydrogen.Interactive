@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"git.solsynth.dev/hydrogen/interactive/pkg/database"
 	"git.solsynth.dev/hydrogen/interactive/pkg/models"
 	"github.com/samber/lo"
@@ -76,13 +77,16 @@ func ListRealmMember(realmId uint) ([]models.RealmMember, error) {
 }
 
 func InviteRealmMember(user models.Account, target models.Realm) error {
+	if _, err := GetAccountFriend(user.ID, target.AccountID, 1); err != nil {
+		return fmt.Errorf("you only can invite your friends to your realm")
+	}
+
 	member := models.RealmMember{
 		RealmID:   target.ID,
 		AccountID: user.ID,
 	}
 
 	err := database.C.Save(&member).Error
-
 	return err
 }
 
