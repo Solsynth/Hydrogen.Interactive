@@ -35,12 +35,21 @@ func GetAccountFollowed(user models.Account, target models.Account) (models.Acco
 }
 
 func GetAccountFriend(userId, relatedId uint, status int) (*proto.FriendshipResponse, error) {
+	var user models.Account
+	if err := database.C.Where("id = ?", userId).First(&user).Error; err != nil {
+		return nil, err
+	}
+	var related models.Account
+	if err := database.C.Where("id = ?", relatedId).First(&related).Error; err != nil {
+		return nil, err
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
 	return grpc.Friendships.GetFriendship(ctx, &proto.FriendshipTwoSideLookupRequest{
-		AccountId: uint64(userId),
-		RelatedId: uint64(relatedId),
+		AccountId: uint64(user.ExternalID),
+		RelatedId: uint64(related.ExternalID),
 		Status:    uint32(status),
 	})
 }
