@@ -121,6 +121,7 @@ func NewServer() {
 			realms.Post("/", authMiddleware, createRealm)
 			realms.Post("/:realmId/invite", authMiddleware, inviteRealm)
 			realms.Post("/:realmId/kick", authMiddleware, kickRealm)
+			realms.Post("/:realmId/leave", authMiddleware, kickRealm)
 			realms.Put("/:realmId", authMiddleware, editRealm)
 			realms.Delete("/:realmId", authMiddleware, deleteRealm)
 		}
