@@ -13,7 +13,7 @@ func readAttachment(c *fiber.Ctx) error {
 	id := c.Params("fileId")
 	basepath := viper.GetString("content")
 
-	return c.SendFile(filepath.Join(basepath, id))
+	return c.SendFile(filepath.Join(basepath, id), true)
 }
 
 func uploadAttachment(c *fiber.Ctx) error {

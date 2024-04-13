@@ -7,10 +7,10 @@ import (
 	"reflect"
 	"time"
 
-	"git.solsynth.dev/hydrogen/identity/pkg/grpc/proto"
 	"git.solsynth.dev/hydrogen/interactive/pkg/database"
 	"git.solsynth.dev/hydrogen/interactive/pkg/grpc"
 	"git.solsynth.dev/hydrogen/interactive/pkg/models"
+	"git.solsynth.dev/hydrogen/passport/pkg/grpc/proto"
 	"gorm.io/gorm"
 )
 

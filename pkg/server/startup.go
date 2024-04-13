@@ -2,20 +2,17 @@ package server
 
 import (
 	"git.solsynth.dev/hydrogen/interactive/pkg"
-	"github.com/gofiber/fiber/v2/middleware/favicon"
-	"net/http"
-	"strings"
-	"time"
-
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cache"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/favicon"
 	"github.com/gofiber/fiber/v2/middleware/idempotency"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/template/html/v2"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
+	"net/http"
+	"strings"
 )
 
 var A *fiber.App
@@ -68,10 +65,7 @@ func NewServer() {
 		api.Get("/users/:accountId/follow", authMiddleware, getAccountFollowed)
 		api.Post("/users/:accountId/follow", authMiddleware, doFollowAccount)
 
-		api.Get("/attachments/o/:fileId", cache.New(cache.Config{
-			Expiration:   365 * 24 * time.Hour,
-			CacheControl: true,
-		}), readAttachment)
+		api.Get("/attachments/o/:fileId", readAttachment)
 		api.Post("/attachments", authMiddleware, uploadAttachment)
 		api.Delete("/attachments/:id", authMiddleware, deleteAttachment)
 

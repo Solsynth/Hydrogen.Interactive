@@ -1,7 +1,7 @@
 package grpc
 
 import (
-	idpb "git.solsynth.dev/hydrogen/identity/pkg/grpc/proto"
+	idpb "git.solsynth.dev/hydrogen/passport/pkg/grpc/proto"
 	"google.golang.org/grpc/credentials/insecure"
 
 	"github.com/spf13/viper"
@@ -13,7 +13,7 @@ var Notify idpb.NotifyClient
 var Auth idpb.AuthClient
 
 func ConnectPassport() error {
-	addr := viper.GetString("identity.grpc_endpoint")
+	addr := viper.GetString("passport.grpc_endpoint")
 	if conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials())); err != nil {
 		return err
 	} else {

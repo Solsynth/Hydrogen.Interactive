@@ -2,10 +2,10 @@ package services
 
 import (
 	"context"
-	"git.solsynth.dev/hydrogen/identity/pkg/grpc/proto"
 	"git.solsynth.dev/hydrogen/interactive/pkg/database"
 	"git.solsynth.dev/hydrogen/interactive/pkg/grpc"
 	"git.solsynth.dev/hydrogen/interactive/pkg/models"
+	"git.solsynth.dev/hydrogen/passport/pkg/grpc/proto"
 	"github.com/spf13/viper"
 	"time"
 )
@@ -59,8 +59,8 @@ func NotifyAccount(user models.Account, subject, content string, realtime bool, 
 	defer cancel()
 
 	_, err := grpc.Notify.NotifyUser(ctx, &proto.NotifyRequest{
-		ClientId:     viper.GetString("identity.client_id"),
-		ClientSecret: viper.GetString("identity.client_secret"),
+		ClientId:     viper.GetString("passport.client_id"),
+		ClientSecret: viper.GetString("passport.client_secret"),
 		Subject:      subject,
 		Content:      content,
 		Links:        links,

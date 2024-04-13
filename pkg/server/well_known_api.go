@@ -10,7 +10,7 @@ func getMetadata(c *fiber.Ctx) error {
 		"name":   viper.GetString("name"),
 		"domain": viper.GetString("domain"),
 		"components": fiber.Map{
-			"identity": viper.GetString("identity.endpoint"),
+			"passport": viper.GetString("passport.endpoint"),
 		},
 	})
 }

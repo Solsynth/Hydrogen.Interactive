@@ -2,7 +2,7 @@ package services
 
 import (
 	"fmt"
-	"git.solsynth.dev/hydrogen/identity/pkg/grpc/proto"
+	"git.solsynth.dev/hydrogen/passport/pkg/grpc/proto"
 	"github.com/rs/zerolog/log"
 	"time"
 

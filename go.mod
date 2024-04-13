@@ -3,7 +3,6 @@ module git.solsynth.dev/hydrogen/interactive
 go 1.21.6
 
 require (
-	git.solsynth.dev/hydrogen/identity v0.0.0-20240405190322-7f5183f83bbf
 	github.com/go-playground/validator/v10 v10.17.0
 	github.com/gofiber/fiber/v2 v2.52.4
 	github.com/gofiber/template/html/v2 v2.1.1
@@ -23,6 +22,7 @@ require (
 )
 
 require (
+	git.solsynth.dev/hydrogen/passport v0.0.0-20240413054819-e5d53ab77b1b // indirect
 	github.com/andybalholm/brotli v1.1.0 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect

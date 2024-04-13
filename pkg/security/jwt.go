@@ -21,8 +21,8 @@ const (
 )
 
 const (
-	CookieAccessKey  = "identity_auth_key"
-	CookieRefreshKey = "identity_refresh_key"
+	CookieAccessKey  = "passport_auth_key"
+	CookieRefreshKey = "passport_refresh_key"
 )
 
 func EncodeJwt(id string, typ, sub string, aud []string, exp time.Time) (string, error) {

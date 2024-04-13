@@ -13,7 +13,7 @@ content = "uploads"
 database = false
 print_routes = false
 
-[identity]
+[passport]
 client_id = "solarplaza"
 client_secret = "Z9k9AFTj^p"
 endpoint = "http://localhost:8444"
