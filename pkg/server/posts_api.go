@@ -100,7 +100,7 @@ func reactPost(c *fiber.Ctx) error {
 
 	var data struct {
 		Symbol   string                  `json:"symbol" form:"symbol" validate:"required"`
-		Attitude models.ReactionAttitude `json:"attitude" form:"attitude" validate:"required"`
+		Attitude models.ReactionAttitude `json:"attitude" form:"attitude"`
 	}
 
 	if err := BindAndValidate(c, &data); err != nil {
