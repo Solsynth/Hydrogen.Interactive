@@ -85,7 +85,11 @@ func (v *PostTypeContext) CountComment(id uint) (int64, error) {
 
 func CommentNotify(this models.PostInterface, original models.Feed, columnName, tableName string) {
 	var op models.Feed
-	if err := database.C.Where(columnName+"_id = ?", original.ID).Preload("Author").Table(tableName).First(&op).Error; err == nil {
+	if err := database.C.
+		Where(columnName+"_id = ?", original.ID).
+		Preload("Author").
+		Table(tableName).
+		First(&op).Error; err == nil {
 		if op.Author.ID != this.GetAuthor().ID {
 			postUrl := fmt.Sprintf("https://%s/posts/%d", viper.GetString("domain"), this.GetID())
 			err := NotifyAccount(

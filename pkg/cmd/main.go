@@ -41,11 +41,9 @@ func main() {
 	}
 
 	// Connect other services
-	go func() {
-		if err := grpc.ConnectPassport(); err != nil {
-			log.Fatal().Err(err).Msg("An error occurred when connecting to passport grpc endpoint...")
-		}
-	}()
+	if err := grpc.ConnectPassport(); err != nil {
+		log.Fatal().Err(err).Msg("An error occurred when connecting to passport grpc endpoint...")
+	}
 
 	// Configure timed tasks
 	quartz := cron.New(cron.WithLogger(cron.VerbosePrintfLogger(&log.Logger)))

@@ -6,6 +6,7 @@ import (
 	"git.solsynth.dev/hydrogen/interactive/pkg/grpc"
 	"git.solsynth.dev/hydrogen/interactive/pkg/models"
 	"git.solsynth.dev/hydrogen/passport/pkg/grpc/proto"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 	"time"
 )
@@ -68,6 +69,11 @@ func NotifyAccount(user models.Account, subject, content string, realtime bool, 
 		IsRealtime:   realtime,
 		IsImportant:  false,
 	})
+	if err != nil {
+		log.Warn().Err(err).Msg("An error occurred when notify account...")
+	} else {
+		log.Debug().Uint("external", user.ExternalID).Msg("Notified account.")
+	}
 
 	return err
 }

@@ -314,7 +314,10 @@ func NewPost[T models.PostInterface](item T) (T, error) {
 	if item.GetReplyTo() != nil {
 		go func() {
 			var op models.Moment
-			if err := database.C.Where("id = ?", item.GetReplyTo()).Preload("Author").First(&op).Error; err == nil {
+			if err := database.C.
+				Where("id = ?", item.GetReplyTo()).
+				Preload("Author").
+				First(&op).Error; err == nil {
 				if op.Author.ID != item.GetAuthor().ID {
 					postUrl := fmt.Sprintf("https://%s/posts/%d", viper.GetString("domain"), item.GetID())
 					err := NotifyAccount(
