@@ -100,7 +100,7 @@ func editMoment(c *fiber.Ctx) error {
 		return err
 	}
 
-	var item *models.Moment
+	var item *models.Comment
 	if err := database.C.Where(models.Comment{
 		PostBase: models.PostBase{
 			BaseModel: models.BaseModel{ID: uint(id)},

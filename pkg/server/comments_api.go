@@ -57,11 +57,12 @@ func createComment(c *fiber.Ctx) error {
 	user := c.Locals("principal").(models.Account)
 
 	var data struct {
-		Content     string            `json:"content" form:"content" validate:"required"`
-		PublishedAt *time.Time        `json:"published_at" form:"published_at"`
-		Hashtags    []models.Tag      `json:"hashtags" form:"hashtags"`
-		Categories  []models.Category `json:"categories" form:"categories"`
-		ReplyTo     uint              `json:"reply_to" form:"reply_to"`
+		Content     string              `json:"content" form:"content" validate:"required"`
+		PublishedAt *time.Time          `json:"published_at" form:"published_at"`
+		Hashtags    []models.Tag        `json:"hashtags" form:"hashtags"`
+		Categories  []models.Category   `json:"categories" form:"categories"`
+		Attachments []models.Attachment `json:"attachments" form:"attachments"`
+		ReplyTo     uint                `json:"reply_to" form:"reply_to"`
 	}
 
 	if err := BindAndValidate(c, &data); err != nil {
@@ -74,9 +75,10 @@ func createComment(c *fiber.Ctx) error {
 			PublishedAt: data.PublishedAt,
 			AuthorID:    user.ID,
 		},
-		Hashtags:   data.Hashtags,
-		Categories: data.Categories,
-		Content:    data.Content,
+		Hashtags:    data.Hashtags,
+		Categories:  data.Categories,
+		Attachments: data.Attachments,
+		Content:     data.Content,
 	}
 
 	postType := c.Params("postType")
