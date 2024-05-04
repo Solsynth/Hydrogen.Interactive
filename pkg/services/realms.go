@@ -1,118 +1,82 @@
 package services
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"git.solsynth.dev/hydrogen/interactive/pkg/database"
+	"git.solsynth.dev/hydrogen/interactive/pkg/grpc"
 	"git.solsynth.dev/hydrogen/interactive/pkg/models"
+	"git.solsynth.dev/hydrogen/passport/pkg/grpc/proto"
 	"github.com/samber/lo"
+	"gorm.io/gorm"
 )
 
-func ListRealm() ([]models.Realm, error) {
-	var realms []models.Realm
-	if err := database.C.Find(&realms).Error; err != nil {
-		return realms, err
-	}
-
-	return realms, nil
-}
-
-func ListRealmWithUser(user models.Account) ([]models.Realm, error) {
-	var realms []models.Realm
-	if err := database.C.Where(&models.Realm{AccountID: user.ID}).Find(&realms).Error; err != nil {
-		return realms, err
-	}
-
-	return realms, nil
-}
-
-func ListRealmIsAvailable(user models.Account) ([]models.Realm, error) {
-	var realms []models.Realm
-	var members []models.RealmMember
-	if err := database.C.Where(&models.RealmMember{
-		AccountID: user.ID,
-	}).Find(&members).Error; err != nil {
-		return realms, err
-	}
-
-	idx := lo.Map(members, func(item models.RealmMember, index int) uint {
-		return item.RealmID
+func GetRealm(id uint) (models.Realm, error) {
+	var realm models.Realm
+	response, err := grpc.Realms.GetRealm(context.Background(), &proto.RealmLookupRequest{
+		Id: lo.ToPtr(uint64(id)),
 	})
+	if err != nil {
+		return realm, err
+	}
+	return LinkRealm(response)
+}
 
+func GetRealmWithAlias(alias string) (models.Realm, error) {
+	var realm models.Realm
+	response, err := grpc.Realms.GetRealm(context.Background(), &proto.RealmLookupRequest{
+		Alias: &alias,
+	})
+	if err != nil {
+		return realm, err
+	}
+	return LinkRealm(response)
+}
+
+func GetRealmMember(realmId uint, userId uint) (*proto.RealmMemberResponse, error) {
+	response, err := grpc.Realms.GetRealmMember(context.Background(), &proto.RealmMemberLookupRequest{
+		RealmId: uint64(realmId),
+		UserId:  lo.ToPtr(uint64(userId)),
+	})
+	if err != nil {
+		return nil, err
+	} else {
+		return response, nil
+	}
+}
+
+func ListRealmMember(realmId uint) ([]*proto.RealmMemberResponse, error) {
+	response, err := grpc.Realms.ListRealmMember(context.Background(), &proto.RealmMemberLookupRequest{
+		RealmId: uint64(realmId),
+	})
+	if err != nil {
+		return nil, err
+	} else {
+		return response.Data, nil
+	}
+}
+
+func LinkRealm(info *proto.RealmResponse) (models.Realm, error) {
+	var realm models.Realm
+	if info == nil {
+		return realm, fmt.Errorf("remote realm info was not found")
+	}
 	if err := database.C.Where(&models.Realm{
-		RealmType: models.RealmTypePublic,
-	}).Or("id IN ?", idx).Find(&realms).Error; err != nil {
-		return realms, err
+		ExternalID: uint(info.Id),
+	}).First(&realm).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			realm = models.Realm{
+				Alias:       info.Alias,
+				Name:        info.Name,
+				Description: info.Description,
+				IsPublic:    info.IsPublic,
+				IsCommunity: info.IsCommunity,
+				ExternalID:  uint(info.Id),
+			}
+			return realm, database.C.Save(&realm).Error
+		}
+		return realm, err
 	}
-
-	return realms, nil
-}
-
-func NewRealm(user models.Account, name, description string, realmType int) (models.Realm, error) {
-	realm := models.Realm{
-		Name:        name,
-		Description: description,
-		AccountID:   user.ID,
-		RealmType:   realmType,
-		Members: []models.RealmMember{
-			{AccountID: user.ID},
-		},
-	}
-
-	err := database.C.Save(&realm).Error
-
-	return realm, err
-}
-
-func ListRealmMember(realmId uint) ([]models.RealmMember, error) {
-	var members []models.RealmMember
-
-	if err := database.C.
-		Where(&models.RealmMember{RealmID: realmId}).
-		Preload("Account").
-		Find(&members).Error; err != nil {
-		return members, err
-	}
-
-	return members, nil
-}
-
-func InviteRealmMember(user models.Account, target models.Realm) error {
-	if _, err := GetAccountFriend(user.ID, target.AccountID, 1); err != nil {
-		return fmt.Errorf("you only can invite your friends to your realm")
-	}
-
-	member := models.RealmMember{
-		RealmID:   target.ID,
-		AccountID: user.ID,
-	}
-
-	err := database.C.Save(&member).Error
-	return err
-}
-
-func KickRealmMember(user models.Account, target models.Realm) error {
-	var member models.RealmMember
-
-	if err := database.C.Where(&models.RealmMember{
-		RealmID:   target.ID,
-		AccountID: user.ID,
-	}).First(&member).Error; err != nil {
-		return err
-	}
-
-	return database.C.Delete(&member).Error
-}
-
-func EditRealm(realm models.Realm, name, description string, realmType int) (models.Realm, error) {
-	realm.Name = name
-	realm.Description = description
-	realm.RealmType = realmType
-
-	err := database.C.Save(&realm).Error
-
-	return realm, err
-}
-
-func DeleteRealm(realm models.Realm) error {
-	return database.C.Delete(&realm).Error
+	return realm, nil
 }

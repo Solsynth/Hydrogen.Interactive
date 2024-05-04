@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"git.solsynth.dev/hydrogen/passport/pkg/services"
 	"strings"
 
 	"git.solsynth.dev/hydrogen/interactive/pkg/database"
@@ -19,7 +20,7 @@ const (
 func listFeed(c *fiber.Ctx) error {
 	take := c.QueryInt("take", 0)
 	offset := c.QueryInt("offset", 0)
-	realmId := c.QueryInt("realmId", 0)
+	realmAlias := c.Query("realm")
 
 	if take > 20 {
 		take = 20
@@ -27,10 +28,12 @@ func listFeed(c *fiber.Ctx) error {
 
 	var whereConditions []string
 
-	if realmId < 0 {
-		whereConditions = append(whereConditions, "feed.realm_id IS NULL")
-	} else if realmId > 0 {
-		whereConditions = append(whereConditions, fmt.Sprintf("feed.realm_id = %d", realmId))
+	if len(realmAlias) > 0 {
+		realm, err := services.GetRealmWithAlias(realmAlias)
+		if err != nil {
+			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("related realm was not found: %v", err))
+		}
+		whereConditions = append(whereConditions, fmt.Sprintf("feed.realm_id = %d", realm.ID))
 	}
 
 	var author models.Account

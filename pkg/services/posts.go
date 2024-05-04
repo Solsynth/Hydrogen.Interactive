@@ -3,6 +3,7 @@ package services
 import (
 	"errors"
 	"fmt"
+	"git.solsynth.dev/hydrogen/passport/pkg/services"
 	"time"
 
 	"git.solsynth.dev/hydrogen/interactive/pkg/database"
@@ -296,14 +297,9 @@ func NewPost[T models.PostInterface](item T) (T, error) {
 	}
 
 	if item.GetRealm() != nil {
-		if item.GetRealm().RealmType != models.RealmTypePublic {
-			var member models.RealmMember
-			if err := database.C.Where(&models.RealmMember{
-				RealmID:   item.GetRealm().ID,
-				AccountID: item.GetAuthor().ID,
-			}).First(&member).Error; err != nil {
-				return item, fmt.Errorf("you aren't a part of that realm")
-			}
+		_, err := services.GetRealmMember(item.GetRealm().ID, item.GetAuthor().ID)
+		if err != nil {
+			return item, fmt.Errorf("you aren't a part of that realm: %v", err)
 		}
 	}
 

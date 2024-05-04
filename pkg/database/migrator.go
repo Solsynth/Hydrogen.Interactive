@@ -8,7 +8,6 @@ import (
 var DatabaseAutoActionRange = []any{
 	&models.Account{},
 	&models.Realm{},
-	&models.RealmMember{},
 	&models.Category{},
 	&models.Tag{},
 	&models.Moment{},

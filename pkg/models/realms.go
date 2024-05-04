@@ -1,30 +1,16 @@
 package models
 
-type RealmType = int
-
-const (
-	RealmTypePublic = RealmType(iota)
-	RealmTypeRestricted
-	RealmTypePrivate
-)
-
+// Realm profiles basically fetched from Hydrogen.Passport
+// But cache at here for better usage and database relations
 type Realm struct {
 	BaseModel
 
-	Name        string        `json:"name"`
-	Description string        `json:"description"`
-	Articles    []Article     `json:"article"`
-	Moments     []Moment      `json:"moments"`
-	Members     []RealmMember `json:"members"`
-	RealmType   RealmType     `json:"realm_type"`
-	AccountID   uint          `json:"account_id"`
-}
-
-type RealmMember struct {
-	BaseModel
-
-	RealmID   uint    `json:"realm_id"`
-	AccountID uint    `json:"account_id"`
-	Realm     Realm   `json:"realm"`
-	Account   Account `json:"account"`
+	Alias       string    `json:"alias"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+	Articles    []Article `json:"article"`
+	Moments     []Moment  `json:"moments"`
+	IsPublic    bool      `json:"is_public"`
+	IsCommunity bool      `json:"is_community"`
+	ExternalID  uint      `json:"external_id"`
 }

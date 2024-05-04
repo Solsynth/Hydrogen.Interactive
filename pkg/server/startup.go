@@ -104,21 +104,6 @@ func NewServer() {
 		api.Post("/categories", authMiddleware, newCategory)
 		api.Put("/categories/:categoryId", authMiddleware, editCategory)
 		api.Delete("/categories/:categoryId", authMiddleware, deleteCategory)
-
-		realms := api.Group("/realms").Name("Realms API")
-		{
-			realms.Get("/", listRealm)
-			realms.Get("/me", authMiddleware, listOwnedRealm)
-			realms.Get("/me/available", authMiddleware, listAvailableRealm)
-			realms.Get("/:realmId", getRealm)
-			realms.Get("/:realmId/members", listRealmMembers)
-			realms.Post("/", authMiddleware, createRealm)
-			realms.Post("/:realmId/invite", authMiddleware, inviteRealm)
-			realms.Post("/:realmId/kick", authMiddleware, kickRealm)
-			realms.Post("/:realmId/leave", authMiddleware, kickRealm)
-			realms.Put("/:realmId", authMiddleware, editRealm)
-			realms.Delete("/:realmId", authMiddleware, deleteRealm)
-		}
 	}
 
 	A.Use(favicon.New(favicon.Config{
