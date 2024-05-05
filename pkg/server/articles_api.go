@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -54,15 +55,15 @@ func createArticle(c *fiber.Ctx) error {
 		Title:       data.Title,
 		Description: data.Description,
 		Content:     data.Content,
-		RealmID:     data.RealmID,
 	}
 
-	var realm *models.Realm
 	if data.RealmID != nil {
-		if err := database.C.Where(&models.Realm{
-			BaseModel: models.BaseModel{ID: *data.RealmID},
-		}).First(&realm).Error; err != nil {
+		if realm, err := services.GetRealm(*data.RealmID); err != nil {
 			return fiber.NewError(fiber.StatusBadRequest, err.Error())
+		} else if _, err := services.GetRealmMember(realm.ExternalID, user.ExternalID); err != nil {
+			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("you aren't a part of related realm: %v", err))
+		} else {
+			item.RealmID = &realm.ID
 		}
 	}
 

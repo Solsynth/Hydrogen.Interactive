@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -51,7 +52,6 @@ func createMoment(c *fiber.Ctx) error {
 		Categories:  data.Categories,
 		Attachments: data.Attachments,
 		Content:     data.Content,
-		RealmID:     data.RealmID,
 	}
 
 	var relatedCount int64
@@ -66,12 +66,13 @@ func createMoment(c *fiber.Ctx) error {
 		}
 	}
 
-	var realm *models.Realm
 	if data.RealmID != nil {
-		if err := database.C.Where(&models.Realm{
-			BaseModel: models.BaseModel{ID: *data.RealmID},
-		}).First(&realm).Error; err != nil {
+		if realm, err := services.GetRealm(*data.RealmID); err != nil {
 			return fiber.NewError(fiber.StatusBadRequest, err.Error())
+		} else if _, err := services.GetRealmMember(realm.ExternalID, user.ExternalID); err != nil {
+			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("you aren't a part of related realm: %v", err))
+		} else {
+			item.RealmID = &realm.ID
 		}
 	}
 
