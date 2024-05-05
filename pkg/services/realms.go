@@ -10,6 +10,7 @@ import (
 	"git.solsynth.dev/hydrogen/passport/pkg/grpc/proto"
 	"github.com/samber/lo"
 	"gorm.io/gorm"
+	"reflect"
 )
 
 func GetRealm(id uint) (models.Realm, error) {
@@ -78,5 +79,18 @@ func LinkRealm(info *proto.RealmResponse) (models.Realm, error) {
 		}
 		return realm, err
 	}
-	return realm, nil
+
+	prev := realm
+	realm.Alias = info.Alias
+	realm.Name = info.Name
+	realm.Description = info.Description
+	realm.IsPublic = info.IsPublic
+	realm.IsCommunity = info.IsCommunity
+
+	var err error
+	if !reflect.DeepEqual(prev, realm) {
+		err = database.C.Save(&realm).Error
+	}
+
+	return realm, err
 }
