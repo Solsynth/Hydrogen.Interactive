@@ -32,7 +32,7 @@ func createMoment(c *fiber.Ctx) error {
 		Categories  []models.Category   `json:"categories" form:"categories"`
 		Attachments []models.Attachment `json:"attachments" form:"attachments"`
 		PublishedAt *time.Time          `json:"published_at" form:"published_at"`
-		RealmID     *uint               `json:"realm_id" form:"realm_id"`
+		RealmAlias  string              `json:"realm" form:"realm"`
 		RepostTo    uint                `json:"repost_to" form:"repost_to"`
 	}
 
@@ -66,8 +66,8 @@ func createMoment(c *fiber.Ctx) error {
 		}
 	}
 
-	if data.RealmID != nil {
-		if realm, err := services.GetRealm(*data.RealmID); err != nil {
+	if len(data.RealmAlias) > 0 {
+		if realm, err := services.GetRealmWithAlias(data.RealmAlias); err != nil {
 			return fiber.NewError(fiber.StatusBadRequest, err.Error())
 		} else if _, err := services.GetRealmMember(realm.ExternalID, user.ExternalID); err != nil {
 			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("you aren't a part of related realm: %v", err))
