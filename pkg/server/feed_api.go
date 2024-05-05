@@ -2,7 +2,7 @@ package server
 
 import (
 	"fmt"
-	"git.solsynth.dev/hydrogen/passport/pkg/services"
+	"git.solsynth.dev/hydrogen/interactive/pkg/services"
 	"strings"
 
 	"git.solsynth.dev/hydrogen/interactive/pkg/database"
