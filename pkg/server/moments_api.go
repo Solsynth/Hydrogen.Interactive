@@ -130,7 +130,7 @@ func deleteMoment(c *fiber.Ctx) error {
 	id, _ := c.ParamsInt("momentId", 0)
 
 	var item *models.Moment
-	if err := database.C.Where(models.Comment{
+	if err := database.C.Where(models.Moment{
 		PostBase: models.PostBase{
 			BaseModel: models.BaseModel{ID: uint(id)},
 			AuthorID:  user.ID,
