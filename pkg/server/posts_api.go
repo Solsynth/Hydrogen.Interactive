@@ -83,7 +83,8 @@ func createPost(c *fiber.Ctx) error {
 		Attachments []models.Attachment `json:"attachments" form:"attachments"`
 		PublishedAt *time.Time          `json:"published_at" form:"published_at"`
 		RealmAlias  string              `json:"realm" form:"realm"`
-		RepostTo    uint                `json:"repost_to" form:"repost_to"`
+		ReplyTo     *uint               `json:"reply_to" form:"reply_to"`
+		RepostTo    *uint               `json:"repost_to" form:"repost_to"`
 	}
 
 	if err := BindAndValidate(c, &data); err != nil {
@@ -102,15 +103,20 @@ func createPost(c *fiber.Ctx) error {
 		Content:     data.Content,
 	}
 
-	var relatedCount int64
-	if data.RepostTo > 0 {
-		if err := database.C.Where("id = ?", data.RepostTo).
-			Model(&models.Post{}).Count(&relatedCount).Error; err != nil {
-			return fiber.NewError(fiber.StatusBadRequest, err.Error())
-		} else if relatedCount <= 0 {
-			return fiber.NewError(fiber.StatusNotFound, "related post was not found")
+	if data.ReplyTo != nil {
+		var replyTo models.Post
+		if err := database.C.Where("id = ?", data.ReplyTo).First(&replyTo).Error; err != nil {
+			return fiber.NewError(fiber.StatusNotFound, fmt.Sprintf("related post was not found: %v", err))
 		} else {
-			item.RepostID = &data.RepostTo
+			item.ReplyID = &replyTo.ID
+		}
+	}
+	if data.RepostTo != nil {
+		var repostTo models.Post
+		if err := database.C.Where("id = ?", data.RepostTo).First(&repostTo).Error; err != nil {
+			return fiber.NewError(fiber.StatusNotFound, fmt.Sprintf("related post was not found: %v", err))
+		} else {
+			item.RepostID = &repostTo.ID
 		}
 	}
 

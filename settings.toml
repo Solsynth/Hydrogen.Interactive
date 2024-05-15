@@ -17,7 +17,7 @@ print_routes = false
 client_id = "solarplaza"
 client_secret = "Z9k9AFTj^p"
 endpoint = "http://localhost:8444"
-grpc_endpoint = "127.0.0.1:7444"
+grpc_endpoint = "id.solsynth.dev:7444"
 
 [mailer]
 name = "Alphabot <alphabot@smartsheep.studio>"
