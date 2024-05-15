@@ -62,8 +62,6 @@ func NewServer() {
 	{
 		api.Get("/users/me", authMiddleware, getUserinfo)
 		api.Get("/users/:accountId", getOthersInfo)
-		api.Get("/users/:accountId/follow", authMiddleware, getAccountFollowed)
-		api.Post("/users/:accountId/follow", authMiddleware, doFollowAccount)
 
 		api.Get("/attachments/o/:fileId", readAttachment)
 		api.Post("/attachments", authMiddleware, uploadAttachment)
@@ -71,33 +69,16 @@ func NewServer() {
 
 		api.Get("/feed", listFeed)
 
-		posts := api.Group("/p/:postType").Use(useDynamicContext).Name("Dataset Universal API")
+		posts := api.Group("/posts").Name("Posts API")
 		{
 			posts.Get("/", listPost)
 			posts.Get("/:postId", getPost)
+			posts.Post("/", authMiddleware, createPost)
 			posts.Post("/:postId/react", authMiddleware, reactPost)
-			posts.Get("/:postId/comments", listComment)
-			posts.Post("/:postId/comments", authMiddleware, createComment)
-		}
+			posts.Put("/:postId", authMiddleware, editPost)
+			posts.Delete("/:postId", authMiddleware, deletePost)
 
-		moments := api.Group("/p/moments").Name("Moments API")
-		{
-			moments.Post("/", authMiddleware, createMoment)
-			moments.Put("/:momentId", authMiddleware, editMoment)
-			moments.Delete("/:momentId", authMiddleware, deleteMoment)
-		}
-
-		articles := api.Group("/p/articles").Name("Articles API")
-		{
-			articles.Post("/", authMiddleware, createArticle)
-			articles.Put("/:articleId", authMiddleware, editArticle)
-			articles.Delete("/:articleId", authMiddleware, deleteArticle)
-		}
-
-		comments := api.Group("/p/comments").Name("Comments API")
-		{
-			comments.Put("/:commentId", authMiddleware, editComment)
-			comments.Delete("/:commentId", authMiddleware, deleteComment)
+			posts.Get("/:postId/replies", listReplies)
 		}
 
 		api.Get("/categories", listCategories)

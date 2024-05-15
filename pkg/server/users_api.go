@@ -3,7 +3,6 @@ package server
 import (
 	"git.solsynth.dev/hydrogen/interactive/pkg/database"
 	"git.solsynth.dev/hydrogen/interactive/pkg/models"
-	"git.solsynth.dev/hydrogen/interactive/pkg/services"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -31,46 +30,4 @@ func getOthersInfo(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(data)
-}
-
-func getAccountFollowed(c *fiber.Ctx) error {
-	user := c.Locals("principal").(models.Account)
-	accountId, _ := c.ParamsInt("accountId", 0)
-
-	var data models.Account
-	if err := database.C.
-		Where(&models.Account{BaseModel: models.BaseModel{ID: uint(accountId)}}).
-		First(&data).Error; err != nil {
-		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
-	}
-
-	_, status := services.GetAccountFollowed(user, data)
-
-	return c.JSON(fiber.Map{
-		"is_followed": status,
-	})
-}
-
-func doFollowAccount(c *fiber.Ctx) error {
-	user := c.Locals("principal").(models.Account)
-	id, _ := c.ParamsInt("accountId", 0)
-
-	var account models.Account
-	if err := database.C.Where(&models.Account{
-		BaseModel: models.BaseModel{ID: uint(id)},
-	}).First(&account).Error; err != nil {
-		return fiber.NewError(fiber.StatusNotFound, err.Error())
-	}
-
-	if _, ok := services.GetAccountFollowed(user, account); ok {
-		if err := services.UnfollowAccount(user.ID, account.ID); err != nil {
-			return fiber.NewError(fiber.StatusBadRequest, err.Error())
-		}
-		return c.SendStatus(fiber.StatusNoContent)
-	} else {
-		if err := services.FollowAccount(user.ID, account.ID); err != nil {
-			return fiber.NewError(fiber.StatusBadRequest, err.Error())
-		}
-		return c.SendStatus(fiber.StatusCreated)
-	}
 }

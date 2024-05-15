@@ -3,8 +3,6 @@ package services
 import (
 	"errors"
 	"fmt"
-	"time"
-
 	"git.solsynth.dev/hydrogen/interactive/pkg/database"
 	"git.solsynth.dev/hydrogen/interactive/pkg/models"
 	"git.solsynth.dev/hydrogen/passport/pkg/grpc/proto"
@@ -12,131 +10,90 @@ import (
 	"github.com/samber/lo"
 	"github.com/spf13/viper"
 	"gorm.io/gorm"
+	"time"
 )
 
-type PostTypeContext struct {
-	Tx *gorm.DB
-
-	TableName  string
-	ColumnName string
-	CanReply   bool
-	CanRepost  bool
+func FilterPostWithCategory(tx *gorm.DB, alias string) *gorm.DB {
+	return tx.Joins("JOIN post_categories ON posts.id = post_categories.post_id").
+		Joins("JOIN post_categories ON post_categories.id = post_categories.category_id").
+		Where("post_categories.alias = ?", alias)
 }
 
-func (v *PostTypeContext) FilterWithCategory(alias string) *PostTypeContext {
-	name := v.ColumnName
-	v.Tx.Joins(fmt.Sprintf("JOIN %s_categories ON %s.id = %s_categories.%s_id", name, v.TableName, name, name)).
-		Joins(fmt.Sprintf("JOIN %s_categories ON %s_categories.id = %s_categories.category_id", name, name, name)).
-		Where(name+"_categories.alias = ?", alias)
-	return v
+func FilterPostWithTag(tx *gorm.DB, alias string) *gorm.DB {
+	return tx.Joins("JOIN post_tags ON posts.id = post_tags.post_id").
+		Joins("JOIN post_tags ON post_tags.id = post_tags.category_id").
+		Where("post_tags.alias = ?", alias)
 }
 
-func (v *PostTypeContext) FilterWithTag(alias string) *PostTypeContext {
-	name := v.ColumnName
-	v.Tx.Joins(fmt.Sprintf("JOIN %s_tags ON %s.id = %s_tags.%s_id", name, v.TableName, name, name)).
-		Joins(fmt.Sprintf("JOIN %s_tags ON %s_tags.id = %s_tags.category_id", name, name, name)).
-		Where(name+"_tags.alias = ?", alias)
-	return v
-}
-
-func (v *PostTypeContext) FilterPublishedAt(date time.Time) *PostTypeContext {
-	v.Tx.Where("published_at <= ? AND published_at IS NULL", date)
-	return v
-}
-
-func (v *PostTypeContext) FilterRealm(id uint) *PostTypeContext {
+func FilterWithRealm(tx *gorm.DB, id uint) *gorm.DB {
 	if id > 0 {
-		v.Tx = v.Tx.Where("realm_id = ?", id)
+		return tx.Where("realm_id = ?", id)
 	} else {
-		v.Tx = v.Tx.Where("realm_id IS NULL")
+		return tx.Where("realm_id IS NULL")
 	}
-	return v
 }
 
-func (v *PostTypeContext) FilterAuthor(id uint) *PostTypeContext {
-	v.Tx = v.Tx.Where("author_id = ?", id)
-	return v
-}
-
-func (v *PostTypeContext) FilterReply(condition bool) *PostTypeContext {
-	if condition {
-		v.Tx = v.Tx.Where("reply_id IS NOT NULL")
+func FilterPostReply(tx *gorm.DB, replyTo ...uint) *gorm.DB {
+	if len(replyTo) > 0 && replyTo[0] > 0 {
+		return tx.Where("reply_id = ?", replyTo[0])
 	} else {
-		v.Tx = v.Tx.Where("reply_id IS NULL")
+		return tx.Where("reply_id IS NULL")
 	}
-	return v
 }
 
-func (v *PostTypeContext) SortCreatedAt(order string) *PostTypeContext {
-	v.Tx.Order(fmt.Sprintf("created_at %s", order))
-	return v
+func FilterPostWithPublishedAt(tx *gorm.DB, date time.Time) *gorm.DB {
+	return tx.Where("published_at <= ? AND published_at IS NULL", date)
 }
 
-func (v *PostTypeContext) GetViaAlias(alias string) (models.Feed, error) {
-	var item models.Feed
-	table := viper.GetString("database.prefix") + v.TableName
-	userTable := viper.GetString("database.prefix") + "accounts"
-	if err := v.Tx.
-		Table(table).
-		Select("*, ? as model_type", v.ColumnName).
-		Joins(fmt.Sprintf("INNER JOIN %s AS author ON author_id = author.id", userTable)).
+func GetPostWithAlias(alias string, ignoreLimitation ...bool) (models.Post, error) {
+	tx := database.C
+	if len(ignoreLimitation) == 0 || !ignoreLimitation[0] {
+		tx = FilterPostWithPublishedAt(tx, time.Now())
+	}
+
+	var item models.Post
+	if err := tx.
 		Where("alias = ?", alias).
+		Preload("Author").
+		Preload("Attachments").
 		First(&item).Error; err != nil {
 		return item, err
 	}
 
-	var attachments []models.Attachment
-	if err := database.C.
-		Model(&models.Attachment{}).
-		Where(v.ColumnName+"_id = ?", item.ID).
-		Scan(&attachments).Error; err != nil {
+	return item, nil
+}
+
+func GetPost(id uint, ignoreLimitation ...bool) (models.Post, error) {
+	tx := database.C
+	if len(ignoreLimitation) == 0 || !ignoreLimitation[0] {
+		tx = FilterPostWithPublishedAt(tx, time.Now())
+	}
+
+	var item models.Post
+	if err := tx.
+		Where("id = ?", id).
+		Preload("Author").
+		Preload("Attachments").
+		First(&item).Error; err != nil {
 		return item, err
-	} else {
-		item.Attachments = attachments
 	}
 
 	return item, nil
 }
 
-func (v *PostTypeContext) Get(id uint, noComments ...bool) (models.Feed, error) {
-	var item models.Feed
-	table := viper.GetString("database.prefix") + v.TableName
-	userTable := viper.GetString("database.prefix") + "accounts"
-	if err := v.Tx.
-		Table(table).
-		Select("*, ? as model_type", v.ColumnName).
-		Joins(fmt.Sprintf("INNER JOIN %s AS author ON author_id = author.id", userTable)).
-		Where("id = ?", id).First(&item).Error; err != nil {
-		return item, err
-	}
-
-	var attachments []models.Attachment
-	if err := database.C.
-		Model(&models.Attachment{}).
-		Where(v.ColumnName+"_id = ?", id).
-		Scan(&attachments).Error; err != nil {
-		return item, err
-	} else {
-		item.Attachments = attachments
-	}
-
-	return item, nil
-}
-
-func (v *PostTypeContext) Count() (int64, error) {
+func CountPost(tx *gorm.DB) (int64, error) {
 	var count int64
-	table := viper.GetString("database.prefix") + v.TableName
-	if err := v.Tx.Table(table).Count(&count).Error; err != nil {
+	if err := tx.Model(&models.Post{}).Count(&count).Error; err != nil {
 		return count, err
 	}
 
 	return count, nil
 }
 
-func (v *PostTypeContext) CountComments(id uint) int64 {
+func CountPostReply(id uint) int64 {
 	var count int64
-	if err := database.C.Model(&models.Comment{}).
-		Where(v.ColumnName+"_id = ?", id).
+	if err := database.C.Model(&models.Post{}).
+		Where("reply_id = ?", id).
 		Count(&count).Error; err != nil {
 		return 0
 	}
@@ -144,10 +101,10 @@ func (v *PostTypeContext) CountComments(id uint) int64 {
 	return count
 }
 
-func (v *PostTypeContext) CountReactions(id uint) int64 {
+func CountPostReactions(id uint) int64 {
 	var count int64
 	if err := database.C.Model(&models.Reaction{}).
-		Where(v.ColumnName+"_id = ?", id).
+		Where("post_id = ?", id).
 		Count(&count).Error; err != nil {
 		return 0
 	}
@@ -155,7 +112,7 @@ func (v *PostTypeContext) CountReactions(id uint) int64 {
 	return count
 }
 
-func (v *PostTypeContext) ListReactions(id uint) (map[string]int64, error) {
+func ListPostReactions(id uint) (map[string]int64, error) {
 	var reactions []struct {
 		Symbol string
 		Count  int64
@@ -163,7 +120,7 @@ func (v *PostTypeContext) ListReactions(id uint) (map[string]int64, error) {
 
 	if err := database.C.Model(&models.Reaction{}).
 		Select("symbol, COUNT(id) as count").
-		Where(v.ColumnName+"_id = ?", id).
+		Where("post_id = ?", id).
 		Group("symbol").
 		Scan(&reactions).Error; err != nil {
 		return map[string]int64{}, err
@@ -178,21 +135,22 @@ func (v *PostTypeContext) ListReactions(id uint) (map[string]int64, error) {
 	}), nil
 }
 
-func (v *PostTypeContext) List(take int, offset int, noReact ...bool) ([]*models.Feed, error) {
+func ListPost(tx *gorm.DB, take int, offset int, noReact ...bool) ([]models.Post, error) {
 	if take > 20 {
 		take = 20
 	}
 
-	var items []*models.Feed
-	table := viper.GetString("database.prefix") + v.TableName
-	if err := v.Tx.
-		Table(table).
-		Select("*, ? as model_type", v.ColumnName).
-		Limit(take).Offset(offset).Find(&items).Error; err != nil {
+	var items []models.Post
+	if err := tx.
+		Limit(take).Offset(offset).
+		Order("created_at DESC").
+		Preload("Author").
+		Preload("Attachments").
+		Find(&items).Error; err != nil {
 		return items, err
 	}
 
-	idx := lo.Map(items, func(item *models.Feed, index int) uint {
+	idx := lo.Map(items, func(item models.Post, index int) uint {
 		return item.ID
 	})
 
@@ -204,14 +162,14 @@ func (v *PostTypeContext) List(take int, offset int, noReact ...bool) ([]*models
 		}
 
 		if err := database.C.Model(&models.Reaction{}).
-			Select(v.ColumnName+"_id as post_id, symbol, COUNT(id) as count").
-			Where(v.ColumnName+"_id IN (?)", idx).
+			Select("post_id as post_id, symbol, COUNT(id) as count").
+			Where("post_id IN (?)", idx).
 			Group("post_id, symbol").
 			Scan(&reactions).Error; err != nil {
 			return items, err
 		}
 
-		itemMap := lo.SliceToMap(items, func(item *models.Feed) (uint, *models.Feed) {
+		itemMap := lo.SliceToMap(items, func(item models.Post) (uint, models.Post) {
 			return item.ID, item
 		})
 
@@ -230,73 +188,34 @@ func (v *PostTypeContext) List(take int, offset int, noReact ...bool) ([]*models
 		}
 	}
 
-	{
-		var attachments []struct {
-			models.Attachment
-
-			PostID uint `json:"post_id"`
-		}
-
-		itemMap := lo.SliceToMap(items, func(item *models.Feed) (uint, *models.Feed) {
-			return item.ID, item
-		})
-
-		idx := lo.Map(items, func(item *models.Feed, index int) uint {
-			return item.ID
-		})
-
-		if err := database.C.
-			Model(&models.Attachment{}).
-			Select(v.ColumnName+"_id as post_id, *").
-			Where(v.ColumnName+"_id IN (?)", idx).
-			Scan(&attachments).Error; err != nil {
-			return items, err
-		}
-
-		list := map[uint][]models.Attachment{}
-		for _, info := range attachments {
-			list[info.PostID] = append(list[info.PostID], info.Attachment)
-		}
-
-		for k, v := range list {
-			if post, ok := itemMap[k]; ok {
-				post.Attachments = v
-			}
-		}
-	}
-
 	return items, nil
 }
 
-func MapCategoriesAndTags[T models.PostInterface](item T) (T, error) {
+func InitPostCategoriesAndTags(item models.Post) (models.Post, error) {
 	var err error
-	categories := item.GetCategories()
-	for idx, category := range categories {
-		categories[idx], err = GetCategory(category.Alias)
+	for idx, category := range item.Categories {
+		item.Categories[idx], err = GetCategory(category.Alias)
 		if err != nil {
 			return item, err
 		}
 	}
-	item.SetCategories(categories)
-	tags := item.GetHashtags()
-	for idx, tag := range tags {
-		tags[idx], err = GetTagOrCreate(tag.Alias, tag.Name)
+	for idx, tag := range item.Tags {
+		item.Tags[idx], err = GetTagOrCreate(tag.Alias, tag.Name)
 		if err != nil {
 			return item, err
 		}
 	}
-	item.SetHashtags(tags)
 	return item, nil
 }
 
-func NewPost[T models.PostInterface](item T) (T, error) {
-	item, err := MapCategoriesAndTags(item)
+func NewPost(user models.Account, item models.Post) (models.Post, error) {
+	item, err := InitPostCategoriesAndTags(item)
 	if err != nil {
 		return item, err
 	}
 
-	if item.GetRealm() != nil {
-		_, err := GetRealmMember(item.GetRealm().ID, item.GetAuthor().ExternalID)
+	if item.RealmID != nil {
+		_, err := GetRealmMember(*item.RealmID, user.ExternalID)
 		if err != nil {
 			return item, fmt.Errorf("you aren't a part of that realm: %v", err)
 		}
@@ -306,19 +225,20 @@ func NewPost[T models.PostInterface](item T) (T, error) {
 		return item, err
 	}
 
-	if item.GetReplyTo() != nil {
+	// Notify the original poster its post has been replied
+	if item.ReplyID != nil {
 		go func() {
-			var op models.Moment
+			var op models.Post
 			if err := database.C.
-				Where("id = ?", item.GetReplyTo()).
+				Where("id = ?", item.ReplyID).
 				Preload("Author").
 				First(&op).Error; err == nil {
-				if op.Author.ID != item.GetAuthor().ID {
-					postUrl := fmt.Sprintf("https://%s/posts/%d", viper.GetString("domain"), item.GetID())
+				if op.Author.ID != user.ID {
+					postUrl := fmt.Sprintf("https://%s/posts/%s", viper.GetString("domain"), item.Alias)
 					err := NotifyAccount(
 						op.Author,
-						fmt.Sprintf("%s replied you", item.GetAuthor().Name),
-						fmt.Sprintf("%s replied your post. Check it out!", item.GetAuthor().Name),
+						fmt.Sprintf("%s replied you", user.Nick),
+						fmt.Sprintf("%s (%s) replied your post #%s.", user.Nick, user.Name, op.Alias),
 						false,
 						&proto.NotifyLink{Label: "Related post", Url: postUrl},
 					)
@@ -330,36 +250,11 @@ func NewPost[T models.PostInterface](item T) (T, error) {
 		}()
 	}
 
-	var subscribers []models.AccountMembership
-	if err := database.C.Where(&models.AccountMembership{
-		FollowingID: item.GetAuthor().ID,
-	}).Preload("Follower").Find(&subscribers).Error; err == nil && len(subscribers) > 0 {
-		go func() {
-			accounts := lo.Map(subscribers, func(item models.AccountMembership, index int) models.Account {
-				return item.Follower
-			})
-
-			for _, account := range accounts {
-				postUrl := fmt.Sprintf("https://%s/posts/%d", viper.GetString("domain"), item.GetID())
-				err := NotifyAccount(
-					account,
-					fmt.Sprintf("%s just posted a post", item.GetAuthor().Name),
-					"Someone you followed post a brand new post. Check it out!",
-					false,
-					&proto.NotifyLink{Label: "Related post", Url: postUrl},
-				)
-				if err != nil {
-					log.Error().Err(err).Msg("An error occurred when notifying user...")
-				}
-			}
-		}()
-	}
-
 	return item, nil
 }
 
-func EditPost[T models.PostInterface](item T) (T, error) {
-	item, err := MapCategoriesAndTags(item)
+func EditPost(item models.Post) (models.Post, error) {
+	item, err := InitPostCategoriesAndTags(item)
 	if err != nil {
 		return item, err
 	}
@@ -369,11 +264,11 @@ func EditPost[T models.PostInterface](item T) (T, error) {
 	return item, err
 }
 
-func DeletePost[T models.PostInterface](item T) error {
+func DeletePost(item models.Post) error {
 	return database.C.Delete(&item).Error
 }
 
-func (v *PostTypeContext) React(reaction models.Reaction) (bool, models.Reaction, error) {
+func ReactPost(reaction models.Reaction) (bool, models.Reaction, error) {
 	if err := database.C.Where(reaction).First(&reaction).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return true, reaction, database.C.Save(&reaction).Error

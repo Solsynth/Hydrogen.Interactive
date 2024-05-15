@@ -1,7 +1,5 @@
 package models
 
-import "time"
-
 // Account profiles basically fetched from Hydrogen.Passport
 // But cache at here for better usage
 // At the same time this model can make relations between local models
@@ -15,19 +13,8 @@ type Account struct {
 	Description  string       `json:"description"`
 	EmailAddress string       `json:"email_address"`
 	PowerLevel   int          `json:"power_level"`
-	Moments      []Moment     `json:"moments" gorm:"foreignKey:AuthorID"`
-	Articles     []Article    `json:"articles" gorm:"foreignKey:AuthorID"`
+	Posts        []Post       `json:"posts" gorm:"foreignKey:AuthorID"`
 	Attachments  []Attachment `json:"attachments" gorm:"foreignKey:AuthorID"`
 	Reactions    []Reaction   `json:"reactions"`
 	ExternalID   uint         `json:"external_id"`
-}
-
-type AccountMembership struct {
-	ID          uint      `json:"id" gorm:"primaryKey"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
-	Follower    Account   `json:"follower"`
-	Following   Account   `json:"following"`
-	FollowerID  uint
-	FollowingID uint
 }

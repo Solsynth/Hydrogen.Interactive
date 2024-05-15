@@ -12,53 +12,30 @@ type PostReactInfo struct {
 	RepostCount  int64 `json:"repost_count"`
 }
 
-type PostBase struct {
+type Post struct {
 	BaseModel
 
-	Alias       string     `json:"alias" gorm:"uniqueIndex"`
+	Alias       string       `json:"alias" gorm:"uniqueIndex"`
+	Content     string       `json:"content"`
+	Tags        []Tag        `json:"tags" gorm:"many2many:post_tags"`
+	Categories  []Category   `json:"categories" gorm:"many2many:post_categories"`
+	Reactions   []Reaction   `json:"reactions"`
+	Attachments []Attachment `json:"attachments"`
+	Replies     []Post       `json:"replies" gorm:"foreignKey:ReplyID"`
+	ReplyID     *uint        `json:"reply_id"`
+	RepostID    *uint        `json:"repost_id"`
+	RealmID     *uint        `json:"realm_id"`
+	ReplyTo     *Post        `json:"reply_to" gorm:"foreignKey:ReplyID"`
+	RepostTo    *Post        `json:"repost_to" gorm:"foreignKey:RepostID"`
+	Realm       *Realm       `json:"realm"`
+
 	PublishedAt *time.Time `json:"published_at"`
 
 	AuthorID uint    `json:"author_id"`
 	Author   Account `json:"author"`
 
 	// Dynamic Calculated Values
-	ReactionList map[string]int64 `json:"reaction_list" gorm:"-"`
-}
-
-func (p *PostBase) GetID() uint {
-	return p.ID
-}
-
-func (p *PostBase) GetReplyTo() PostInterface {
-	return nil
-}
-
-func (p *PostBase) GetRepostTo() PostInterface {
-	return nil
-}
-
-func (p *PostBase) GetAuthor() Account {
-	return p.Author
-}
-
-func (p *PostBase) GetRealm() *Realm {
-	return nil
-}
-
-func (p *PostBase) SetReactionList(list map[string]int64) {
-	p.ReactionList = list
-}
-
-type PostInterface interface {
-	GetID() uint
-	GetHashtags() []Tag
-	GetCategories() []Category
-	GetReplyTo() PostInterface
-	GetRepostTo() PostInterface
-	GetAuthor() Account
-	GetRealm() *Realm
-
-	SetHashtags([]Tag)
-	SetCategories([]Category)
-	SetReactionList(map[string]int64)
+	ReplyCount    int64            `json:"comment_count"`
+	ReactionCount int64            `json:"reaction_count"`
+	ReactionList  map[string]int64 `json:"reaction_list" gorm:"-"`
 }

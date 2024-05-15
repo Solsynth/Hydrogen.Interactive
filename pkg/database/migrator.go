@@ -5,23 +5,19 @@ import (
 	"gorm.io/gorm"
 )
 
-var DatabaseAutoActionRange = []any{
+var AutoMaintainRange = []any{
 	&models.Account{},
 	&models.Realm{},
 	&models.Category{},
 	&models.Tag{},
-	&models.Moment{},
-	&models.Article{},
-	&models.Comment{},
+	&models.Post{},
 	&models.Reaction{},
 	&models.Attachment{},
 }
 
 func RunMigration(source *gorm.DB) error {
 	if err := source.AutoMigrate(
-		append([]any{
-			&models.AccountMembership{},
-		}, DatabaseAutoActionRange...)...,
+		AutoMaintainRange...,
 	); err != nil {
 		return err
 	}

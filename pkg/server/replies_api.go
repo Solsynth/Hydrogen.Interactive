@@ -1,20 +1,23 @@
 package server
 
 import (
+	"fmt"
 	"git.solsynth.dev/hydrogen/interactive/pkg/database"
 	"git.solsynth.dev/hydrogen/interactive/pkg/models"
 	"git.solsynth.dev/hydrogen/interactive/pkg/services"
 	"github.com/gofiber/fiber/v2"
 )
 
-func listFeed(c *fiber.Ctx) error {
+func listReplies(c *fiber.Ctx) error {
 	take := c.QueryInt("take", 0)
 	offset := c.QueryInt("offset", 0)
-	realmId := c.QueryInt("realmId", 0)
 
 	tx := database.C
-	if realmId > 0 {
-		tx = services.FilterWithRealm(tx, uint(realmId))
+	var post models.Post
+	if err := database.C.Where("alias = ?", c.Params("postId")).First(&post).Error; err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("unable to find post: %v", err))
+	} else {
+		tx = services.FilterPostReply(tx, post.ID)
 	}
 
 	if len(c.Query("authorId")) > 0 {
