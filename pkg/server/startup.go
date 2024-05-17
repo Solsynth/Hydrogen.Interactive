@@ -63,10 +63,6 @@ func NewServer() {
 		api.Get("/users/me", authMiddleware, getUserinfo)
 		api.Get("/users/:accountId", getOthersInfo)
 
-		api.Get("/attachments/o/:fileId", readAttachment)
-		api.Post("/attachments", authMiddleware, uploadAttachment)
-		api.Delete("/attachments/:id", authMiddleware, deleteAttachment)
-
 		api.Get("/feed", listFeed)
 
 		posts := api.Group("/posts").Name("Posts API")

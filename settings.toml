@@ -4,7 +4,7 @@ maintainer = "SmartSheep Studio"
 frontend = "https://lian.solsynth.dev"
 
 bind = "0.0.0.0:8445"
-domain = "feed.smartsheep.studio"
+domain = "im.solsynth.dev"
 secret = "LtTjzAGFLshwXhN4ZD4nG5KlMv1MWcsvfv03TSZYnT1VhiAnLIZFTnHUwR0XhGgi"
 
 content = "uploads"
@@ -13,11 +13,15 @@ content = "uploads"
 database = false
 print_routes = false
 
+[paperclip]
+endpoint = "http://localhost:8443"
+grpc_endpoint = "localhost:7443"
+
 [passport]
 client_id = "solarplaza"
 client_secret = "Z9k9AFTj^p"
 endpoint = "http://localhost:8444"
-grpc_endpoint = "id.solsynth.dev:7444"
+grpc_endpoint = "localhost:7444"
 
 [mailer]
 name = "Alphabot <alphabot@smartsheep.studio>"

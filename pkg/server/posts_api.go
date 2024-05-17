@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"strings"
 	"time"
@@ -9,7 +10,6 @@ import (
 	"git.solsynth.dev/hydrogen/interactive/pkg/database"
 	"git.solsynth.dev/hydrogen/interactive/pkg/models"
 	"git.solsynth.dev/hydrogen/interactive/pkg/services"
-	"github.com/gofiber/fiber/v2"
 	"github.com/samber/lo"
 )
 
@@ -76,21 +76,27 @@ func createPost(c *fiber.Ctx) error {
 	user := c.Locals("principal").(models.Account)
 
 	var data struct {
-		Alias       string              `json:"alias" form:"alias"`
-		Content     string              `json:"content" form:"content" validate:"required,max=4096"`
-		Tags        []models.Tag        `json:"tags" form:"tags"`
-		Categories  []models.Category   `json:"categories" form:"categories"`
-		Attachments []models.Attachment `json:"attachments" form:"attachments"`
-		PublishedAt *time.Time          `json:"published_at" form:"published_at"`
-		RealmAlias  string              `json:"realm" form:"realm"`
-		ReplyTo     *uint               `json:"reply_to" form:"reply_to"`
-		RepostTo    *uint               `json:"repost_to" form:"repost_to"`
+		Alias       string            `json:"alias" form:"alias"`
+		Content     string            `json:"content" form:"content" validate:"required,max=4096"`
+		Tags        []models.Tag      `json:"tags" form:"tags"`
+		Categories  []models.Category `json:"categories" form:"categories"`
+		Attachments []string          `json:"attachments" form:"attachments"`
+		PublishedAt *time.Time        `json:"published_at" form:"published_at"`
+		RealmAlias  string            `json:"realm" form:"realm"`
+		ReplyTo     *uint             `json:"reply_to" form:"reply_to"`
+		RepostTo    *uint             `json:"repost_to" form:"repost_to"`
 	}
 
 	if err := BindAndValidate(c, &data); err != nil {
 		return err
 	} else if len(data.Alias) == 0 {
 		data.Alias = strings.ReplaceAll(uuid.NewString(), "-", "")
+	}
+
+	for _, attachment := range data.Attachments {
+		if _, err := services.GetAttachmentByUUID(attachment); err != nil {
+			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("attachment %s not found: %v", attachment, err))
+		}
 	}
 
 	item := models.Post{
@@ -143,12 +149,12 @@ func editPost(c *fiber.Ctx) error {
 	id, _ := c.ParamsInt("postId", 0)
 
 	var data struct {
-		Alias       string              `json:"alias" form:"alias" validate:"required"`
-		Content     string              `json:"content" form:"content" validate:"required,max=1024"`
-		PublishedAt *time.Time          `json:"published_at" form:"published_at"`
-		Tags        []models.Tag        `json:"tags" form:"tags"`
-		Categories  []models.Category   `json:"categories" form:"categories"`
-		Attachments []models.Attachment `json:"attachments" form:"attachments"`
+		Alias       string            `json:"alias" form:"alias" validate:"required"`
+		Content     string            `json:"content" form:"content" validate:"required,max=1024"`
+		PublishedAt *time.Time        `json:"published_at" form:"published_at"`
+		Tags        []models.Tag      `json:"tags" form:"tags"`
+		Categories  []models.Category `json:"categories" form:"categories"`
+		Attachments []string          `json:"attachments" form:"attachments"`
 	}
 
 	if err := BindAndValidate(c, &data); err != nil {
@@ -161,6 +167,12 @@ func editPost(c *fiber.Ctx) error {
 		AuthorID:  user.ID,
 	}).First(&item).Error; err != nil {
 		return fiber.NewError(fiber.StatusNotFound, err.Error())
+	}
+
+	for _, attachment := range data.Attachments {
+		if _, err := services.GetAttachmentByUUID(attachment); err != nil {
+			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("attachment %s not found: %v", attachment, err))
+		}
 	}
 
 	item.Alias = data.Alias

@@ -1,6 +1,7 @@
 package models
 
 import (
+	"gorm.io/datatypes"
 	"time"
 )
 
@@ -15,19 +16,19 @@ type PostReactInfo struct {
 type Post struct {
 	BaseModel
 
-	Alias       string       `json:"alias" gorm:"uniqueIndex"`
-	Content     string       `json:"content"`
-	Tags        []Tag        `json:"tags" gorm:"many2many:post_tags"`
-	Categories  []Category   `json:"categories" gorm:"many2many:post_categories"`
-	Reactions   []Reaction   `json:"reactions"`
-	Attachments []Attachment `json:"attachments"`
-	Replies     []Post       `json:"replies" gorm:"foreignKey:ReplyID"`
-	ReplyID     *uint        `json:"reply_id"`
-	RepostID    *uint        `json:"repost_id"`
-	RealmID     *uint        `json:"realm_id"`
-	ReplyTo     *Post        `json:"reply_to" gorm:"foreignKey:ReplyID"`
-	RepostTo    *Post        `json:"repost_to" gorm:"foreignKey:RepostID"`
-	Realm       *Realm       `json:"realm"`
+	Alias       string                      `json:"alias" gorm:"uniqueIndex"`
+	Content     string                      `json:"content"`
+	Tags        []Tag                       `json:"tags" gorm:"many2many:post_tags"`
+	Categories  []Category                  `json:"categories" gorm:"many2many:post_categories"`
+	Reactions   []Reaction                  `json:"reactions"`
+	Replies     []Post                      `json:"replies" gorm:"foreignKey:ReplyID"`
+	Attachments datatypes.JSONSlice[string] `json:"attachments"`
+	ReplyID     *uint                       `json:"reply_id"`
+	RepostID    *uint                       `json:"repost_id"`
+	RealmID     *uint                       `json:"realm_id"`
+	ReplyTo     *Post                       `json:"reply_to" gorm:"foreignKey:ReplyID"`
+	RepostTo    *Post                       `json:"repost_to" gorm:"foreignKey:RepostID"`
+	Realm       *Realm                      `json:"realm"`
 
 	PublishedAt *time.Time `json:"published_at"`
 

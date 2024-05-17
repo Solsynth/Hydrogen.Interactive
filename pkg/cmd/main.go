@@ -41,8 +41,11 @@ func main() {
 	}
 
 	// Connect other services
+	if err := grpc.ConnectPaperclip(); err != nil {
+		log.Fatal().Err(err).Msg("An error occurred when connecting to paperclip...")
+	}
 	if err := grpc.ConnectPassport(); err != nil {
-		log.Fatal().Err(err).Msg("An error occurred when connecting to passport grpc endpoint...")
+		log.Fatal().Err(err).Msg("An error occurred when connecting to passport...")
 	}
 
 	// Configure timed tasks

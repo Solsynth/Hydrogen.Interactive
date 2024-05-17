@@ -12,7 +12,6 @@ var AutoMaintainRange = []any{
 	&models.Tag{},
 	&models.Post{},
 	&models.Reaction{},
-	&models.Attachment{},
 }
 
 func RunMigration(source *gorm.DB) error {
