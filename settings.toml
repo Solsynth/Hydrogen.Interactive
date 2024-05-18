@@ -7,8 +7,6 @@ bind = "0.0.0.0:8445"
 domain = "im.solsynth.dev"
 secret = "LtTjzAGFLshwXhN4ZD4nG5KlMv1MWcsvfv03TSZYnT1VhiAnLIZFTnHUwR0XhGgi"
 
-content = "uploads"
-
 [debug]
 database = false
 print_routes = false
