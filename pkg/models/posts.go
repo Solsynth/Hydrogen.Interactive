@@ -36,7 +36,7 @@ type Post struct {
 	Author   Account `json:"author"`
 
 	// Dynamic Calculated Values
-	ReplyCount    int64            `json:"comment_count"`
+	ReplyCount    int64            `json:"reply_count"`
 	ReactionCount int64            `json:"reaction_count"`
 	ReactionList  map[string]int64 `json:"reaction_list" gorm:"-"`
 }

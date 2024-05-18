@@ -1,5 +1,7 @@
 git.solsynth.dev/hydrogen/paperclip v0.0.0-20240517123600-145c5563a55e h1:jQNErCjKl76zVO2+nkBvKJK5eEkOVhVXQh4FMm8G0Xc=
 git.solsynth.dev/hydrogen/paperclip v0.0.0-20240517123600-145c5563a55e/go.mod h1:uTNEtJcNdgt7DhOgsewPaLQQ5kTN9H+tGNRT2CshHGs=
+git.solsynth.dev/hydrogen/paperclip v0.0.0-20240518085442-715238074040 h1:B/3gXFaxoLdD7icLu33OXrx166raEHtHdfhCFrPYgTE=
+git.solsynth.dev/hydrogen/paperclip v0.0.0-20240518085442-715238074040/go.mod h1:uTNEtJcNdgt7DhOgsewPaLQQ5kTN9H+tGNRT2CshHGs=
 git.solsynth.dev/hydrogen/passport v0.0.0-20240517123434-ebef35a619f5 h1:iEnty5+OHZiIaa27/e9qXfj7lmlhUVe8Oog/BJmLsRM=
 git.solsynth.dev/hydrogen/passport v0.0.0-20240517123434-ebef35a619f5/go.mod h1:mEcDEKashAh3jvoGDbNLefK+HgsJaMj4xEc6vkLZ+Zc=
 github.com/andybalholm/brotli v1.1.0 h1:eLKJA0d02Lf0mVpIDgYnqXcUn0GqVmEFny3VuID1U3M=

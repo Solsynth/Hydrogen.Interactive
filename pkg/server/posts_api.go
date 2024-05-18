@@ -94,8 +94,8 @@ func createPost(c *fiber.Ctx) error {
 	}
 
 	for _, attachment := range data.Attachments {
-		if _, err := services.GetAttachmentByUUID(attachment); err != nil {
-			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("attachment %s not found: %v", attachment, err))
+		if services.CheckAttachmentByUUIDExists(attachment, "i.attachment") {
+			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("attachment %s not found", attachment))
 		}
 	}
 
@@ -170,8 +170,8 @@ func editPost(c *fiber.Ctx) error {
 	}
 
 	for _, attachment := range data.Attachments {
-		if _, err := services.GetAttachmentByUUID(attachment); err != nil {
-			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("attachment %s not found: %v", attachment, err))
+		if services.CheckAttachmentByUUIDExists(attachment, "i.attachment") {
+			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("attachment %s not found", attachment))
 		}
 	}
 
