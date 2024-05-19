@@ -42,7 +42,7 @@ func FilterPostReply(tx *gorm.DB, replyTo ...uint) *gorm.DB {
 }
 
 func FilterPostWithPublishedAt(tx *gorm.DB, date time.Time) *gorm.DB {
-	return tx.Where("published_at <= ? AND published_at IS NULL", date)
+	return tx.Where("published_at <= ? OR published_at IS NULL", date)
 }
 
 func GetPostWithAlias(alias string, ignoreLimitation ...bool) (models.Post, error) {
@@ -141,12 +141,12 @@ func ListPostReactions(id uint) (map[string]int64, error) {
 	}), nil
 }
 
-func ListPost(tx *gorm.DB, take int, offset int, noReact ...bool) ([]models.Post, error) {
+func ListPost(tx *gorm.DB, take int, offset int, noReact ...bool) ([]*models.Post, error) {
 	if take > 20 {
 		take = 20
 	}
 
-	var items []models.Post
+	var items []*models.Post
 	if err := tx.
 		Limit(take).Offset(offset).
 		Order("created_at DESC").
@@ -159,7 +159,7 @@ func ListPost(tx *gorm.DB, take int, offset int, noReact ...bool) ([]models.Post
 		return items, err
 	}
 
-	idx := lo.Map(items, func(item models.Post, index int) uint {
+	idx := lo.Map(items, func(item *models.Post, index int) uint {
 		return item.ID
 	})
 
@@ -171,14 +171,14 @@ func ListPost(tx *gorm.DB, take int, offset int, noReact ...bool) ([]models.Post
 		}
 
 		if err := database.C.Model(&models.Reaction{}).
-			Select("post_id as post_id, symbol, COUNT(id) as count").
+			Select("post_id, symbol, COUNT(id) as count").
 			Where("post_id IN (?)", idx).
 			Group("post_id, symbol").
 			Scan(&reactions).Error; err != nil {
 			return items, err
 		}
 
-		itemMap := lo.SliceToMap(items, func(item models.Post) (uint, models.Post) {
+		itemMap := lo.SliceToMap(items, func(item *models.Post) (uint, *models.Post) {
 			return item.ID, item
 		})
 
