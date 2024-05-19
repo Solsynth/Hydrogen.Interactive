@@ -68,13 +68,13 @@ func NewServer() {
 		posts := api.Group("/posts").Name("Posts API")
 		{
 			posts.Get("/", listPost)
-			posts.Get("/:postId", getPost)
+			posts.Get("/:post", getPost)
 			posts.Post("/", authMiddleware, createPost)
-			posts.Post("/:postId/react", authMiddleware, reactPost)
+			posts.Post("/:post/react", authMiddleware, reactPost)
 			posts.Put("/:postId", authMiddleware, editPost)
 			posts.Delete("/:postId", authMiddleware, deletePost)
 
-			posts.Get("/:postId/replies", listReplies)
+			posts.Get("/:post/replies", listReplies)
 		}
 
 		api.Get("/categories", listCategories)
