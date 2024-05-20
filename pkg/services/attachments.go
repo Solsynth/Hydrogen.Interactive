@@ -19,9 +19,9 @@ func GetAttachmentByUUID(uuid string) (*pcpb.Attachment, error) {
 	})
 }
 
-func CheckAttachmentByUUIDExists(uuid string, usage string) bool {
+func CheckAttachmentByIDExists(id uint, usage string) bool {
 	_, err := grpc.Attachments.CheckAttachmentExists(context.Background(), &pcpb.AttachmentLookupRequest{
-		Uuid:  &uuid,
+		Id:    lo.ToPtr(uint64(id)),
 		Usage: &usage,
 	})
 

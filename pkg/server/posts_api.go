@@ -80,7 +80,7 @@ func createPost(c *fiber.Ctx) error {
 		Content     string            `json:"content" form:"content" validate:"required,max=4096"`
 		Tags        []models.Tag      `json:"tags" form:"tags"`
 		Categories  []models.Category `json:"categories" form:"categories"`
-		Attachments []string          `json:"attachments" form:"attachments"`
+		Attachments []uint            `json:"attachments" form:"attachments"`
 		PublishedAt *time.Time        `json:"published_at" form:"published_at"`
 		RealmAlias  string            `json:"realm" form:"realm"`
 		ReplyTo     *uint             `json:"reply_to" form:"reply_to"`
@@ -94,7 +94,7 @@ func createPost(c *fiber.Ctx) error {
 	}
 
 	for _, attachment := range data.Attachments {
-		if !services.CheckAttachmentByUUIDExists(attachment, "i.attachment") {
+		if !services.CheckAttachmentByIDExists(attachment, "i.attachment") {
 			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("attachment %s not found", attachment))
 		}
 	}
@@ -154,7 +154,7 @@ func editPost(c *fiber.Ctx) error {
 		PublishedAt *time.Time        `json:"published_at" form:"published_at"`
 		Tags        []models.Tag      `json:"tags" form:"tags"`
 		Categories  []models.Category `json:"categories" form:"categories"`
-		Attachments []string          `json:"attachments" form:"attachments"`
+		Attachments []uint            `json:"attachments" form:"attachments"`
 	}
 
 	if err := BindAndValidate(c, &data); err != nil {
@@ -170,7 +170,7 @@ func editPost(c *fiber.Ctx) error {
 	}
 
 	for _, attachment := range data.Attachments {
-		if !services.CheckAttachmentByUUIDExists(attachment, "i.attachment") {
+		if !services.CheckAttachmentByIDExists(attachment, "i.attachment") {
 			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("attachment %s not found", attachment))
 		}
 	}
