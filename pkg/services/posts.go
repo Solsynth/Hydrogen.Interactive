@@ -3,6 +3,8 @@ package services
 import (
 	"errors"
 	"fmt"
+	"time"
+
 	"git.solsynth.dev/hydrogen/interactive/pkg/database"
 	"git.solsynth.dev/hydrogen/interactive/pkg/models"
 	"git.solsynth.dev/hydrogen/passport/pkg/grpc/proto"
@@ -10,7 +12,6 @@ import (
 	"github.com/samber/lo"
 	"github.com/spf13/viper"
 	"gorm.io/gorm"
-	"time"
 )
 
 func FilterPostWithCategory(tx *gorm.DB, alias string) *gorm.DB {
@@ -193,6 +194,36 @@ func ListPost(tx *gorm.DB, take int, offset int, noReact ...bool) ([]*models.Pos
 		for k, v := range list {
 			if post, ok := itemMap[k]; ok {
 				post.ReactionList = v
+			}
+		}
+	}
+
+	if len(noReact) <= 0 || !noReact[0] {
+		var replies []struct {
+			PostID uint
+			Count  int64
+		}
+
+		if err := database.C.Model(&models.Post{}).
+			Select("id as post_id, COUNT(id) as count").
+			Where("reply_id IN (?)", idx).
+			Group("post_id").
+			Scan(&replies).Error; err != nil {
+			return items, err
+		}
+
+		itemMap := lo.SliceToMap(items, func(item *models.Post) (uint, *models.Post) {
+			return item.ID, item
+		})
+
+		list := map[uint]int64{}
+		for _, info := range replies {
+			list[info.PostID] = info.Count
+		}
+
+		for k, v := range list {
+			if post, ok := itemMap[k]; ok {
+				post.ReplyCount = v
 			}
 		}
 	}
