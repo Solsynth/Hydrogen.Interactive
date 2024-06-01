@@ -2,10 +2,11 @@ package server
 
 import (
 	"fmt"
-	"github.com/gofiber/fiber/v2"
-	"github.com/google/uuid"
 	"strings"
 	"time"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 
 	"git.solsynth.dev/hydrogen/interactive/pkg/database"
 	"git.solsynth.dev/hydrogen/interactive/pkg/models"
@@ -95,7 +96,7 @@ func createPost(c *fiber.Ctx) error {
 
 	for _, attachment := range data.Attachments {
 		if !services.CheckAttachmentByIDExists(attachment, "i.attachment") {
-			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("attachment %s not found", attachment))
+			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("attachment %d not found", attachment))
 		}
 	}
 
@@ -171,7 +172,7 @@ func editPost(c *fiber.Ctx) error {
 
 	for _, attachment := range data.Attachments {
 		if !services.CheckAttachmentByIDExists(attachment, "i.attachment") {
-			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("attachment %s not found", attachment))
+			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("attachment %d not found", attachment))
 		}
 	}
 
