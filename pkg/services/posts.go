@@ -267,27 +267,24 @@ func NewPost(user models.Account, item models.Post) (models.Post, error) {
 
 	// Notify the original poster its post has been replied
 	if item.ReplyID != nil {
-		go func() {
-			var op models.Post
-			if err := database.C.
-				Where("id = ?", item.ReplyID).
-				Preload("Author").
-				First(&op).Error; err == nil {
-				if op.Author.ID != user.ID {
-					postUrl := fmt.Sprintf("https://%s/posts/%s", viper.GetString("domain"), item.Alias)
-					err := NotifyAccount(
-						op.Author,
-						fmt.Sprintf("%s replied you", user.Nick),
-						fmt.Sprintf("%s (%s) replied your post #%s.", user.Nick, user.Name, op.Alias),
-						false,
-						&proto.NotifyLink{Label: "Related post", Url: postUrl},
-					)
-					if err != nil {
-						log.Error().Err(err).Msg("An error occurred when notifying user...")
-					}
+		var op models.Post
+		if err := database.C.
+			Where("id = ?", item.ReplyID).
+			Preload("Author").
+			First(&op).Error; err == nil {
+			if op.Author.ID != user.ID {
+				postUrl := fmt.Sprintf("https://%s/posts/%s", viper.GetString("domain"), item.Alias)
+				err := NotifyPosterAccount(
+					op.Author,
+					fmt.Sprintf("%s replied you", user.Nick),
+					fmt.Sprintf("%s (%s) replied your post #%s.", user.Nick, user.Name, op.Alias),
+					&proto.NotifyLink{Label: "Related post", Url: postUrl},
+				)
+				if err != nil {
+					log.Error().Err(err).Msg("An error occurred when notifying user...")
 				}
 			}
-		}()
+		}
 	}
 
 	return item, nil
@@ -308,9 +305,28 @@ func DeletePost(item models.Post) error {
 	return database.C.Delete(&item).Error
 }
 
-func ReactPost(reaction models.Reaction) (bool, models.Reaction, error) {
+func ReactPost(user models.Account, reaction models.Reaction) (bool, models.Reaction, error) {
 	if err := database.C.Where(reaction).First(&reaction).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
+			var op models.Post
+			if err := database.C.
+				Where("id = ?", reaction.PostID).
+				Preload("Author").
+				First(&op).Error; err == nil {
+				if op.Author.ID != user.ID {
+					postUrl := fmt.Sprintf("https://%s/posts/%s", viper.GetString("domain"), op.Alias)
+					err := NotifyPosterAccount(
+						op.Author,
+						fmt.Sprintf("%s reacted your post", user.Nick),
+						fmt.Sprintf("%s (%s) reacted your post a %s", user.Nick, user.Name, reaction.Symbol),
+						&proto.NotifyLink{Label: "Related post", Url: postUrl},
+					)
+					if err != nil {
+						log.Error().Err(err).Msg("An error occurred when notifying user...")
+					}
+				}
+			}
+
 			return true, reaction, database.C.Save(&reaction).Error
 		} else {
 			return true, reaction, err

@@ -236,7 +236,7 @@ func reactPost(c *fiber.Ctx) error {
 		reaction.PostID = &res.ID
 	}
 
-	if positive, reaction, err := services.ReactPost(reaction); err != nil {
+	if positive, reaction, err := services.ReactPost(user, reaction); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	} else {
 		return c.Status(lo.Ternary(positive, fiber.StatusCreated, fiber.StatusNoContent)).JSON(reaction)

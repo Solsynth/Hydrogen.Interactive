@@ -31,24 +31,25 @@ func GetAccountFriend(userId, relatedId uint, status int) (*proto.FriendshipResp
 	})
 }
 
-func NotifyAccount(user models.Account, subject, content string, realtime bool, links ...*proto.NotifyLink) error {
+func NotifyPosterAccount(user models.Account, subject, content string, links ...*proto.NotifyLink) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
 	_, err := grpc.Notify.NotifyUser(ctx, &proto.NotifyRequest{
 		ClientId:     viper.GetString("passport.client_id"),
 		ClientSecret: viper.GetString("passport.client_secret"),
+		Type:         "notifications.interactive.feedback",
 		Subject:      subject,
 		Content:      content,
 		Links:        links,
 		RecipientId:  uint64(user.ExternalID),
-		IsRealtime:   realtime,
-		IsImportant:  false,
+		IsRealtime:   false,
+		IsForcePush:  true,
 	})
 	if err != nil {
 		log.Warn().Err(err).Msg("An error occurred when notify account...")
 	} else {
-		log.Debug().Uint("external", user.ExternalID).Msg("Notified account.")
+		log.Debug().Uint("eid", user.ExternalID).Msg("Notified account.")
 	}
 
 	return err
