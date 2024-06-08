@@ -38,7 +38,7 @@ func NotifyPosterAccount(user models.Account, subject, content string, links ...
 	_, err := grpc.Notify.NotifyUser(ctx, &proto.NotifyRequest{
 		ClientId:     viper.GetString("passport.client_id"),
 		ClientSecret: viper.GetString("passport.client_secret"),
-		Type:         "notifications.interactive.feedback",
+		Type:         "interactive.feedback",
 		Subject:      subject,
 		Content:      content,
 		Links:        links,
