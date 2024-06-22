@@ -1,13 +1,17 @@
-package server
+package api
 
 import (
-	"git.solsynth.dev/hydrogen/interactive/pkg/database"
-	"git.solsynth.dev/hydrogen/interactive/pkg/models"
+	"git.solsynth.dev/hydrogen/interactive/pkg/internal/database"
+	"git.solsynth.dev/hydrogen/interactive/pkg/internal/gap"
+	"git.solsynth.dev/hydrogen/interactive/pkg/internal/models"
 	"github.com/gofiber/fiber/v2"
 )
 
 func getUserinfo(c *fiber.Ctx) error {
-	user := c.Locals("principal").(models.Account)
+	if err := gap.H.EnsureAuthenticated(c); err != nil {
+		return err
+	}
+	user := c.Locals("user").(models.Account)
 
 	var data models.Account
 	if err := database.C.

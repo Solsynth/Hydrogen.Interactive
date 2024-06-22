@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	"git.solsynth.dev/hydrogen/interactive/pkg/database"
-	"git.solsynth.dev/hydrogen/interactive/pkg/models"
-	"git.solsynth.dev/hydrogen/passport/pkg/grpc/proto"
+	"git.solsynth.dev/hydrogen/interactive/pkg/internal/database"
+	"git.solsynth.dev/hydrogen/interactive/pkg/internal/models"
+	"git.solsynth.dev/hydrogen/passport/pkg/proto"
 	"github.com/rs/zerolog/log"
 	"github.com/samber/lo"
 	"github.com/spf13/viper"

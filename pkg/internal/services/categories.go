@@ -3,8 +3,8 @@ package services
 import (
 	"errors"
 
-	"git.solsynth.dev/hydrogen/interactive/pkg/database"
-	"git.solsynth.dev/hydrogen/interactive/pkg/models"
+	"git.solsynth.dev/hydrogen/interactive/pkg/internal/database"
+	"git.solsynth.dev/hydrogen/interactive/pkg/internal/models"
 	"gorm.io/gorm"
 )
 

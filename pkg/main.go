@@ -1,19 +1,19 @@
 package main
 
 import (
-	"git.solsynth.dev/hydrogen/interactive/pkg/grpc"
-	"git.solsynth.dev/hydrogen/interactive/pkg/server"
-	"git.solsynth.dev/hydrogen/interactive/pkg/services"
+	"git.solsynth.dev/hydrogen/interactive/pkg/internal"
+	"git.solsynth.dev/hydrogen/interactive/pkg/internal/database"
+	"git.solsynth.dev/hydrogen/interactive/pkg/internal/gap"
+	"git.solsynth.dev/hydrogen/interactive/pkg/internal/grpc"
+	"git.solsynth.dev/hydrogen/interactive/pkg/internal/server"
+	"git.solsynth.dev/hydrogen/interactive/pkg/internal/services"
 	"github.com/robfig/cron/v3"
-	"os"
-	"os/signal"
-	"syscall"
-
-	interactive "git.solsynth.dev/hydrogen/interactive/pkg"
-	"git.solsynth.dev/hydrogen/interactive/pkg/database"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 func init() {
@@ -41,11 +41,10 @@ func main() {
 	}
 
 	// Connect other services
-	if err := grpc.ConnectPaperclip(); err != nil {
+	if err := gap.Register(); err != nil {
 		log.Fatal().Err(err).Msg("An error occurred when connecting to paperclip...")
-	}
-	if err := grpc.ConnectPassport(); err != nil {
-		log.Fatal().Err(err).Msg("An error occurred when connecting to passport...")
+	} else {
+		gap.NewHyperClient()
 	}
 
 	// Configure timed tasks
@@ -57,14 +56,17 @@ func main() {
 	server.NewServer()
 	go server.Listen()
 
+	grpc.NewGRPC()
+	go grpc.ListenGRPC()
+
 	// Messages
-	log.Info().Msgf("Interactive v%s is started...", interactive.AppVersion)
+	log.Info().Msgf("Interactive v%s is started...", pkg.AppVersion)
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
-	log.Info().Msgf("Interactive v%s is quitting...", interactive.AppVersion)
+	log.Info().Msgf("Interactive v%s is quitting...", pkg.AppVersion)
 
 	quartz.Stop()
 }

@@ -1,17 +1,17 @@
-package server
+package api
 
 import (
 	"fmt"
-	"strings"
-	"time"
-
+	"git.solsynth.dev/hydrogen/interactive/pkg/internal/database"
+	"git.solsynth.dev/hydrogen/interactive/pkg/internal/gap"
+	"git.solsynth.dev/hydrogen/interactive/pkg/internal/models"
+	"git.solsynth.dev/hydrogen/interactive/pkg/internal/server/exts"
+	"git.solsynth.dev/hydrogen/interactive/pkg/internal/services"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
-
-	"git.solsynth.dev/hydrogen/interactive/pkg/database"
-	"git.solsynth.dev/hydrogen/interactive/pkg/models"
-	"git.solsynth.dev/hydrogen/interactive/pkg/services"
 	"github.com/samber/lo"
+	"strings"
+	"time"
 )
 
 func getPost(c *fiber.Ctx) error {
@@ -74,7 +74,10 @@ func listPost(c *fiber.Ctx) error {
 }
 
 func createPost(c *fiber.Ctx) error {
-	user := c.Locals("principal").(models.Account)
+	if err := gap.H.EnsureGrantedPerm(c, "CreateInteractivePost", true); err != nil {
+		return err
+	}
+	user := c.Locals("user").(models.Account)
 
 	var data struct {
 		Alias       string            `json:"alias" form:"alias"`
@@ -88,7 +91,7 @@ func createPost(c *fiber.Ctx) error {
 		RepostTo    *uint             `json:"repost_to" form:"repost_to"`
 	}
 
-	if err := BindAndValidate(c, &data); err != nil {
+	if err := exts.BindAndValidate(c, &data); err != nil {
 		return err
 	} else if len(data.Alias) == 0 {
 		data.Alias = strings.ReplaceAll(uuid.NewString(), "-", "")
@@ -146,8 +149,11 @@ func createPost(c *fiber.Ctx) error {
 }
 
 func editPost(c *fiber.Ctx) error {
-	user := c.Locals("principal").(models.Account)
 	id, _ := c.ParamsInt("postId", 0)
+	if err := gap.H.EnsureAuthenticated(c); err != nil {
+		return err
+	}
+	user := c.Locals("user").(models.Account)
 
 	var data struct {
 		Alias       string            `json:"alias" form:"alias" validate:"required"`
@@ -158,7 +164,7 @@ func editPost(c *fiber.Ctx) error {
 		Attachments []uint            `json:"attachments" form:"attachments"`
 	}
 
-	if err := BindAndValidate(c, &data); err != nil {
+	if err := exts.BindAndValidate(c, &data); err != nil {
 		return err
 	}
 
@@ -191,7 +197,10 @@ func editPost(c *fiber.Ctx) error {
 }
 
 func deletePost(c *fiber.Ctx) error {
-	user := c.Locals("principal").(models.Account)
+	if err := gap.H.EnsureAuthenticated(c); err != nil {
+		return err
+	}
+	user := c.Locals("user").(models.Account)
 	id, _ := c.ParamsInt("postId", 0)
 
 	var item models.Post
@@ -210,14 +219,17 @@ func deletePost(c *fiber.Ctx) error {
 }
 
 func reactPost(c *fiber.Ctx) error {
-	user := c.Locals("principal").(models.Account)
+	if err := gap.H.EnsureAuthenticated(c); err != nil {
+		return err
+	}
+	user := c.Locals("user").(models.Account)
 
 	var data struct {
 		Symbol   string                  `json:"symbol" form:"symbol" validate:"required"`
 		Attitude models.ReactionAttitude `json:"attitude" form:"attitude"`
 	}
 
-	if err := BindAndValidate(c, &data); err != nil {
+	if err := exts.BindAndValidate(c, &data); err != nil {
 		return err
 	}
 

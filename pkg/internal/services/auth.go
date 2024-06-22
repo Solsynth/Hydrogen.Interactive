@@ -1,17 +1,13 @@
 package services
 
 import (
-	"context"
 	"errors"
 	"fmt"
-	"reflect"
-	"time"
-
-	"git.solsynth.dev/hydrogen/interactive/pkg/database"
-	"git.solsynth.dev/hydrogen/interactive/pkg/grpc"
-	"git.solsynth.dev/hydrogen/interactive/pkg/models"
-	"git.solsynth.dev/hydrogen/passport/pkg/grpc/proto"
+	"git.solsynth.dev/hydrogen/interactive/pkg/internal/database"
+	"git.solsynth.dev/hydrogen/interactive/pkg/internal/models"
+	"git.solsynth.dev/hydrogen/passport/pkg/proto"
 	"gorm.io/gorm"
+	"reflect"
 )
 
 func LinkAccount(userinfo *proto.Userinfo) (models.Account, error) {
@@ -52,25 +48,4 @@ func LinkAccount(userinfo *proto.Userinfo) (models.Account, error) {
 	}
 
 	return account, err
-}
-
-func Authenticate(atk, rtk string) (models.Account, string, string, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
-	defer cancel()
-
-	var err error
-	var user models.Account
-	reply, err := grpc.Auth.Authenticate(ctx, &proto.AuthRequest{
-		AccessToken:  atk,
-		RefreshToken: &rtk,
-	})
-	if err != nil {
-		return user, reply.GetAccessToken(), reply.GetRefreshToken(), err
-	} else if !reply.IsValid {
-		return user, reply.GetAccessToken(), reply.GetRefreshToken(), fmt.Errorf("invalid authorization context")
-	}
-
-	user, err = LinkAccount(reply.Userinfo)
-
-	return user, reply.GetAccessToken(), reply.GetRefreshToken(), err
 }

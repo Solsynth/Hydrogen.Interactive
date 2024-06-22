@@ -1,8 +1,10 @@
-package server
+package api
 
 import (
-	"git.solsynth.dev/hydrogen/interactive/pkg/models"
-	"git.solsynth.dev/hydrogen/interactive/pkg/services"
+	"git.solsynth.dev/hydrogen/interactive/pkg/internal/gap"
+	"git.solsynth.dev/hydrogen/interactive/pkg/internal/models"
+	"git.solsynth.dev/hydrogen/interactive/pkg/internal/server/exts"
+	"git.solsynth.dev/hydrogen/interactive/pkg/internal/services"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -16,7 +18,10 @@ func listCategories(c *fiber.Ctx) error {
 }
 
 func newCategory(c *fiber.Ctx) error {
-	user := c.Locals("principal").(models.Account)
+	if err := gap.H.EnsureAuthenticated(c); err != nil {
+		return err
+	}
+	user := c.Locals("user").(models.Account)
 	if user.PowerLevel <= 55 {
 		return fiber.NewError(fiber.StatusForbidden, "require power level 55 to create categories")
 	}
@@ -27,7 +32,7 @@ func newCategory(c *fiber.Ctx) error {
 		Description string `json:"description"`
 	}
 
-	if err := BindAndValidate(c, &data); err != nil {
+	if err := exts.BindAndValidate(c, &data); err != nil {
 		return err
 	}
 
@@ -40,7 +45,10 @@ func newCategory(c *fiber.Ctx) error {
 }
 
 func editCategory(c *fiber.Ctx) error {
-	user := c.Locals("principal").(models.Account)
+	if err := gap.H.EnsureAuthenticated(c); err != nil {
+		return err
+	}
+	user := c.Locals("user").(models.Account)
 	if user.PowerLevel <= 55 {
 		return fiber.NewError(fiber.StatusForbidden, "require power level 55 to edit categories")
 	}
@@ -57,7 +65,7 @@ func editCategory(c *fiber.Ctx) error {
 		Description string `json:"description"`
 	}
 
-	if err := BindAndValidate(c, &data); err != nil {
+	if err := exts.BindAndValidate(c, &data); err != nil {
 		return err
 	}
 
@@ -70,7 +78,10 @@ func editCategory(c *fiber.Ctx) error {
 }
 
 func deleteCategory(c *fiber.Ctx) error {
-	user := c.Locals("principal").(models.Account)
+	if err := gap.H.EnsureAuthenticated(c); err != nil {
+		return err
+	}
+	user := c.Locals("user").(models.Account)
 	if user.PowerLevel <= 55 {
 		return fiber.NewError(fiber.StatusForbidden, "require power level 55 to delete categories")
 	}

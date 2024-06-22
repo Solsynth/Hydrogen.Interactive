@@ -1,7 +1,10 @@
 package server
 
 import (
-	"git.solsynth.dev/hydrogen/interactive/pkg"
+	pkg "git.solsynth.dev/hydrogen/interactive/pkg/internal"
+	"git.solsynth.dev/hydrogen/interactive/pkg/internal/gap"
+	"git.solsynth.dev/hydrogen/interactive/pkg/internal/server/api"
+	"git.solsynth.dev/hydrogen/interactive/pkg/internal/server/exts"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/favicon"
@@ -56,38 +59,16 @@ func NewServer() {
 		Output: log.Logger,
 	}))
 
-	A.Get("/.well-known", getMetadata)
-
-	api := A.Group("/api").Name("API")
-	{
-		api.Get("/users/me", authMiddleware, getUserinfo)
-		api.Get("/users/:accountId", getOthersInfo)
-
-		api.Get("/feed", listFeed)
-
-		posts := api.Group("/posts").Name("Posts API")
-		{
-			posts.Get("/", listPost)
-			posts.Get("/:post", getPost)
-			posts.Post("/", authMiddleware, createPost)
-			posts.Post("/:post/react", authMiddleware, reactPost)
-			posts.Put("/:postId", authMiddleware, editPost)
-			posts.Delete("/:postId", authMiddleware, deletePost)
-
-			posts.Get("/:post/replies", listReplies)
-		}
-
-		api.Get("/categories", listCategories)
-		api.Post("/categories", authMiddleware, newCategory)
-		api.Put("/categories/:categoryId", authMiddleware, editCategory)
-		api.Delete("/categories/:categoryId", authMiddleware, deleteCategory)
-	}
+	A.Use(gap.H.AuthMiddleware)
+	A.Use(exts.LinkAccountMiddleware)
 
 	A.Use(favicon.New(favicon.Config{
 		FileSystem: http.FS(pkg.FS),
 		File:       "views/favicon.png",
 		URL:        "/favicon.png",
 	}))
+
+	api.MapAPIs(A)
 
 	A.Get("/", func(c *fiber.Ctx) error {
 		return c.Render("views/open", fiber.Map{

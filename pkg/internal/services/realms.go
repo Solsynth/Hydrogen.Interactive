@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"git.solsynth.dev/hydrogen/interactive/pkg/database"
-	"git.solsynth.dev/hydrogen/interactive/pkg/grpc"
-	"git.solsynth.dev/hydrogen/interactive/pkg/models"
-	"git.solsynth.dev/hydrogen/passport/pkg/grpc/proto"
+	"git.solsynth.dev/hydrogen/interactive/pkg/internal/database"
+	"git.solsynth.dev/hydrogen/interactive/pkg/internal/gap"
+	"git.solsynth.dev/hydrogen/interactive/pkg/internal/models"
+	"git.solsynth.dev/hydrogen/passport/pkg/proto"
 	"github.com/samber/lo"
 	"gorm.io/gorm"
 	"reflect"
@@ -15,7 +15,11 @@ import (
 
 func GetRealm(id uint) (models.Realm, error) {
 	var realm models.Realm
-	response, err := grpc.Realms.GetRealm(context.Background(), &proto.RealmLookupRequest{
+	pc, err := gap.H.DiscoverServiceGRPC("Hydrogen.Passport")
+	if err != nil {
+		return realm, err
+	}
+	response, err := proto.NewRealmsClient(pc).GetRealm(context.Background(), &proto.RealmLookupRequest{
 		Id: lo.ToPtr(uint64(id)),
 	})
 	if err != nil {
@@ -26,7 +30,11 @@ func GetRealm(id uint) (models.Realm, error) {
 
 func GetRealmWithAlias(alias string) (models.Realm, error) {
 	var realm models.Realm
-	response, err := grpc.Realms.GetRealm(context.Background(), &proto.RealmLookupRequest{
+	pc, err := gap.H.DiscoverServiceGRPC("Hydrogen.Passport")
+	if err != nil {
+		return realm, err
+	}
+	response, err := proto.NewRealmsClient(pc).GetRealm(context.Background(), &proto.RealmLookupRequest{
 		Alias: &alias,
 	})
 	if err != nil {
@@ -36,7 +44,11 @@ func GetRealmWithAlias(alias string) (models.Realm, error) {
 }
 
 func GetRealmMember(realmId uint, userId uint) (*proto.RealmMemberResponse, error) {
-	response, err := grpc.Realms.GetRealmMember(context.Background(), &proto.RealmMemberLookupRequest{
+	pc, err := gap.H.DiscoverServiceGRPC("Hydrogen.Passport")
+	if err != nil {
+		return nil, err
+	}
+	response, err := proto.NewRealmsClient(pc).GetRealmMember(context.Background(), &proto.RealmMemberLookupRequest{
 		RealmId: uint64(realmId),
 		UserId:  lo.ToPtr(uint64(userId)),
 	})
@@ -48,7 +60,11 @@ func GetRealmMember(realmId uint, userId uint) (*proto.RealmMemberResponse, erro
 }
 
 func ListRealmMember(realmId uint) ([]*proto.RealmMemberResponse, error) {
-	response, err := grpc.Realms.ListRealmMember(context.Background(), &proto.RealmMemberLookupRequest{
+	pc, err := gap.H.DiscoverServiceGRPC("Hydrogen.Passport")
+	if err != nil {
+		return nil, err
+	}
+	response, err := proto.NewRealmsClient(pc).ListRealmMember(context.Background(), &proto.RealmMemberLookupRequest{
 		RealmId: uint64(realmId),
 	})
 	if err != nil {
