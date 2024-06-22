@@ -13,6 +13,21 @@ import (
 	"reflect"
 )
 
+func GetRealmWithExtID(id uint) (models.Realm, error) {
+	var realm models.Realm
+	pc, err := gap.H.DiscoverServiceGRPC("Hydrogen.Passport")
+	if err != nil {
+		return realm, err
+	}
+	response, err := proto.NewRealmsClient(pc).GetRealm(context.Background(), &proto.RealmLookupRequest{
+		Id: lo.ToPtr(uint64(id)),
+	})
+	if err != nil {
+		return realm, err
+	}
+	return LinkRealm(response)
+}
+
 func GetRealmWithAlias(alias string) (models.Realm, error) {
 	var realm models.Realm
 	pc, err := gap.H.DiscoverServiceGRPC("Hydrogen.Passport")

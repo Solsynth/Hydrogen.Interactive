@@ -55,6 +55,7 @@ func GetPostWithAlias(alias string, ignoreLimitation ...bool) (models.Post, erro
 	var item models.Post
 	if err := tx.
 		Where("alias = ?", alias).
+		Preload("Realm").
 		Preload("Author").
 		Preload("ReplyTo").
 		Preload("ReplyTo.Author").
@@ -76,6 +77,7 @@ func GetPost(id uint, ignoreLimitation ...bool) (models.Post, error) {
 	var item models.Post
 	if err := tx.
 		Where("id = ?", id).
+		Preload("Realm").
 		Preload("Author").
 		Preload("ReplyTo").
 		Preload("ReplyTo.Author").
@@ -151,6 +153,7 @@ func ListPost(tx *gorm.DB, take int, offset int, noReact ...bool) ([]*models.Pos
 	if err := tx.
 		Limit(take).Offset(offset).
 		Order("created_at DESC").
+		Preload("Realm").
 		Preload("Author").
 		Preload("ReplyTo").
 		Preload("ReplyTo.Author").
