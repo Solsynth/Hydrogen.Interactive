@@ -1,7 +1,11 @@
 package main
 
 import (
-	"git.solsynth.dev/hydrogen/interactive/pkg/internal"
+	"os"
+	"os/signal"
+	"syscall"
+
+	pkg "git.solsynth.dev/hydrogen/interactive/pkg/internal"
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/database"
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/gap"
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/grpc"
@@ -11,9 +15,6 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
-	"os"
-	"os/signal"
-	"syscall"
 )
 
 func init() {
@@ -42,7 +43,7 @@ func main() {
 
 	// Connect other services
 	if err := gap.Register(); err != nil {
-		log.Fatal().Err(err).Msg("An error occurred when connecting to paperclip...")
+		log.Fatal().Err(err).Msg("An error occurred when connecting to consul...")
 	} else {
 		gap.NewHyperClient()
 	}
