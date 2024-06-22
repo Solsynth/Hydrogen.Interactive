@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/database"
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/models"
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/services"
@@ -14,7 +15,11 @@ func listFeed(c *fiber.Ctx) error {
 
 	tx := database.C
 	if realmId > 0 {
-		tx = services.FilterWithRealm(tx, uint(realmId))
+		if realm, err := services.GetRealmWithExtID(uint(realmId)); err != nil {
+			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("realm was not found: %v", err))
+		} else {
+			tx = services.FilterWithRealm(tx, realm.ID)
+		}
 	}
 
 	if len(c.Query("authorId")) > 0 {
