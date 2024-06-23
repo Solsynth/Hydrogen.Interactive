@@ -1,7 +1,7 @@
 git.solsynth.dev/hydrogen/paperclip v0.0.0-20240622051057-0f56dba45745 h1:40BUsQMNXjqHyytkyF9py1HjTAWlRgO6R57YXUrHNy4=
 git.solsynth.dev/hydrogen/paperclip v0.0.0-20240622051057-0f56dba45745/go.mod h1:FsQGSLTl0gvo+9Jmbot02S72suyF9tFTrzDj70Xhifo=
-git.solsynth.dev/hydrogen/passport v0.0.0-20240622131052-18ae5f12e2e7 h1:4zoeDzrAY9/C9RaXsfv7vDE0cC/j94IR1vVpIQEEB6A=
-git.solsynth.dev/hydrogen/passport v0.0.0-20240622131052-18ae5f12e2e7/go.mod h1:tUr7x1v0trG3ALDacdDuhJiPRPgFhJ1Si9OqNlYbgSk=
+git.solsynth.dev/hydrogen/passport v0.0.0-20240623081149-7ddbea8bcb86 h1:cxjBOhemnyxf49CJyPmnt1RKFHerK45rXXBPwsIFrhA=
+git.solsynth.dev/hydrogen/passport v0.0.0-20240623081149-7ddbea8bcb86/go.mod h1:tUr7x1v0trG3ALDacdDuhJiPRPgFhJ1Si9OqNlYbgSk=
 github.com/DataDog/datadog-go v3.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3tL4fMGNddJ+vMq1mwgfaqoQ=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
 github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
