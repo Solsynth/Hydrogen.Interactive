@@ -2,6 +2,9 @@ package api
 
 import (
 	"fmt"
+	"strings"
+	"time"
+
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/database"
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/gap"
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/models"
@@ -10,8 +13,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/samber/lo"
-	"strings"
-	"time"
 )
 
 func getArticle(c *fiber.Ctx) error {
@@ -104,7 +105,7 @@ func listDraftArticle(c *fiber.Ctx) error {
 }
 
 func createArticle(c *fiber.Ctx) error {
-	if err := gap.H.EnsureGrantedPerm(c, "CreateArticle", true); err != nil {
+	if err := gap.H.EnsureGrantedPerm(c, "CreateArticles", true); err != nil {
 		return err
 	}
 	user := c.Locals("user").(models.Account)
