@@ -12,6 +12,12 @@ func MapAPIs(app *fiber.App) {
 
 		api.Get("/feed", listFeed)
 
+		drafts := api.Group("/drafts").Name("Draft box API")
+		{
+			drafts.Get("/posts", listDraftPost)
+			drafts.Get("/articles", listDraftArticle)
+		}
+
 		posts := api.Group("/posts").Name("Posts API")
 		{
 			posts.Get("/", listPost)
@@ -21,7 +27,17 @@ func MapAPIs(app *fiber.App) {
 			posts.Put("/:postId", editPost)
 			posts.Delete("/:postId", deletePost)
 
-			posts.Get("/:post/replies", listReplies)
+			posts.Get("/:post/replies", listPostReplies)
+		}
+
+		articles := api.Group("/articles").Name("Articles API")
+		{
+			articles.Get("/", listArticle)
+			articles.Get("/:article", getArticle)
+			articles.Post("/", createArticle)
+			articles.Post("/:article/react", reactArticle)
+			articles.Put("/:articleId", editArticle)
+			articles.Delete("/:articleId", deleteArticle)
 		}
 
 		api.Get("/categories", listCategories)

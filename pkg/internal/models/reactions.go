@@ -21,5 +21,6 @@ type Reaction struct {
 	Attitude ReactionAttitude `json:"attitude"`
 
 	PostID    *uint `json:"post_id"`
+	ArticleID *uint `json:"article_id"`
 	AccountID uint  `json:"account_id"`
 }

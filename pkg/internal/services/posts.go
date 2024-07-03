@@ -26,7 +26,7 @@ func FilterPostWithTag(tx *gorm.DB, alias string) *gorm.DB {
 		Where("post_tags.alias = ?", alias)
 }
 
-func FilterWithRealm(tx *gorm.DB, id uint) *gorm.DB {
+func FilterPostWithRealm(tx *gorm.DB, id uint) *gorm.DB {
 	if id > 0 {
 		return tx.Where("realm_id = ?", id)
 	} else {
@@ -46,8 +46,15 @@ func FilterPostWithPublishedAt(tx *gorm.DB, date time.Time) *gorm.DB {
 	return tx.Where("published_at <= ? OR published_at IS NULL", date)
 }
 
-func GetPostWithAlias(alias string, ignoreLimitation ...bool) (models.Post, error) {
-	tx := database.C
+func FilterPostWithAuthorDraft(tx *gorm.DB, uid uint) *gorm.DB {
+	return tx.Where("author_id = ? AND is_draft = ?", uid, true)
+}
+
+func FilterPostDraft(tx *gorm.DB) *gorm.DB {
+	return tx.Where("is_draft = ?", false)
+}
+
+func GetPostWithAlias(tx *gorm.DB, alias string, ignoreLimitation ...bool) (models.Post, error) {
 	if len(ignoreLimitation) == 0 || !ignoreLimitation[0] {
 		tx = FilterPostWithPublishedAt(tx, time.Now())
 	}
@@ -68,8 +75,7 @@ func GetPostWithAlias(alias string, ignoreLimitation ...bool) (models.Post, erro
 	return item, nil
 }
 
-func GetPost(id uint, ignoreLimitation ...bool) (models.Post, error) {
-	tx := database.C
+func GetPost(tx *gorm.DB, id uint, ignoreLimitation ...bool) (models.Post, error) {
 	if len(ignoreLimitation) == 0 || !ignoreLimitation[0] {
 		tx = FilterPostWithPublishedAt(tx, time.Now())
 	}
@@ -121,29 +127,6 @@ func CountPostReactions(id uint) int64 {
 	return count
 }
 
-func ListPostReactions(id uint) (map[string]int64, error) {
-	var reactions []struct {
-		Symbol string
-		Count  int64
-	}
-
-	if err := database.C.Model(&models.Reaction{}).
-		Select("symbol, COUNT(id) as count").
-		Where("post_id = ?", id).
-		Group("symbol").
-		Scan(&reactions).Error; err != nil {
-		return map[string]int64{}, err
-	}
-
-	return lo.SliceToMap(reactions, func(item struct {
-		Symbol string
-		Count  int64
-	},
-	) (string, int64) {
-		return item.Symbol, item.Count
-	}), nil
-}
-
 func ListPost(tx *gorm.DB, take int, offset int, noReact ...bool) ([]*models.Post, error) {
 	if take > 20 {
 		take = 20
@@ -167,40 +150,24 @@ func ListPost(tx *gorm.DB, take int, offset int, noReact ...bool) ([]*models.Pos
 		return item.ID
 	})
 
+	// Load reactions
 	if len(noReact) <= 0 || !noReact[0] {
-		var reactions []struct {
-			PostID uint
-			Symbol string
-			Count  int64
-		}
-
-		if err := database.C.Model(&models.Reaction{}).
-			Select("post_id, symbol, COUNT(id) as count").
-			Where("post_id IN (?)", idx).
-			Group("post_id, symbol").
-			Scan(&reactions).Error; err != nil {
+		if mapping, err := BatchListResourceReactions(database.C.Where("post_id IN ?", idx)); err != nil {
 			return items, err
-		}
+		} else {
+			itemMap := lo.SliceToMap(items, func(item *models.Post) (uint, *models.Post) {
+				return item.ID, item
+			})
 
-		itemMap := lo.SliceToMap(items, func(item *models.Post) (uint, *models.Post) {
-			return item.ID, item
-		})
-
-		list := map[uint]map[string]int64{}
-		for _, info := range reactions {
-			if _, ok := list[info.PostID]; !ok {
-				list[info.PostID] = make(map[string]int64)
-			}
-			list[info.PostID][info.Symbol] = info.Count
-		}
-
-		for k, v := range list {
-			if post, ok := itemMap[k]; ok {
-				post.ReactionList = v
+			for k, v := range mapping {
+				if post, ok := itemMap[k]; ok {
+					post.ReactionList = v
+				}
 			}
 		}
 	}
 
+	// Load replies
 	if len(noReact) <= 0 || !noReact[0] {
 		var replies []struct {
 			PostID uint
@@ -234,7 +201,7 @@ func ListPost(tx *gorm.DB, take int, offset int, noReact ...bool) ([]*models.Pos
 	return items, nil
 }
 
-func InitPostCategoriesAndTags(item models.Post) (models.Post, error) {
+func EnsurePostCategoriesAndTags(item models.Post) (models.Post, error) {
 	var err error
 	for idx, category := range item.Categories {
 		item.Categories[idx], err = GetCategory(category.Alias)
@@ -252,7 +219,7 @@ func InitPostCategoriesAndTags(item models.Post) (models.Post, error) {
 }
 
 func NewPost(user models.Account, item models.Post) (models.Post, error) {
-	item, err := InitPostCategoriesAndTags(item)
+	item, err := EnsurePostCategoriesAndTags(item)
 	if err != nil {
 		return item, err
 	}
@@ -294,7 +261,7 @@ func NewPost(user models.Account, item models.Post) (models.Post, error) {
 }
 
 func EditPost(item models.Post) (models.Post, error) {
-	item, err := InitPostCategoriesAndTags(item)
+	item, err := EnsurePostCategoriesAndTags(item)
 	if err != nil {
 		return item, err
 	}

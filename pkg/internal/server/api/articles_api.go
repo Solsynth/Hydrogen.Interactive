@@ -14,17 +14,16 @@ import (
 	"time"
 )
 
-func getPost(c *fiber.Ctx) error {
-	alias := c.Params("post")
+func getArticle(c *fiber.Ctx) error {
+	alias := c.Params("article")
 
-	item, err := services.GetPostWithAlias(services.FilterPostDraft(database.C), alias)
+	item, err := services.GetArticleWithAlias(services.FilterPostDraft(database.C), alias)
 	if err != nil {
 		return fiber.NewError(fiber.StatusNotFound, err.Error())
 	}
 
-	item.ReplyCount = services.CountPostReply(item.ID)
-	item.ReactionCount = services.CountPostReactions(item.ID)
-	item.ReactionList, err = services.ListResourceReactions(database.C.Where("post_id = ?", item.ID))
+	item.ReactionCount = services.CountArticleReactions(item.ID)
+	item.ReactionList, err = services.ListResourceReactions(database.C.Where("article_id = ?", item.ID))
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
@@ -32,7 +31,7 @@ func getPost(c *fiber.Ctx) error {
 	return c.JSON(item)
 }
 
-func listPost(c *fiber.Ctx) error {
+func listArticle(c *fiber.Ctx) error {
 	take := c.QueryInt("take", 0)
 	offset := c.QueryInt("offset", 0)
 	realmId := c.QueryInt("realmId", 0)
@@ -42,7 +41,7 @@ func listPost(c *fiber.Ctx) error {
 		if realm, err := services.GetRealmWithExtID(uint(realmId)); err != nil {
 			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("realm was not found: %v", err))
 		} else {
-			tx = services.FilterPostWithRealm(tx, realm.ID)
+			tx = services.FilterArticleWithRealm(tx, realm.ID)
 		}
 	}
 
@@ -55,18 +54,18 @@ func listPost(c *fiber.Ctx) error {
 	}
 
 	if len(c.Query("category")) > 0 {
-		tx = services.FilterPostWithCategory(tx, c.Query("category"))
+		tx = services.FilterArticleWithCategory(tx, c.Query("category"))
 	}
 	if len(c.Query("tag")) > 0 {
-		tx = services.FilterPostWithTag(tx, c.Query("tag"))
+		tx = services.FilterArticleWithTag(tx, c.Query("tag"))
 	}
 
-	count, err := services.CountPost(tx)
+	count, err := services.CountArticle(tx)
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
-	items, err := services.ListPost(tx, take, offset)
+	items, err := services.ListArticle(tx, take, offset)
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
@@ -77,7 +76,7 @@ func listPost(c *fiber.Ctx) error {
 	})
 }
 
-func listDraftPost(c *fiber.Ctx) error {
+func listDraftArticle(c *fiber.Ctx) error {
 	take := c.QueryInt("take", 0)
 	offset := c.QueryInt("offset", 0)
 
@@ -86,14 +85,14 @@ func listDraftPost(c *fiber.Ctx) error {
 	}
 	user := c.Locals("user").(models.Account)
 
-	tx := services.FilterPostWithAuthorDraft(database.C, user.ID)
+	tx := services.FilterArticleWithAuthorDraft(database.C, user.ID)
 
-	count, err := services.CountPost(tx)
+	count, err := services.CountArticle(tx)
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
-	items, err := services.ListPost(tx, take, offset, true)
+	items, err := services.ListArticle(tx, take, offset, true)
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
@@ -104,23 +103,23 @@ func listDraftPost(c *fiber.Ctx) error {
 	})
 }
 
-func createPost(c *fiber.Ctx) error {
-	if err := gap.H.EnsureGrantedPerm(c, "CreatePost", true); err != nil {
+func createArticle(c *fiber.Ctx) error {
+	if err := gap.H.EnsureGrantedPerm(c, "CreateArticle", true); err != nil {
 		return err
 	}
 	user := c.Locals("user").(models.Account)
 
 	var data struct {
 		Alias       string            `json:"alias"`
-		Content     string            `json:"content" validate:"required,max=4096"`
+		Title       string            `json:"title" validate:"required"`
+		Description string            `json:"description"`
+		Content     string            `json:"content"`
 		Tags        []models.Tag      `json:"tags"`
 		Categories  []models.Category `json:"categories"`
 		Attachments []uint            `json:"attachments"`
 		IsDraft     bool              `json:"is_draft"`
 		PublishedAt *time.Time        `json:"published_at"`
 		RealmAlias  string            `json:"realm"`
-		ReplyTo     *uint             `json:"reply_to"`
-		RepostTo    *uint             `json:"repost_to"`
 	}
 
 	if err := exts.BindAndValidate(c, &data); err != nil {
@@ -135,32 +134,17 @@ func createPost(c *fiber.Ctx) error {
 		}
 	}
 
-	item := models.Post{
+	item := models.Article{
 		Alias:       data.Alias,
+		Title:       data.Title,
+		Description: data.Description,
 		Content:     data.Content,
-		Tags:        data.Tags,
-		Categories:  data.Categories,
-		Attachments: data.Attachments,
 		IsDraft:     data.IsDraft,
 		PublishedAt: data.PublishedAt,
 		AuthorID:    user.ID,
-	}
-
-	if data.ReplyTo != nil {
-		var replyTo models.Post
-		if err := database.C.Where("id = ?", data.ReplyTo).First(&replyTo).Error; err != nil {
-			return fiber.NewError(fiber.StatusNotFound, fmt.Sprintf("related post was not found: %v", err))
-		} else {
-			item.ReplyID = &replyTo.ID
-		}
-	}
-	if data.RepostTo != nil {
-		var repostTo models.Post
-		if err := database.C.Where("id = ?", data.RepostTo).First(&repostTo).Error; err != nil {
-			return fiber.NewError(fiber.StatusNotFound, fmt.Sprintf("related post was not found: %v", err))
-		} else {
-			item.RepostID = &repostTo.ID
-		}
+		Tags:        data.Tags,
+		Categories:  data.Categories,
+		Attachments: data.Attachments,
 	}
 
 	if len(data.RealmAlias) > 0 {
@@ -173,7 +157,7 @@ func createPost(c *fiber.Ctx) error {
 		}
 	}
 
-	item, err := services.NewPost(user, item)
+	item, err := services.NewArticle(user, item)
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
@@ -181,8 +165,8 @@ func createPost(c *fiber.Ctx) error {
 	return c.JSON(item)
 }
 
-func editPost(c *fiber.Ctx) error {
-	id, _ := c.ParamsInt("postId", 0)
+func editArticle(c *fiber.Ctx) error {
+	id, _ := c.ParamsInt("articleId", 0)
 	if err := gap.H.EnsureAuthenticated(c); err != nil {
 		return err
 	}
@@ -190,7 +174,9 @@ func editPost(c *fiber.Ctx) error {
 
 	var data struct {
 		Alias       string            `json:"alias"`
-		Content     string            `json:"content" validate:"required,max=4096"`
+		Title       string            `json:"title"`
+		Description string            `json:"description"`
+		Content     string            `json:"content"`
 		IsDraft     bool              `json:"is_draft"`
 		PublishedAt *time.Time        `json:"published_at"`
 		Tags        []models.Tag      `json:"tags"`
@@ -202,8 +188,8 @@ func editPost(c *fiber.Ctx) error {
 		return err
 	}
 
-	var item models.Post
-	if err := database.C.Where(models.Post{
+	var item models.Article
+	if err := database.C.Where(models.Article{
 		BaseModel: models.BaseModel{ID: uint(id)},
 		AuthorID:  user.ID,
 	}).First(&item).Error; err != nil {
@@ -217,6 +203,8 @@ func editPost(c *fiber.Ctx) error {
 	}
 
 	item.Alias = data.Alias
+	item.Title = data.Title
+	item.Description = data.Description
 	item.Content = data.Content
 	item.IsDraft = data.IsDraft
 	item.PublishedAt = data.PublishedAt
@@ -224,36 +212,36 @@ func editPost(c *fiber.Ctx) error {
 	item.Categories = data.Categories
 	item.Attachments = data.Attachments
 
-	if item, err := services.EditPost(item); err != nil {
+	if item, err := services.EditArticle(item); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	} else {
 		return c.JSON(item)
 	}
 }
 
-func deletePost(c *fiber.Ctx) error {
+func deleteArticle(c *fiber.Ctx) error {
 	if err := gap.H.EnsureAuthenticated(c); err != nil {
 		return err
 	}
 	user := c.Locals("user").(models.Account)
-	id, _ := c.ParamsInt("postId", 0)
+	id, _ := c.ParamsInt("articleId", 0)
 
-	var item models.Post
-	if err := database.C.Where(models.Post{
+	var item models.Article
+	if err := database.C.Where(models.Article{
 		BaseModel: models.BaseModel{ID: uint(id)},
 		AuthorID:  user.ID,
 	}).First(&item).Error; err != nil {
 		return fiber.NewError(fiber.StatusNotFound, err.Error())
 	}
 
-	if err := services.DeletePost(item); err != nil {
+	if err := services.DeleteArticle(item); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 
 	return c.SendStatus(fiber.StatusOK)
 }
 
-func reactPost(c *fiber.Ctx) error {
+func reactArticle(c *fiber.Ctx) error {
 	if err := gap.H.EnsureAuthenticated(c); err != nil {
 		return err
 	}
@@ -274,16 +262,16 @@ func reactPost(c *fiber.Ctx) error {
 		AccountID: user.ID,
 	}
 
-	alias := c.Params("post")
+	alias := c.Params("article")
 
-	var res models.Post
+	var res models.Article
 	if err := database.C.Where("alias = ?", alias).Select("id").First(&res).Error; err != nil {
-		return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("unable to find post to react: %v", err))
+		return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("unable to find article to react: %v", err))
 	} else {
-		reaction.PostID = &res.ID
+		reaction.ArticleID = &res.ID
 	}
 
-	if positive, reaction, err := services.ReactPost(user, reaction); err != nil {
+	if positive, reaction, err := services.ReactArticle(user, reaction); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	} else {
 		return c.Status(lo.Ternary(positive, fiber.StatusCreated, fiber.StatusNoContent)).JSON(reaction)

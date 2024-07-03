@@ -18,7 +18,7 @@ func listFeed(c *fiber.Ctx) error {
 		if realm, err := services.GetRealmWithExtID(uint(realmId)); err != nil {
 			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("realm was not found: %v", err))
 		} else {
-			tx = services.FilterWithRealm(tx, realm.ID)
+			tx = services.FilterPostWithRealm(tx, realm.ID)
 		}
 	}
 
