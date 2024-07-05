@@ -43,7 +43,7 @@ func FilterArticleWithAuthorDraft(tx *gorm.DB, uid uint) *gorm.DB {
 }
 
 func FilterArticleDraft(tx *gorm.DB) *gorm.DB {
-	return tx.Where("is_draft = ?", false)
+	return tx.Where("is_draft = ? OR is_draft IS NULL", false)
 }
 
 func GetArticleWithAlias(tx *gorm.DB, alias string, ignoreLimitation ...bool) (models.Article, error) {

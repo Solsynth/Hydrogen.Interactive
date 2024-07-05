@@ -51,7 +51,7 @@ func FilterPostWithAuthorDraft(tx *gorm.DB, uid uint) *gorm.DB {
 }
 
 func FilterPostDraft(tx *gorm.DB) *gorm.DB {
-	return tx.Where("is_draft = ?", false)
+	return tx.Where("is_draft = ? OR is_draft IS NULL", false)
 }
 
 func GetPostWithAlias(tx *gorm.DB, alias string, ignoreLimitation ...bool) (models.Post, error) {
