@@ -39,7 +39,7 @@ func BatchListResourceReactions(tx *gorm.DB, indexField string) (map[uint]map[st
 
 	reactInfo := map[uint]map[string]int64{}
 	if err := tx.Model(&models.Reaction{}).
-		Select(fmt.Sprintf("%s as id, symbol, COUNT(id) as count"), indexField).
+		Select(fmt.Sprintf("%s as id, symbol, COUNT(id) as count", indexField)).
 		Group("id, symbol").
 		Scan(&reactions).Error; err != nil {
 		return reactInfo, err
