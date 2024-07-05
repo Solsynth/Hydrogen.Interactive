@@ -61,7 +61,8 @@ func listArticle(c *fiber.Ctx) error {
 		tx = services.FilterArticleWithTag(tx, c.Query("tag"))
 	}
 
-	count, err := services.CountArticle(tx)
+	counTx := tx
+	count, err := services.CountArticle(counTx)
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}

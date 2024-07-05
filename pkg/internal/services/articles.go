@@ -121,7 +121,7 @@ func ListArticle(tx *gorm.DB, take int, offset int, noReact ...bool) ([]*models.
 
 	// Load reactions
 	if len(noReact) <= 0 || !noReact[0] {
-		if mapping, err := BatchListResourceReactions(database.C.Where("article_id IN ?", idx)); err != nil {
+		if mapping, err := BatchListResourceReactions(database.C.Where("article_id IN ?", idx), "article_id"); err != nil {
 			return items, err
 		} else {
 			itemMap := lo.SliceToMap(items, func(item *models.Article) (uint, *models.Article) {

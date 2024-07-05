@@ -1,6 +1,8 @@
 package services
 
 import (
+	"fmt"
+
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/models"
 	"github.com/samber/lo"
 	"gorm.io/gorm"
@@ -28,26 +30,26 @@ func ListResourceReactions(tx *gorm.DB) (map[string]int64, error) {
 	}), nil
 }
 
-func BatchListResourceReactions(tx *gorm.DB) (map[uint]map[string]int64, error) {
+func BatchListResourceReactions(tx *gorm.DB, indexField string) (map[uint]map[string]int64, error) {
 	var reactions []struct {
-		ArticleID uint
-		Symbol    string
-		Count     int64
+		ID     uint
+		Symbol string
+		Count  int64
 	}
 
 	reactInfo := map[uint]map[string]int64{}
 	if err := tx.Model(&models.Reaction{}).
-		Select("article_id, symbol, COUNT(id) as count").
-		Group("article_id, symbol").
+		Select(fmt.Sprintf("%s as id, symbol, COUNT(id) as count"), indexField).
+		Group("id, symbol").
 		Scan(&reactions).Error; err != nil {
 		return reactInfo, err
 	}
 
 	for _, info := range reactions {
-		if _, ok := reactInfo[info.ArticleID]; !ok {
-			reactInfo[info.ArticleID] = make(map[string]int64)
+		if _, ok := reactInfo[info.ID]; !ok {
+			reactInfo[info.ID] = make(map[string]int64)
 		}
-		reactInfo[info.ArticleID][info.Symbol] = info.Count
+		reactInfo[info.ID][info.Symbol] = info.Count
 	}
 
 	return reactInfo, nil

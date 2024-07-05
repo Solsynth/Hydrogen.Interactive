@@ -62,7 +62,8 @@ func listPost(c *fiber.Ctx) error {
 		tx = services.FilterPostWithTag(tx, c.Query("tag"))
 	}
 
-	count, err := services.CountPost(tx)
+	countTx := tx
+	count, err := services.CountPost(countTx)
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}

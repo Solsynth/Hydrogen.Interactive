@@ -152,7 +152,7 @@ func ListPost(tx *gorm.DB, take int, offset int, noReact ...bool) ([]*models.Pos
 
 	// Load reactions
 	if len(noReact) <= 0 || !noReact[0] {
-		if mapping, err := BatchListResourceReactions(database.C.Where("post_id IN ?", idx)); err != nil {
+		if mapping, err := BatchListResourceReactions(database.C.Where("post_id IN ?", idx), "post_id"); err != nil {
 			return items, err
 		} else {
 			itemMap := lo.SliceToMap(items, func(item *models.Post) (uint, *models.Post) {
