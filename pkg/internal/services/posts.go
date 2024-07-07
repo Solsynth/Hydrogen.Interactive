@@ -68,8 +68,12 @@ func GetPostWithAlias(tx *gorm.DB, alias string, ignoreLimitation ...bool) (mode
 		Preload("Author").
 		Preload("ReplyTo").
 		Preload("ReplyTo.Author").
+		Preload("ReplyTo.Tags").
+		Preload("ReplyTo.Categories").
 		Preload("RepostTo").
 		Preload("RepostTo.Author").
+		Preload("RepostTo.Tags").
+		Preload("RepostTo.Categories").
 		First(&item).Error; err != nil {
 		return item, err
 	}
@@ -91,8 +95,12 @@ func GetPost(tx *gorm.DB, id uint, ignoreLimitation ...bool) (models.Post, error
 		Preload("Author").
 		Preload("ReplyTo").
 		Preload("ReplyTo.Author").
+		Preload("ReplyTo.Tags").
+		Preload("ReplyTo.Categories").
 		Preload("RepostTo").
 		Preload("RepostTo.Author").
+		Preload("RepostTo.Tags").
+		Preload("RepostTo.Categories").
 		First(&item).Error; err != nil {
 		return item, err
 	}
@@ -146,8 +154,12 @@ func ListPost(tx *gorm.DB, take int, offset int, noReact ...bool) ([]*models.Pos
 		Preload("Author").
 		Preload("ReplyTo").
 		Preload("ReplyTo.Author").
+		Preload("ReplyTo.Tags").
+		Preload("ReplyTo.Categories").
 		Preload("RepostTo").
 		Preload("RepostTo.Author").
+		Preload("RepostTo.Tags").
+		Preload("RepostTo.Categories").
 		Find(&items).Error; err != nil {
 		return items, err
 	}
