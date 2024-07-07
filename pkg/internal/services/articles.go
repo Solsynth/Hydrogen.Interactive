@@ -113,6 +113,8 @@ func ListArticle(tx *gorm.DB, take int, offset int, noReact ...bool) ([]*models.
 	if err := tx.
 		Limit(take).Offset(offset).
 		Order("created_at DESC").
+		Preload("Tags").
+		Preload("Categories").
 		Preload("Realm").
 		Preload("Author").
 		Find(&items).Error; err != nil {
