@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"strings"
 
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/database"
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/models"
@@ -61,6 +62,7 @@ func DeleteCategory(category models.Category) error {
 }
 
 func GetTagOrCreate(alias, name string) (models.Tag, error) {
+	alias = strings.ToLower(alias)
 	var tag models.Tag
 	if err := database.C.Where(models.Category{Alias: alias}).First(&tag).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
