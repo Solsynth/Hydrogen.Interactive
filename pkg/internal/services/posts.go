@@ -15,15 +15,17 @@ import (
 )
 
 func FilterPostWithCategory(tx *gorm.DB, alias string) *gorm.DB {
-	return tx.Joins("JOIN post_categories ON posts.id = post_categories.post_id").
-		Joins("JOIN post_categories ON post_categories.id = post_categories.category_id").
-		Where("post_categories.alias = ?", alias)
+	prefix := viper.GetString("database.prefix")
+	return tx.Joins(fmt.Sprintf("JOIN %spost_categories ON %sposts.id = %spost_categories.post_id", prefix, prefix, prefix)).
+		Joins(fmt.Sprintf("JOIN %spost_categories ON %spost_categories.id = %spost_categories.category_id", prefix, prefix, prefix)).
+		Where(fmt.Sprintf("%spost_categories.alias = ?", prefix), alias)
 }
 
 func FilterPostWithTag(tx *gorm.DB, alias string) *gorm.DB {
-	return tx.Joins("JOIN post_tags ON posts.id = post_tags.post_id").
-		Joins("JOIN post_tags ON post_tags.id = post_tags.category_id").
-		Where("post_tags.alias = ?", alias)
+	prefix := viper.GetString("database.prefix")
+	return tx.Joins(fmt.Sprintf("JOIN %spost_tags ON %sposts.id = %spost_tags.post_id", prefix, prefix, prefix)).
+		Joins(fmt.Sprintf("JOIN %spost_tags ON %spost_tags.id = %spost_tags.category_id", prefix, prefix, prefix)).
+		Where(fmt.Sprintf("%spost_tags.alias = ?", prefix), alias)
 }
 
 func FilterPostWithRealm(tx *gorm.DB, id uint) *gorm.DB {
