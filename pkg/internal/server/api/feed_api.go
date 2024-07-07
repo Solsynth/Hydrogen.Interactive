@@ -100,20 +100,8 @@ func listFeed(c *fiber.Ctx) error {
 		return feed[i].CreatedAt.After(feed[j].CreatedAt)
 	})
 
-	start := offset
-	end := start + take
-	if start > len(feed) {
-		return c.JSON(fiber.Map{
-			"count": postCount + articleCount,
-			"data":  []FeedRecord{},
-		})
-	}
-	if end > len(feed) {
-		end = len(feed)
-	}
-
 	return c.JSON(fiber.Map{
 		"count": postCount + articleCount,
-		"data":  feed[start:end],
+		"data":  feed,
 	})
 }
