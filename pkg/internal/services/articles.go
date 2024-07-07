@@ -54,6 +54,8 @@ func GetArticleWithAlias(tx *gorm.DB, alias string, ignoreLimitation ...bool) (m
 	var item models.Article
 	if err := tx.
 		Where("alias = ?", alias).
+		Preload("Tags").
+		Preload("Categories").
 		Preload("Realm").
 		Preload("Author").
 		First(&item).Error; err != nil {
@@ -71,6 +73,8 @@ func GetArticle(tx *gorm.DB, id uint, ignoreLimitation ...bool) (models.Article,
 	var item models.Article
 	if err := tx.
 		Where("id = ?", id).
+		Preload("Tags").
+		Preload("Categories").
 		Preload("Realm").
 		Preload("Author").
 		First(&item).Error; err != nil {

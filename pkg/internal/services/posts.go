@@ -62,6 +62,8 @@ func GetPostWithAlias(tx *gorm.DB, alias string, ignoreLimitation ...bool) (mode
 	var item models.Post
 	if err := tx.
 		Where("alias = ?", alias).
+		Preload("Tags").
+		Preload("Categories").
 		Preload("Realm").
 		Preload("Author").
 		Preload("ReplyTo").
@@ -83,6 +85,8 @@ func GetPost(tx *gorm.DB, id uint, ignoreLimitation ...bool) (models.Post, error
 	var item models.Post
 	if err := tx.
 		Where("id = ?", id).
+		Preload("Tags").
+		Preload("Categories").
 		Preload("Realm").
 		Preload("Author").
 		Preload("ReplyTo").
