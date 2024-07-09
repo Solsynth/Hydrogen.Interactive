@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/database"
+	"git.solsynth.dev/hydrogen/interactive/pkg/internal/gap"
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/models"
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/services"
 	"github.com/gofiber/fiber/v2"
@@ -52,6 +53,71 @@ func listFeed(c *fiber.Ctx) error {
 		postTx = services.FilterPostWithTag(postTx, c.Query("tag"))
 		articleTx = services.FilterArticleWithTag(articleTx, c.Query("tag"))
 	}
+
+	postCountTx := postTx
+	articleCountTx := articleTx
+
+	postCount, err := services.CountPost(postCountTx)
+	if err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	}
+	articleCount, err := services.CountArticle(articleCountTx)
+	if err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	}
+
+	postItems, err := services.ListPost(postTx, take, offset)
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+	articleItems, err := services.ListArticle(articleTx, take, offset)
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
+	var feed []FeedRecord
+
+	encodeToFeed := func(t string, in any, createdAt time.Time) FeedRecord {
+		var result map[string]any
+		raw, _ := jsoniter.Marshal(in)
+		jsoniter.Unmarshal(raw, &result)
+
+		return FeedRecord{
+			Type:      t,
+			Data:      result,
+			CreatedAt: createdAt,
+		}
+	}
+
+	for _, post := range postItems {
+		feed = append(feed, encodeToFeed("post", post, post.CreatedAt))
+	}
+
+	for _, article := range articleItems {
+		feed = append(feed, encodeToFeed("article", article, article.CreatedAt))
+	}
+
+	sort.Slice(feed, func(i, j int) bool {
+		return feed[i].CreatedAt.After(feed[j].CreatedAt)
+	})
+
+	return c.JSON(fiber.Map{
+		"count": postCount + articleCount,
+		"data":  feed,
+	})
+}
+
+func listDraftMixed(c *fiber.Ctx) error {
+	take := c.QueryInt("take", 0)
+	offset := c.QueryInt("offset", 0)
+
+	if err := gap.H.EnsureAuthenticated(c); err != nil {
+		return err
+	}
+	user := c.Locals("user").(models.Account)
+
+	postTx := services.FilterPostWithAuthorDraft(database.C, user.ID)
+	articleTx := services.FilterArticleWithAuthorDraft(database.C, user.ID)
 
 	postCountTx := postTx
 	articleCountTx := articleTx

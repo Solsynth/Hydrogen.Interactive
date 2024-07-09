@@ -14,6 +14,7 @@ func MapAPIs(app *fiber.App) {
 
 		drafts := api.Group("/drafts").Name("Draft box API")
 		{
+			drafts.Get("/", listDraftMixed)
 			drafts.Get("/posts", listDraftPost)
 			drafts.Get("/articles", listDraftArticle)
 		}
