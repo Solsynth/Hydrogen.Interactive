@@ -167,6 +167,7 @@ func ListPost(tx *gorm.DB, take int, offset int, noReact ...bool) ([]*models.Pos
 	}
 
 	idx := lo.Map(items, func(item *models.Post, index int) uint {
+		item.Metric = models.PostMetric{}
 		return item.ID
 	})
 
@@ -181,7 +182,7 @@ func ListPost(tx *gorm.DB, take int, offset int, noReact ...bool) ([]*models.Pos
 
 			for k, v := range mapping {
 				if post, ok := itemMap[k]; ok {
-					post.ReactionList = v
+					post.Metric.ReactionList = v
 				}
 			}
 		}
@@ -213,7 +214,7 @@ func ListPost(tx *gorm.DB, take int, offset int, noReact ...bool) ([]*models.Pos
 
 		for k, v := range list {
 			if post, ok := itemMap[k]; ok {
-				post.ReplyCount = v
+				post.Metric.ReplyCount = v
 			}
 		}
 	}
@@ -239,6 +240,8 @@ func EnsurePostCategoriesAndTags(item models.Post) (models.Post, error) {
 }
 
 func NewPost(user models.Account, item models.Post) (models.Post, error) {
+	item.Language = DetectLanguage(item.Content)
+
 	item, err := EnsurePostCategoriesAndTags(item)
 	if err != nil {
 		return item, err
@@ -281,6 +284,7 @@ func NewPost(user models.Account, item models.Post) (models.Post, error) {
 }
 
 func EditPost(item models.Post) (models.Post, error) {
+	item.Language = DetectLanguage(item.Content)
 	item, err := EnsurePostCategoriesAndTags(item)
 	if err != nil {
 		return item, err

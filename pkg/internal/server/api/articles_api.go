@@ -23,8 +23,8 @@ func getArticle(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusNotFound, err.Error())
 	}
 
-	item.ReactionCount = services.CountArticleReactions(item.ID)
-	item.ReactionList, err = services.ListResourceReactions(database.C.Where("article_id = ?", item.ID))
+	item.Metric.ReactionCount = services.CountArticleReactions(item.ID)
+	item.Metric.ReactionList, err = services.ListResourceReactions(database.C.Where("article_id = ?", item.ID))
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}

@@ -10,7 +10,8 @@ type Post struct {
 	BaseModel
 
 	Alias       string                    `json:"alias" gorm:"uniqueIndex"`
-	Content     string                    `json:"content"`
+	Content     *string                   `json:"content"`
+	Language    string                    `json:"language"`
 	Tags        []Tag                     `json:"tags" gorm:"many2many:post_tags"`
 	Categories  []Category                `json:"categories" gorm:"many2many:post_categories"`
 	Reactions   []Reaction                `json:"reactions"`
@@ -29,8 +30,5 @@ type Post struct {
 	AuthorID uint    `json:"author_id"`
 	Author   Account `json:"author"`
 
-	// Dynamic Calculated Values
-	ReplyCount    int64            `json:"reply_count"`
-	ReactionCount int64            `json:"reaction_count"`
-	ReactionList  map[string]int64 `json:"reaction_list" gorm:"-"`
+	Metric PostMetric `json:"metric" gorm:"-"`
 }

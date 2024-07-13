@@ -23,9 +23,11 @@ func getPost(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusNotFound, err.Error())
 	}
 
-	item.ReplyCount = services.CountPostReply(item.ID)
-	item.ReactionCount = services.CountPostReactions(item.ID)
-	item.ReactionList, err = services.ListResourceReactions(database.C.Where("post_id = ?", item.ID))
+	item.Metric = models.PostMetric{
+		ReplyCount:    services.CountPostReply(item.ID),
+		ReactionCount: services.CountPostReactions(item.ID),
+	}
+	item.Metric.ReactionList, err = services.ListResourceReactions(database.C.Where("post_id = ?", item.ID))
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
@@ -139,7 +141,7 @@ func createPost(c *fiber.Ctx) error {
 
 	item := models.Post{
 		Alias:       data.Alias,
-		Content:     data.Content,
+		Content:     &data.Content,
 		Tags:        data.Tags,
 		Categories:  data.Categories,
 		Attachments: data.Attachments,
@@ -218,8 +220,8 @@ func editPost(c *fiber.Ctx) error {
 		}
 	}
 
+	item.Content = &data.Content
 	item.Alias = data.Alias
-	item.Content = data.Content
 	item.IsDraft = data.IsDraft
 	item.PublishedAt = data.PublishedAt
 	item.Tags = data.Tags

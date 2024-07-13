@@ -13,6 +13,7 @@ type Article struct {
 	Title       string                    `json:"title"`
 	Description string                    `json:"description"`
 	Content     string                    `json:"content"`
+	Language    string                    `json:"language"`
 	Tags        []Tag                     `json:"tags" gorm:"many2many:article_tags"`
 	Categories  []Category                `json:"categories" gorm:"many2many:article_categories"`
 	Reactions   []Reaction                `json:"reactions"`
@@ -26,7 +27,5 @@ type Article struct {
 	AuthorID uint    `json:"author_id"`
 	Author   Account `json:"author"`
 
-	// Dynamic Calculated Values
-	ReactionCount int64            `json:"reaction_count"`
-	ReactionList  map[string]int64 `json:"reaction_list" gorm:"-"`
+	Metric PostMetric `json:"metric" gorm:"-"`
 }

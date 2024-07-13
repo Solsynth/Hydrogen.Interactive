@@ -138,7 +138,7 @@ func ListArticle(tx *gorm.DB, take int, offset int, noReact ...bool) ([]*models.
 
 			for k, v := range mapping {
 				if post, ok := itemMap[k]; ok {
-					post.ReactionList = v
+					post.Metric.ReactionList = v
 				}
 			}
 		}
@@ -165,6 +165,8 @@ func EnsureArticleCategoriesAndTags(item models.Article) (models.Article, error)
 }
 
 func NewArticle(user models.Account, item models.Article) (models.Article, error) {
+	item.Language = DetectLanguage(&item.Content)
+
 	item, err := EnsureArticleCategoriesAndTags(item)
 	if err != nil {
 		return item, err
@@ -185,6 +187,7 @@ func NewArticle(user models.Account, item models.Article) (models.Article, error
 }
 
 func EditArticle(item models.Article) (models.Article, error) {
+	item.Language = DetectLanguage(&item.Content)
 	item, err := EnsureArticleCategoriesAndTags(item)
 	if err != nil {
 		return item, err
