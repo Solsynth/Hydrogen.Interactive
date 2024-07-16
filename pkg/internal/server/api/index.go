@@ -4,8 +4,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func MapAPIs(app *fiber.App) {
-	api := app.Group("/api").Name("API")
+func MapAPIs(app *fiber.App, baseURL string) {
+	api := app.Group(baseURL).Name("API")
 	{
 		api.Get("/users/me", getUserinfo)
 		api.Get("/users/:accountId", getOthersInfo)
