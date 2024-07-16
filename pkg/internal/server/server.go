@@ -15,10 +15,10 @@ import (
 	"github.com/spf13/viper"
 )
 
-var A *fiber.App
+var app *fiber.App
 
 func NewServer() {
-	A = fiber.New(fiber.Config{
+	app = fiber.New(fiber.Config{
 		DisableStartupMessage: true,
 		EnableIPValidation:    true,
 		ServerHeader:          "Hydrogen.Interactive",
@@ -30,8 +30,8 @@ func NewServer() {
 		EnablePrintRoutes:     viper.GetBool("debug.print_routes"),
 	})
 
-	A.Use(idempotency.New())
-	A.Use(cors.New(cors.Config{
+	app.Use(idempotency.New())
+	app.Use(cors.New(cors.Config{
 		AllowCredentials: true,
 		AllowMethods: strings.Join([]string{
 			fiber.MethodGet,
@@ -47,19 +47,19 @@ func NewServer() {
 		},
 	}))
 
-	A.Use(logger.New(logger.Config{
+	app.Use(logger.New(logger.Config{
 		Format: "${status} | ${latency} | ${method} ${path}\n",
 		Output: log.Logger,
 	}))
 
-	A.Use(gap.H.AuthMiddleware)
-	A.Use(exts.LinkAccountMiddleware)
+	app.Use(gap.H.AuthMiddleware)
+	app.Use(exts.LinkAccountMiddleware)
 
-	api.MapAPIs(A, "/")
+	api.MapAPIs(app, "/api")
 }
 
 func Listen() {
-	if err := A.Listen(viper.GetString("bind")); err != nil {
+	if err := app.Listen(viper.GetString("bind")); err != nil {
 		log.Fatal().Err(err).Msg("An error occurred when starting server...")
 	}
 }
