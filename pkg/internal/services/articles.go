@@ -106,8 +106,8 @@ func CountArticleReactions(id uint) int64 {
 }
 
 func ListArticle(tx *gorm.DB, take int, offset int, noReact ...bool) ([]*models.Article, error) {
-	if take > 20 {
-		take = 20
+	if take > 100 {
+		take = 100
 	}
 
 	var items []*models.Article
@@ -137,7 +137,9 @@ func ListArticle(tx *gorm.DB, take int, offset int, noReact ...bool) ([]*models.
 
 			for k, v := range mapping {
 				if post, ok := itemMap[k]; ok {
-					post.Metric.ReactionList = v
+					post.Metric = models.PostMetric{
+						ReactionList: v,
+					}
 				}
 			}
 		}

@@ -141,8 +141,8 @@ func CountPostReactions(id uint) int64 {
 }
 
 func ListPost(tx *gorm.DB, take int, offset int, noReact ...bool) ([]*models.Post, error) {
-	if take > 20 {
-		take = 20
+	if take > 100 {
+		take = 100
 	}
 
 	var items []*models.Post
@@ -166,7 +166,6 @@ func ListPost(tx *gorm.DB, take int, offset int, noReact ...bool) ([]*models.Pos
 	}
 
 	idx := lo.Map(items, func(item *models.Post, index int) uint {
-		item.Metric = models.PostMetric{}
 		return item.ID
 	})
 
@@ -181,7 +180,9 @@ func ListPost(tx *gorm.DB, take int, offset int, noReact ...bool) ([]*models.Pos
 
 			for k, v := range mapping {
 				if post, ok := itemMap[k]; ok {
-					post.Metric.ReactionList = v
+					post.Metric = models.PostMetric{
+						ReactionList: v,
+					}
 				}
 			}
 		}
@@ -213,7 +214,10 @@ func ListPost(tx *gorm.DB, take int, offset int, noReact ...bool) ([]*models.Pos
 
 		for k, v := range list {
 			if post, ok := itemMap[k]; ok {
-				post.Metric.ReplyCount = v
+				post.Metric = models.PostMetric{
+					ReactionList: post.Metric.ReactionList,
+					ReplyCount:   v,
+				}
 			}
 		}
 	}
