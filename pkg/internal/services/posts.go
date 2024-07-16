@@ -7,7 +7,6 @@ import (
 
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/database"
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/models"
-	"git.solsynth.dev/hydrogen/passport/pkg/proto"
 	"github.com/rs/zerolog/log"
 	"github.com/samber/lo"
 	"github.com/spf13/viper"
@@ -266,12 +265,11 @@ func NewPost(user models.Account, item models.Post) (models.Post, error) {
 			Preload("Author").
 			First(&op).Error; err == nil {
 			if op.Author.ID != user.ID {
-				postUrl := fmt.Sprintf("https://%s/posts/%s", viper.GetString("domain"), item.Alias)
-				err := NotifyPosterAccount(
+				err = NotifyPosterAccount(
 					op.Author,
-					fmt.Sprintf("%s replied you", user.Nick),
+					"Post got replied",
 					fmt.Sprintf("%s (%s) replied your post #%s.", user.Nick, user.Name, op.Alias),
-					&proto.NotifyLink{Label: "Related post", Url: postUrl},
+					lo.ToPtr(fmt.Sprintf("%s replied you", user.Nick)),
 				)
 				if err != nil {
 					log.Error().Err(err).Msg("An error occurred when notifying user...")
@@ -308,12 +306,11 @@ func ReactPost(user models.Account, reaction models.Reaction) (bool, models.Reac
 				Preload("Author").
 				First(&op).Error; err == nil {
 				if op.Author.ID != user.ID {
-					postUrl := fmt.Sprintf("https://%s/posts/%s", viper.GetString("domain"), op.Alias)
-					err := NotifyPosterAccount(
+					err = NotifyPosterAccount(
 						op.Author,
-						fmt.Sprintf("%s reacted your post", user.Nick),
-						fmt.Sprintf("%s (%s) reacted your post a %s", user.Nick, user.Name, reaction.Symbol),
-						&proto.NotifyLink{Label: "Related post", Url: postUrl},
+						"Post got replied",
+						fmt.Sprintf("%s (%s) replied your post #%s.", user.Nick, user.Name, op.Alias),
+						lo.ToPtr(fmt.Sprintf("%s replied you", user.Nick)),
 					)
 					if err != nil {
 						log.Error().Err(err).Msg("An error occurred when notifying user...")

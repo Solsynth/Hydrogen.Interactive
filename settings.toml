@@ -11,15 +11,8 @@ secret = "LtTjzAGFLshwXhN4ZD4nG5KlMv1MWcsvfv03TSZYnT1VhiAnLIZFTnHUwR0XhGgi"
 database = false
 print_routes = false
 
-[paperclip]
-endpoint = "http://localhost:8443"
-grpc_endpoint = "localhost:7443"
-
-[passport]
-client_id = "solarplaza"
-client_secret = "Z9k9AFTj^p"
-endpoint = "http://localhost:8444"
-grpc_endpoint = "localhost:7444"
+[dealer]
+addr = "127.0.0.1:7442"
 
 [mailer]
 name = "Alphabot <alphabot@smartsheep.studio>"
