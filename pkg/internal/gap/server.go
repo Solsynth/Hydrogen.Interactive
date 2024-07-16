@@ -2,10 +2,11 @@ package gap
 
 import (
 	"fmt"
+	"strings"
+
 	"git.solsynth.dev/hydrogen/dealer/pkg/hyper"
 	"git.solsynth.dev/hydrogen/dealer/pkg/proto"
 	"github.com/rs/zerolog/log"
-	"strings"
 
 	"github.com/spf13/viper"
 )
@@ -24,7 +25,7 @@ func RegisterService() error {
 	var err error
 	H, err = hyper.NewHyperConn(viper.GetString("dealer.addr"), &proto.ServiceInfo{
 		Id:       viper.GetString("id"),
-		Type:     hyper.ServiceTypeAuthProvider,
+		Type:     hyper.ServiceTypeInteractiveProvider,
 		Label:    "Passport",
 		GrpcAddr: grpcOutbound,
 		HttpAddr: &httpOutbound,
