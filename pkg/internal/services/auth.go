@@ -3,14 +3,14 @@ package services
 import (
 	"errors"
 	"fmt"
+	"git.solsynth.dev/hydrogen/dealer/pkg/proto"
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/database"
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/models"
-	"git.solsynth.dev/hydrogen/passport/pkg/proto"
 	"gorm.io/gorm"
 	"reflect"
 )
 
-func LinkAccount(userinfo *proto.Userinfo) (models.Account, error) {
+func LinkAccount(userinfo *proto.UserInfo) (models.Account, error) {
 	var account models.Account
 	if userinfo == nil {
 		return account, fmt.Errorf("remote userinfo was not found")

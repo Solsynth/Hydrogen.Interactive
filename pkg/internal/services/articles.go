@@ -7,7 +7,6 @@ import (
 
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/database"
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/models"
-	"git.solsynth.dev/hydrogen/passport/pkg/proto"
 	"github.com/rs/zerolog/log"
 	"github.com/samber/lo"
 	"github.com/spf13/viper"
@@ -211,12 +210,11 @@ func ReactArticle(user models.Account, reaction models.Reaction) (bool, models.R
 				Preload("Author").
 				First(&op).Error; err == nil {
 				if op.Author.ID != user.ID {
-					articleUrl := fmt.Sprintf("https://%s/articles/%s", viper.GetString("domain"), op.Alias)
-					err := NotifyPosterAccount(
+					err = NotifyPosterAccount(
 						op.Author,
-						fmt.Sprintf("%s reacted your article", user.Nick),
+						"Article got reacted",
 						fmt.Sprintf("%s (%s) reacted your article a %s", user.Nick, user.Name, reaction.Symbol),
-						&proto.NotifyLink{Label: "Related article", Url: articleUrl},
+						lo.ToPtr(fmt.Sprintf("%s reacted your article", user.Nick)),
 					)
 					if err != nil {
 						log.Error().Err(err).Msg("An error occurred when notifying user...")
