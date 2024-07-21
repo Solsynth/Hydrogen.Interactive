@@ -51,6 +51,7 @@ func createStory(c *fiber.Ctx) error {
 	item := models.Post{
 		Type:           models.PostTypeStory,
 		Body:           bodyMapping,
+		Language:       services.DetectLanguage(data.Content),
 		Tags:           data.Tags,
 		Categories:     data.Categories,
 		PublishedAt:    data.PublishedAt,
@@ -137,6 +138,7 @@ func editStory(c *fiber.Ctx) error {
 	_ = jsoniter.Unmarshal(rawBody, &bodyMapping)
 
 	item.Body = bodyMapping
+	item.Language = services.DetectLanguage(data.Content)
 	item.Tags = data.Tags
 	item.Categories = data.Categories
 	item.PublishedAt = data.PublishedAt

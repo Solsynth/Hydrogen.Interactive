@@ -218,6 +218,10 @@ func EnsurePostCategoriesAndTags(item models.Post) (models.Post, error) {
 }
 
 func NewPost(user models.Account, item models.Post) (models.Post, error) {
+	if !item.IsDraft && item.PublishedAt == nil {
+		item.PublishedAt = lo.ToPtr(time.Now())
+	}
+
 	item, err := EnsurePostCategoriesAndTags(item)
 	if err != nil {
 		return item, err
