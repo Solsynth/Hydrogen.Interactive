@@ -48,6 +48,7 @@ func createStory(c *fiber.Ctx) error {
 	_ = jsoniter.Unmarshal(rawBody, &bodyMapping)
 
 	item := models.Post{
+		Type:        models.PostTypeStory,
 		Body:        bodyMapping,
 		Tags:        data.Tags,
 		Categories:  data.Categories,

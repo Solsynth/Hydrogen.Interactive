@@ -6,9 +6,15 @@ import (
 	"gorm.io/datatypes"
 )
 
+const (
+	PostTypeStory   = "story"
+	PostTypeArticle = "article"
+)
+
 type Post struct {
 	BaseModel
 
+	Type       string            `json:"type"`
 	Body       datatypes.JSONMap `json:"body"`
 	Language   string            `json:"language"`
 	Tags       []Tag             `json:"tags" gorm:"many2many:post_tags"`
