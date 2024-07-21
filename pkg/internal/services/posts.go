@@ -44,7 +44,9 @@ func FilterPostReply(tx *gorm.DB, replyTo ...uint) *gorm.DB {
 }
 
 func FilterPostWithPublishedAt(tx *gorm.DB, date time.Time) *gorm.DB {
-	return tx.Where("published_at <= ? OR published_at IS NULL", date)
+	return tx.
+		Where("published_at <= ? OR published_at IS NULL", date).
+		Where("published_until > ? OR published_until IS NULL", date)
 }
 
 func FilterPostWithAuthorDraft(tx *gorm.DB, uid uint) *gorm.DB {

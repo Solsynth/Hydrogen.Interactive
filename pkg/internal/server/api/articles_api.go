@@ -19,15 +19,16 @@ func createArticle(c *fiber.Ctx) error {
 	user := c.Locals("user").(models.Account)
 
 	var data struct {
-		Title       string            `json:"title" validate:"required,max=1024"`
-		Description *string           `json:"description" validate:"max=2048"`
-		Content     string            `json:"content" validate:"required"`
-		Attachments []uint            `json:"attachments"`
-		PublishedAt *time.Time        `json:"published_at"`
-		IsDraft     bool              `json:"is_draft"`
-		RealmAlias  *string           `json:"realm"`
-		Tags        []models.Tag      `json:"tags"`
-		Categories  []models.Category `json:"categories"`
+		Title          string            `json:"title" validate:"required,max=1024"`
+		Description    *string           `json:"description" validate:"max=2048"`
+		Content        string            `json:"content" validate:"required"`
+		Attachments    []uint            `json:"attachments"`
+		Tags           []models.Tag      `json:"tags"`
+		Categories     []models.Category `json:"categories"`
+		PublishedAt    *time.Time        `json:"published_at"`
+		PublishedUntil *time.Time        `json:"published_until"`
+		IsDraft        bool              `json:"is_draft"`
+		RealmAlias     *string           `json:"realm"`
 	}
 
 	if err := exts.BindAndValidate(c, &data); err != nil {
@@ -46,13 +47,14 @@ func createArticle(c *fiber.Ctx) error {
 	_ = jsoniter.Unmarshal(rawBody, &bodyMapping)
 
 	item := models.Post{
-		Type:        models.PostTypeArticle,
-		Body:        bodyMapping,
-		Tags:        data.Tags,
-		Categories:  data.Categories,
-		IsDraft:     data.IsDraft,
-		PublishedAt: data.PublishedAt,
-		AuthorID:    user.ID,
+		Type:           models.PostTypeArticle,
+		Body:           bodyMapping,
+		Tags:           data.Tags,
+		Categories:     data.Categories,
+		IsDraft:        data.IsDraft,
+		PublishedAt:    data.PublishedAt,
+		PublishedUntil: data.PublishedUntil,
+		AuthorID:       user.ID,
 	}
 
 	if data.RealmAlias != nil {
@@ -81,14 +83,15 @@ func editArticle(c *fiber.Ctx) error {
 	user := c.Locals("user").(models.Account)
 
 	var data struct {
-		Title       string            `json:"title" validate:"required,max=1024"`
-		Description *string           `json:"description" validate:"max=2048"`
-		Content     string            `json:"content" validate:"required"`
-		Attachments []uint            `json:"attachments"`
-		IsDraft     bool              `json:"is_draft"`
-		PublishedAt *time.Time        `json:"published_at"`
-		Tags        []models.Tag      `json:"tags"`
-		Categories  []models.Category `json:"categories"`
+		Title          string            `json:"title" validate:"required,max=1024"`
+		Description    *string           `json:"description" validate:"max=2048"`
+		Content        string            `json:"content" validate:"required"`
+		Attachments    []uint            `json:"attachments"`
+		Tags           []models.Tag      `json:"tags"`
+		Categories     []models.Category `json:"categories"`
+		IsDraft        bool              `json:"is_draft"`
+		PublishedAt    *time.Time        `json:"published_at"`
+		PublishedUntil *time.Time        `json:"published_until"`
 	}
 
 	if err := exts.BindAndValidate(c, &data); err != nil {
@@ -114,10 +117,11 @@ func editArticle(c *fiber.Ctx) error {
 	_ = jsoniter.Unmarshal(rawBody, &bodyMapping)
 
 	item.Body = bodyMapping
-	item.IsDraft = data.IsDraft
-	item.PublishedAt = data.PublishedAt
 	item.Tags = data.Tags
 	item.Categories = data.Categories
+	item.IsDraft = data.IsDraft
+	item.PublishedAt = data.PublishedAt
+	item.PublishedUntil = data.PublishedUntil
 
 	if item, err := services.EditPost(item); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
