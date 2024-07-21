@@ -123,7 +123,7 @@ func ListPost(tx *gorm.DB, take int, offset int, noReact ...bool) ([]*models.Pos
 	var items []*models.Post
 	if err := tx.
 		Limit(take).Offset(offset).
-		Order("created_at DESC").
+		Order("published_at DESC").
 		Preload("Tags").
 		Preload("Categories").
 		Preload("Realm").
