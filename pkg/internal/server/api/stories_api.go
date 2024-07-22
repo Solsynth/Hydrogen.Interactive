@@ -12,16 +12,16 @@ import (
 	"time"
 )
 
-func createArticle(c *fiber.Ctx) error {
+func createStory(c *fiber.Ctx) error {
 	if err := gap.H.EnsureGrantedPerm(c, "CreatePosts", true); err != nil {
 		return err
 	}
 	user := c.Locals("user").(models.Account)
 
 	var data struct {
-		Title          string            `json:"title" validate:"required,max=1024"`
-		Description    *string           `json:"description" validate:"max=2048"`
-		Content        string            `json:"content" validate:"required"`
+		Title          *string           `json:"title" validate:"max=1024"`
+		Content        string            `json:"content" validate:"required,max=4096"`
+		Location       *string           `json:"location" validate:"max=2048"`
 		Attachments    []uint            `json:"attachments"`
 		Tags           []models.Tag      `json:"tags"`
 		Categories     []models.Category `json:"categories"`
@@ -29,16 +29,18 @@ func createArticle(c *fiber.Ctx) error {
 		PublishedUntil *time.Time        `json:"published_until"`
 		IsDraft        bool              `json:"is_draft"`
 		RealmAlias     *string           `json:"realm"`
+		ReplyTo        *uint             `json:"reply_to"`
+		RepostTo       *uint             `json:"repost_to"`
 	}
 
 	if err := exts.BindAndValidate(c, &data); err != nil {
 		return err
 	}
 
-	body := models.PostArticleBody{
+	body := models.PostStoryBody{
 		Title:       data.Title,
-		Description: data.Description,
 		Content:     data.Content,
+		Location:    data.Location,
 		Attachments: data.Attachments,
 	}
 
@@ -47,15 +49,32 @@ func createArticle(c *fiber.Ctx) error {
 	_ = jsoniter.Unmarshal(rawBody, &bodyMapping)
 
 	item := models.Post{
-		Type:           models.PostTypeArticle,
+		Type:           models.PostTypeStory,
 		Body:           bodyMapping,
 		Language:       services.DetectLanguage(data.Content),
 		Tags:           data.Tags,
 		Categories:     data.Categories,
-		IsDraft:        data.IsDraft,
 		PublishedAt:    data.PublishedAt,
 		PublishedUntil: data.PublishedUntil,
+		IsDraft:        data.IsDraft,
 		AuthorID:       user.ID,
+	}
+
+	if data.ReplyTo != nil {
+		var replyTo models.Post
+		if err := database.C.Where("id = ?", data.ReplyTo).First(&replyTo).Error; err != nil {
+			return fiber.NewError(fiber.StatusNotFound, fmt.Sprintf("related post was not found: %v", err))
+		} else {
+			item.ReplyID = &replyTo.ID
+		}
+	}
+	if data.RepostTo != nil {
+		var repostTo models.Post
+		if err := database.C.Where("id = ?", data.RepostTo).First(&repostTo).Error; err != nil {
+			return fiber.NewError(fiber.StatusNotFound, fmt.Sprintf("related post was not found: %v", err))
+		} else {
+			item.RepostID = &repostTo.ID
+		}
 	}
 
 	if data.RealmAlias != nil {
@@ -76,7 +95,7 @@ func createArticle(c *fiber.Ctx) error {
 	return c.JSON(item)
 }
 
-func editArticle(c *fiber.Ctx) error {
+func editStory(c *fiber.Ctx) error {
 	id, _ := c.ParamsInt("postId", 0)
 	if err := gap.H.EnsureAuthenticated(c); err != nil {
 		return err
@@ -84,15 +103,15 @@ func editArticle(c *fiber.Ctx) error {
 	user := c.Locals("user").(models.Account)
 
 	var data struct {
-		Title          string            `json:"title" validate:"required,max=1024"`
-		Description    *string           `json:"description" validate:"max=2048"`
-		Content        string            `json:"content" validate:"required"`
+		Title          *string           `json:"title" validate:"max=1024"`
+		Content        string            `json:"content" validate:"required,max=4096"`
+		Location       *string           `json:"location" validate:"max=2048"`
 		Attachments    []uint            `json:"attachments"`
 		Tags           []models.Tag      `json:"tags"`
 		Categories     []models.Category `json:"categories"`
-		IsDraft        bool              `json:"is_draft"`
 		PublishedAt    *time.Time        `json:"published_at"`
 		PublishedUntil *time.Time        `json:"published_until"`
+		IsDraft        bool              `json:"is_draft"`
 	}
 
 	if err := exts.BindAndValidate(c, &data); err != nil {
@@ -107,9 +126,10 @@ func editArticle(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusNotFound, err.Error())
 	}
 
-	body := models.PostArticleBody{
+	body := models.PostStoryBody{
 		Title:       data.Title,
 		Content:     data.Content,
+		Location:    data.Location,
 		Attachments: data.Attachments,
 	}
 
@@ -121,9 +141,9 @@ func editArticle(c *fiber.Ctx) error {
 	item.Language = services.DetectLanguage(data.Content)
 	item.Tags = data.Tags
 	item.Categories = data.Categories
-	item.IsDraft = data.IsDraft
 	item.PublishedAt = data.PublishedAt
 	item.PublishedUntil = data.PublishedUntil
+	item.IsDraft = data.IsDraft
 
 	if item, err := services.EditPost(item); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())

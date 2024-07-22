@@ -5,14 +5,12 @@ import (
 	"strings"
 )
 
-func DetectLanguage(content *string) string {
-	if content != nil {
-		detector := lingua.NewLanguageDetectorBuilder().
-			FromLanguages(lingua.AllLanguages()...).
-			Build()
-		if lang, ok := detector.DetectLanguageOf(*content); ok {
-			return strings.ToLower(lang.String())
-		}
+func DetectLanguage(content string) string {
+	detector := lingua.NewLanguageDetectorBuilder().
+		FromLanguages(lingua.AllLanguages()...).
+		Build()
+	if lang, ok := detector.DetectLanguageOf(content); ok {
+		return strings.ToLower(lang.String())
 	}
 	return "unknown"
 }

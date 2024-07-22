@@ -44,7 +44,9 @@ func FilterPostReply(tx *gorm.DB, replyTo ...uint) *gorm.DB {
 }
 
 func FilterPostWithPublishedAt(tx *gorm.DB, date time.Time) *gorm.DB {
-	return tx.Where("published_at <= ? OR published_at IS NULL", date)
+	return tx.
+		Where("published_at <= ? OR published_at IS NULL", date).
+		Where("published_until > ? OR published_until IS NULL", date)
 }
 
 func FilterPostWithAuthorDraft(tx *gorm.DB, uid uint) *gorm.DB {
@@ -53,33 +55,6 @@ func FilterPostWithAuthorDraft(tx *gorm.DB, uid uint) *gorm.DB {
 
 func FilterPostDraft(tx *gorm.DB) *gorm.DB {
 	return tx.Where("is_draft = ? OR is_draft IS NULL", false)
-}
-
-func GetPostWithAlias(tx *gorm.DB, alias string, ignoreLimitation ...bool) (models.Post, error) {
-	if len(ignoreLimitation) == 0 || !ignoreLimitation[0] {
-		tx = FilterPostWithPublishedAt(tx, time.Now())
-	}
-
-	var item models.Post
-	if err := tx.
-		Where("alias = ?", alias).
-		Preload("Tags").
-		Preload("Categories").
-		Preload("Realm").
-		Preload("Author").
-		Preload("ReplyTo").
-		Preload("ReplyTo.Author").
-		Preload("ReplyTo.Tags").
-		Preload("ReplyTo.Categories").
-		Preload("RepostTo").
-		Preload("RepostTo.Author").
-		Preload("RepostTo.Tags").
-		Preload("RepostTo.Categories").
-		First(&item).Error; err != nil {
-		return item, err
-	}
-
-	return item, nil
 }
 
 func GetPost(tx *gorm.DB, id uint, ignoreLimitation ...bool) (models.Post, error) {
@@ -148,7 +123,7 @@ func ListPost(tx *gorm.DB, take int, offset int, noReact ...bool) ([]*models.Pos
 	var items []*models.Post
 	if err := tx.
 		Limit(take).Offset(offset).
-		Order("created_at DESC").
+		Order("published_at DESC").
 		Preload("Tags").
 		Preload("Categories").
 		Preload("Realm").
@@ -243,7 +218,9 @@ func EnsurePostCategoriesAndTags(item models.Post) (models.Post, error) {
 }
 
 func NewPost(user models.Account, item models.Post) (models.Post, error) {
-	item.Language = DetectLanguage(item.Content)
+	if !item.IsDraft && item.PublishedAt == nil {
+		item.PublishedAt = lo.ToPtr(time.Now())
+	}
 
 	item, err := EnsurePostCategoriesAndTags(item)
 	if err != nil {
@@ -272,7 +249,7 @@ func NewPost(user models.Account, item models.Post) (models.Post, error) {
 				err = NotifyPosterAccount(
 					op.Author,
 					"Post got replied",
-					fmt.Sprintf("%s (%s) replied your post #%s.", user.Nick, user.Name, op.Alias),
+					fmt.Sprintf("%s (%s) replied your post.", user.Nick, user.Name),
 					lo.ToPtr(fmt.Sprintf("%s replied you", user.Nick)),
 				)
 				if err != nil {
@@ -286,7 +263,6 @@ func NewPost(user models.Account, item models.Post) (models.Post, error) {
 }
 
 func EditPost(item models.Post) (models.Post, error) {
-	item.Language = DetectLanguage(item.Content)
 	item, err := EnsurePostCategoriesAndTags(item)
 	if err != nil {
 		return item, err
@@ -312,9 +288,9 @@ func ReactPost(user models.Account, reaction models.Reaction) (bool, models.Reac
 				if op.Author.ID != user.ID {
 					err = NotifyPosterAccount(
 						op.Author,
-						"Post got replied",
-						fmt.Sprintf("%s (%s) replied your post #%s.", user.Nick, user.Name, op.Alias),
-						lo.ToPtr(fmt.Sprintf("%s replied you", user.Nick)),
+						"Post got reacted",
+						fmt.Sprintf("%s (%s) reacted your post a %s.", user.Nick, user.Name, reaction.Symbol),
+						lo.ToPtr(fmt.Sprintf("%s reacted you", user.Nick)),
 					)
 					if err != nil {
 						log.Error().Err(err).Msg("An error occurred when notifying user...")

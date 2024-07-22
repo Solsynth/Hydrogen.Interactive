@@ -10,35 +10,26 @@ func MapAPIs(app *fiber.App, baseURL string) {
 		api.Get("/users/me", getUserinfo)
 		api.Get("/users/:accountId", getOthersInfo)
 
-		api.Get("/feed", listFeed)
-
-		drafts := api.Group("/drafts").Name("Draft box API")
+		stories := api.Group("/stories").Name("Story API")
 		{
-			drafts.Get("/", listDraftMixed)
-			drafts.Get("/posts", listDraftPost)
-			drafts.Get("/articles", listDraftArticle)
+			stories.Post("/", createStory)
+			stories.Put("/:postId", editStory)
+		}
+		articles := api.Group("/articles").Name("Article API")
+		{
+			articles.Post("/", createArticle)
+			articles.Put("/:articleId", editArticle)
 		}
 
 		posts := api.Group("/posts").Name("Posts API")
 		{
 			posts.Get("/", listPost)
-			posts.Get("/:post", getPost)
-			posts.Post("/", createPost)
-			posts.Post("/:post/react", reactPost)
-			posts.Put("/:postId", editPost)
+			posts.Get("/drafts", listDraftPost)
+			posts.Get("/:postId", getPost)
+			posts.Post("/:postId/react", reactPost)
 			posts.Delete("/:postId", deletePost)
 
 			posts.Get("/:post/replies", listPostReplies)
-		}
-
-		articles := api.Group("/articles").Name("Articles API")
-		{
-			articles.Get("/", listArticle)
-			articles.Get("/:article", getArticle)
-			articles.Post("/", createArticle)
-			articles.Post("/:article/react", reactArticle)
-			articles.Put("/:articleId", editArticle)
-			articles.Delete("/:articleId", deleteArticle)
 		}
 
 		api.Get("/categories", listCategories)
