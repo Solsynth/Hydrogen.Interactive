@@ -14,7 +14,7 @@ func listPostReplies(c *fiber.Ctx) error {
 
 	tx := database.C
 	var post models.Post
-	if err := database.C.Where("alias = ?", c.Params("post")).First(&post).Error; err != nil {
+	if err := database.C.Where("id = ?", c.Params("postId")).First(&post).Error; err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("unable to find post: %v", err))
 	} else {
 		tx = services.FilterPostReply(tx, post.ID)
