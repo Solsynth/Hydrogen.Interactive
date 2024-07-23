@@ -19,9 +19,9 @@ func createStory(c *fiber.Ctx) error {
 	user := c.Locals("user").(models.Account)
 
 	var data struct {
-		Title          *string           `json:"title" validate:"max=1024"`
+		Title          *string           `json:"title"`
 		Content        string            `json:"content" validate:"required,max=4096"`
-		Location       *string           `json:"location" validate:"max=2048"`
+		Location       *string           `json:"location"`
 		Attachments    []uint            `json:"attachments"`
 		Tags           []models.Tag      `json:"tags"`
 		Categories     []models.Category `json:"categories"`
@@ -103,9 +103,9 @@ func editStory(c *fiber.Ctx) error {
 	user := c.Locals("user").(models.Account)
 
 	var data struct {
-		Title          *string           `json:"title" validate:"max=1024"`
+		Title          *string           `json:"title"`
 		Content        string            `json:"content" validate:"required,max=4096"`
-		Location       *string           `json:"location" validate:"max=2048"`
+		Location       *string           `json:"location"`
 		Attachments    []uint            `json:"attachments"`
 		Tags           []models.Tag      `json:"tags"`
 		Categories     []models.Category `json:"categories"`

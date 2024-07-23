@@ -24,7 +24,7 @@ func MapAPIs(app *fiber.App, baseURL string) {
 		articles := api.Group("/articles").Name("Article API")
 		{
 			articles.Post("/", createArticle)
-			articles.Put("/:articleId", editArticle)
+			articles.Put("/:postId", editArticle)
 		}
 
 		posts := api.Group("/posts").Name("Posts API")

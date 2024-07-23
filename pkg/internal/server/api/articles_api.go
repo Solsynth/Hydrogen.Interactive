@@ -20,7 +20,7 @@ func createArticle(c *fiber.Ctx) error {
 
 	var data struct {
 		Title          string            `json:"title" validate:"required,max=1024"`
-		Description    *string           `json:"description" validate:"max=2048"`
+		Description    *string           `json:"description"`
 		Content        string            `json:"content" validate:"required"`
 		Attachments    []uint            `json:"attachments"`
 		Tags           []models.Tag      `json:"tags"`
@@ -85,7 +85,7 @@ func editArticle(c *fiber.Ctx) error {
 
 	var data struct {
 		Title          string            `json:"title" validate:"required,max=1024"`
-		Description    *string           `json:"description" validate:"max=2048"`
+		Description    *string           `json:"description"`
 		Content        string            `json:"content" validate:"required"`
 		Attachments    []uint            `json:"attachments"`
 		Tags           []models.Tag      `json:"tags"`
