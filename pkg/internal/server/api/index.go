@@ -10,6 +10,12 @@ func MapAPIs(app *fiber.App, baseURL string) {
 		api.Get("/users/me", getUserinfo)
 		api.Get("/users/:accountId", getOthersInfo)
 
+		recommendations := api.Group("/recommendations").Name("Recommendations API")
+		{
+			recommendations.Get("/", listRecommendationDefault)
+			recommendations.Get("/shuffle", listRecommendationShuffle)
+		}
+
 		stories := api.Group("/stories").Name("Story API")
 		{
 			stories.Post("/", createStory)

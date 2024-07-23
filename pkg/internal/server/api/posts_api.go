@@ -66,7 +66,7 @@ func listPost(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
-	items, err := services.ListPost(tx, take, offset)
+	items, err := services.ListPost(tx, take, offset, "published_at DESC")
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
@@ -93,7 +93,7 @@ func listDraftPost(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
-	items, err := services.ListPost(tx, take, offset, true)
+	items, err := services.ListPost(tx, take, offset, "created_at DESC", true)
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}

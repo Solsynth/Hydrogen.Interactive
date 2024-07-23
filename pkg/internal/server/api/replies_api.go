@@ -40,7 +40,7 @@ func listPostReplies(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
-	items, err := services.ListPost(tx, take, offset)
+	items, err := services.ListPost(tx, take, offset, "published_at DESC")
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}

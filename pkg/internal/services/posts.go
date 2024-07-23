@@ -57,14 +57,8 @@ func FilterPostDraft(tx *gorm.DB) *gorm.DB {
 	return tx.Where("is_draft = ? OR is_draft IS NULL", false)
 }
 
-func GetPost(tx *gorm.DB, id uint, ignoreLimitation ...bool) (models.Post, error) {
-	if len(ignoreLimitation) == 0 || !ignoreLimitation[0] {
-		tx = FilterPostWithPublishedAt(tx, time.Now())
-	}
-
-	var item models.Post
-	if err := tx.
-		Where("id = ?", id).
+func PreloadGeneral(tx *gorm.DB) *gorm.DB {
+	return tx.
 		Preload("Tags").
 		Preload("Categories").
 		Preload("Realm").
@@ -76,7 +70,17 @@ func GetPost(tx *gorm.DB, id uint, ignoreLimitation ...bool) (models.Post, error
 		Preload("RepostTo").
 		Preload("RepostTo.Author").
 		Preload("RepostTo.Tags").
-		Preload("RepostTo.Categories").
+		Preload("RepostTo.Categories")
+}
+
+func GetPost(tx *gorm.DB, id uint, ignoreLimitation ...bool) (models.Post, error) {
+	if len(ignoreLimitation) == 0 || !ignoreLimitation[0] {
+		tx = FilterPostWithPublishedAt(tx, time.Now())
+	}
+
+	var item models.Post
+	if err := PreloadGeneral(tx).
+		Where("id = ?", id).
 		First(&item).Error; err != nil {
 		return item, err
 	}
@@ -115,27 +119,15 @@ func CountPostReactions(id uint) int64 {
 	return count
 }
 
-func ListPost(tx *gorm.DB, take int, offset int, noReact ...bool) ([]*models.Post, error) {
+func ListPost(tx *gorm.DB, take int, offset int, order any, noReact ...bool) ([]*models.Post, error) {
 	if take > 100 {
 		take = 100
 	}
 
 	var items []*models.Post
-	if err := tx.
+	if err := PreloadGeneral(tx).
 		Limit(take).Offset(offset).
-		Order("published_at DESC").
-		Preload("Tags").
-		Preload("Categories").
-		Preload("Realm").
-		Preload("Author").
-		Preload("ReplyTo").
-		Preload("ReplyTo.Author").
-		Preload("ReplyTo.Tags").
-		Preload("ReplyTo.Categories").
-		Preload("RepostTo").
-		Preload("RepostTo.Author").
-		Preload("RepostTo.Tags").
-		Preload("RepostTo.Categories").
+		Order(order).
 		Find(&items).Error; err != nil {
 		return items, err
 	}
@@ -278,31 +270,43 @@ func DeletePost(item models.Post) error {
 }
 
 func ReactPost(user models.Account, reaction models.Reaction) (bool, models.Reaction, error) {
+	var op models.Post
+	if err := database.C.
+		Where("id = ?", reaction.PostID).
+		Preload("Author").
+		First(&op).Error; err != nil {
+		return true, reaction, err
+	}
+
 	if err := database.C.Where(reaction).First(&reaction).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			var op models.Post
-			if err := database.C.
-				Where("id = ?", reaction.PostID).
-				Preload("Author").
-				First(&op).Error; err == nil {
-				if op.Author.ID != user.ID {
-					err = NotifyPosterAccount(
-						op.Author,
-						"Post got reacted",
-						fmt.Sprintf("%s (%s) reacted your post a %s.", user.Nick, user.Name, reaction.Symbol),
-						lo.ToPtr(fmt.Sprintf("%s reacted you", user.Nick)),
-					)
-					if err != nil {
-						log.Error().Err(err).Msg("An error occurred when notifying user...")
-					}
+			if op.Author.ID != user.ID {
+				err = NotifyPosterAccount(
+					op.Author,
+					"Post got reacted",
+					fmt.Sprintf("%s (%s) reacted your post a %s.", user.Nick, user.Name, reaction.Symbol),
+					lo.ToPtr(fmt.Sprintf("%s reacted you", user.Nick)),
+				)
+				if err != nil {
+					log.Error().Err(err).Msg("An error occurred when notifying user...")
 				}
 			}
 
-			return true, reaction, database.C.Save(&reaction).Error
+			err = database.C.Save(&reaction).Error
+			if err == nil {
+				_ = ModifyPosterVoteCount(op.Author, reaction.Attitude == models.AttitudePositive, 1)
+			}
+
+			return true, reaction, err
 		} else {
 			return true, reaction, err
 		}
 	} else {
-		return false, reaction, database.C.Delete(&reaction).Error
+		err = database.C.Delete(&reaction).Error
+		if err == nil {
+			_ = ModifyPosterVoteCount(op.Author, reaction.Attitude == models.AttitudePositive, -1)
+		}
+
+		return false, reaction, err
 	}
 }

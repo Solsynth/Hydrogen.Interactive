@@ -4,11 +4,22 @@ import (
 	"context"
 	"git.solsynth.dev/hydrogen/dealer/pkg/hyper"
 	"git.solsynth.dev/hydrogen/dealer/pkg/proto"
+	"git.solsynth.dev/hydrogen/interactive/pkg/internal/database"
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/gap"
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/models"
 	"github.com/rs/zerolog/log"
 	"time"
 )
+
+func ModifyPosterVoteCount(user models.Account, isUpvote bool, delta int) error {
+	if isUpvote {
+		user.TotalUpvote += delta
+	} else {
+		user.TotalDownvote += delta
+	}
+
+	return database.C.Save(&user).Error
+}
 
 func NotifyPosterAccount(user models.Account, title, body string, subtitle *string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
