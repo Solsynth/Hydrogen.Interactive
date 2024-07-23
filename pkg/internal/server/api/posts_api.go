@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/database"
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/gap"
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/models"
@@ -147,10 +148,8 @@ func reactPost(c *fiber.Ctx) error {
 		AccountID: user.ID,
 	}
 
-	alias := c.Params("post")
-
 	var res models.Post
-	if err := database.C.Where("alias = ?", alias).Select("id").First(&res).Error; err != nil {
+	if err := database.C.Where("id = ?", c.Params("postId")).Select("id").First(&res).Error; err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("unable to find post to react: %v", err))
 	} else {
 		reaction.PostID = &res.ID
