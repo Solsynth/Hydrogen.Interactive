@@ -14,7 +14,7 @@ func listRecommendationDefault(c *fiber.Ctx) error {
 	realmId := c.QueryInt("realmId", 0)
 	maxDownVote := c.QueryInt("maxDownVote", 3)
 
-	tx := database.C.Joins("Author").Where("accounts.total_downvote <= ?", maxDownVote)
+	tx := database.C.Joins("Author").Where("\"Author\".total_downvote <= ?", maxDownVote)
 	tx = services.FilterPostDraft(tx)
 	if realmId > 0 {
 		if realm, err := services.GetRealmWithExtID(uint(realmId)); err != nil {
@@ -47,7 +47,7 @@ func listRecommendationShuffle(c *fiber.Ctx) error {
 	realmId := c.QueryInt("realmId", 0)
 	maxDownVote := c.QueryInt("maxDownVote", 3)
 
-	tx := database.C.Joins("Author").Where("accounts.total_downvote <= ?", maxDownVote)
+	tx := database.C.Joins("Author").Where("\"Author\".total_downvote <= ?", maxDownVote)
 	tx = services.FilterPostDraft(tx)
 	if realmId > 0 {
 		if realm, err := services.GetRealmWithExtID(uint(realmId)); err != nil {
