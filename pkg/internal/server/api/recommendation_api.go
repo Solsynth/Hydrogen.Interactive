@@ -6,7 +6,6 @@ import (
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/database"
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/services"
 	"github.com/gofiber/fiber/v2"
-	"gorm.io/gorm"
 )
 
 func listRecommendationDefault(c *fiber.Ctx) error {
@@ -64,7 +63,7 @@ func listRecommendationShuffle(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
-	items, err := services.ListPost(tx, take, offset, gorm.Expr("RANDOM()"))
+	items, err := services.ListPost(tx, take, offset, "RANDOM()")
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
