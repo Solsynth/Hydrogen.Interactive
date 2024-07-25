@@ -310,3 +310,16 @@ func ReactPost(user models.Account, reaction models.Reaction) (bool, models.Reac
 		return false, reaction, err
 	}
 }
+
+func PinPost(post models.Post) (bool, error) {
+	if post.PinnedAt != nil {
+		post.PinnedAt = nil
+	} else {
+		post.PinnedAt = lo.ToPtr(time.Now())
+	}
+
+	if err := database.C.Save(&post).Error; err != nil {
+		return post.PinnedAt != nil, err
+	}
+	return post.PinnedAt != nil, nil
+}

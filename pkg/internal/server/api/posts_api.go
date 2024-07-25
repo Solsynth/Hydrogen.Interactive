@@ -173,11 +173,11 @@ func pinPost(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("unable to find post in your posts to pin: %v", err))
 	}
 
-	user.PinnedPostID = &res.ID
-
-	if err := database.C.Save(&user).Error; err != nil {
-		return fiber.NewError(fiber.StatusInternalServerError, fmt.Sprintf("failed to save changes: %v", err))
+	if status, err := services.PinPost(res); err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	} else if status {
+		return c.SendStatus(fiber.StatusOK)
+	} else {
+		return c.SendStatus(fiber.StatusNoContent)
 	}
-
-	return c.SendStatus(fiber.StatusOK)
 }
