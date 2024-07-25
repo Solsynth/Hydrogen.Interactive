@@ -2,6 +2,8 @@ package api
 
 import (
 	"fmt"
+	"time"
+
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/database"
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/gap"
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/models"
@@ -9,7 +11,7 @@ import (
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/services"
 	"github.com/gofiber/fiber/v2"
 	jsoniter "github.com/json-iterator/go"
-	"time"
+	"github.com/samber/lo"
 )
 
 func createArticle(c *fiber.Ctx) error {
@@ -105,6 +107,10 @@ func editArticle(c *fiber.Ctx) error {
 		AuthorID:  user.ID,
 	}).First(&item).Error; err != nil {
 		return fiber.NewError(fiber.StatusNotFound, err.Error())
+	}
+
+	if item.IsDraft && !data.IsDraft {
+		item.PublishedAt = lo.ToPtr(time.Now())
 	}
 
 	body := models.PostArticleBody{
