@@ -128,8 +128,10 @@ func editStory(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusNotFound, err.Error())
 	}
 
-	if item.IsDraft && !data.IsDraft {
+	if item.IsDraft && !data.IsDraft && data.PublishedAt == nil {
 		item.PublishedAt = lo.ToPtr(time.Now())
+	} else {
+		item.PublishedAt = data.PublishedAt
 	}
 
 	body := models.PostStoryBody{
@@ -147,7 +149,6 @@ func editStory(c *fiber.Ctx) error {
 	item.Language = services.DetectLanguage(data.Content)
 	item.Tags = data.Tags
 	item.Categories = data.Categories
-	item.PublishedAt = data.PublishedAt
 	item.PublishedUntil = data.PublishedUntil
 	item.IsDraft = data.IsDraft
 

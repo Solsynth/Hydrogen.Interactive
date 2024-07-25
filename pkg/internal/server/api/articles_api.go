@@ -109,8 +109,10 @@ func editArticle(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusNotFound, err.Error())
 	}
 
-	if item.IsDraft && !data.IsDraft {
+	if item.IsDraft && !data.IsDraft && data.PublishedAt == nil {
 		item.PublishedAt = lo.ToPtr(time.Now())
+	} else {
+		item.PublishedAt = data.PublishedAt
 	}
 
 	body := models.PostArticleBody{
@@ -128,7 +130,6 @@ func editArticle(c *fiber.Ctx) error {
 	item.Tags = data.Tags
 	item.Categories = data.Categories
 	item.IsDraft = data.IsDraft
-	item.PublishedAt = data.PublishedAt
 	item.PublishedUntil = data.PublishedUntil
 
 	if item, err := services.EditPost(item); err != nil {
