@@ -4,11 +4,8 @@ go 1.21.6
 
 require (
 	git.solsynth.dev/hydrogen/dealer v0.0.0-20240716024524-cfb73fde1951
-	git.solsynth.dev/hydrogen/paperclip v0.0.0-20240622051057-0f56dba45745
 	github.com/go-playground/validator/v10 v10.17.0
 	github.com/gofiber/fiber/v2 v2.52.4
-	github.com/gofiber/template/html/v2 v2.1.1
-	github.com/google/uuid v1.6.0
 	github.com/json-iterator/go v1.1.12
 	github.com/pemistahl/lingua-go v1.4.0
 	github.com/robfig/cron/v3 v3.0.1
@@ -31,8 +28,7 @@ require (
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-sql-driver/mysql v1.7.1 // indirect
-	github.com/gofiber/template v1.8.3 // indirect
-	github.com/gofiber/utils v1.1.0 // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/consul/api v1.29.1 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
