@@ -161,3 +161,23 @@ func reactPost(c *fiber.Ctx) error {
 		return c.Status(lo.Ternary(positive, fiber.StatusCreated, fiber.StatusNoContent)).JSON(reaction)
 	}
 }
+
+func pinPost(c *fiber.Ctx) error {
+	if err := gap.H.EnsureAuthenticated(c); err != nil {
+		return err
+	}
+	user := c.Locals("user").(models.Account)
+
+	var res models.Post
+	if err := database.C.Where("id = ? AND author_id = ?", c.Params("postId"), user.ID).First(&res).Error; err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("unable to find post in your posts to pin: %v", err))
+	}
+
+	user.PinnedPostID = &res.ID
+
+	if err := database.C.Save(&user).Error; err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, fmt.Sprintf("failed to save changes: %v", err))
+	}
+
+	return c.SendStatus(fiber.StatusOK)
+}

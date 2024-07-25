@@ -16,6 +16,7 @@ func getUserinfo(c *fiber.Ctx) error {
 	var data models.Account
 	if err := database.C.
 		Where(&models.Account{BaseModel: models.BaseModel{ID: user.ID}}).
+		Preload("PinnedPost").
 		First(&data).Error; err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
@@ -24,11 +25,12 @@ func getUserinfo(c *fiber.Ctx) error {
 }
 
 func getOthersInfo(c *fiber.Ctx) error {
-	accountId := c.Params("accountId")
+	account := c.Params("account")
 
 	var data models.Account
 	if err := database.C.
-		Where(&models.Account{Name: accountId}).
+		Where(&models.Account{Name: account}).
+		Preload("PinnedPost").
 		First(&data).Error; err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}

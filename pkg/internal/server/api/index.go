@@ -8,7 +8,7 @@ func MapAPIs(app *fiber.App, baseURL string) {
 	api := app.Group(baseURL).Name("API")
 	{
 		api.Get("/users/me", getUserinfo)
-		api.Get("/users/:accountId", getOthersInfo)
+		api.Get("/users/:account", getOthersInfo)
 
 		recommendations := api.Group("/recommendations").Name("Recommendations API")
 		{
@@ -33,6 +33,7 @@ func MapAPIs(app *fiber.App, baseURL string) {
 			posts.Get("/drafts", listDraftPost)
 			posts.Get("/:postId", getPost)
 			posts.Post("/:postId/react", reactPost)
+			posts.Post("/:postId/pin", pinPost)
 			posts.Delete("/:postId", deletePost)
 
 			posts.Get("/:postId/replies", listPostReplies)

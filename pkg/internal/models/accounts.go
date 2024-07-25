@@ -17,6 +17,9 @@ type Account struct {
 	Reactions    []Reaction `json:"reactions"`
 	ExternalID   uint       `json:"external_id"`
 
+	PinnedPost   *Post `json:"pinned_post"`
+	PinnedPostID *uint `json:"pinned_post_id"`
+
 	TotalUpvote   int `json:"total_upvote"`
 	TotalDownvote int `json:"total_downvote"`
 }
