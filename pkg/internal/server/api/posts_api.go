@@ -46,9 +46,9 @@ func listPost(c *fiber.Ctx) error {
 		}
 	}
 
-	if len(c.Query("authorId")) > 0 {
+	if len(c.Query("author")) > 0 {
 		var author models.Account
-		if err := database.C.Where(&models.Account{Name: c.Query("authorId")}).First(&author).Error; err != nil {
+		if err := database.C.Where(&models.Account{Name: c.Query("author")}).First(&author).Error; err != nil {
 			return fiber.NewError(fiber.StatusNotFound, err.Error())
 		}
 		tx = tx.Where("author_id = ?", author.ID)
