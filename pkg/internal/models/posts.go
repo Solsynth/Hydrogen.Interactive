@@ -34,6 +34,9 @@ type Post struct {
 	PublishedAt    *time.Time `json:"published_at"`
 	PublishedUntil *time.Time `json:"published_until"`
 
+	TotalUpvote   int `json:"total_upvote"`
+	TotalDownvote int `json:"total_downvote"`
+
 	AuthorID uint    `json:"author_id"`
 	Author   Account `json:"author"`
 

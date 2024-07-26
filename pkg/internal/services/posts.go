@@ -295,6 +295,13 @@ func ReactPost(user models.Account, reaction models.Reaction) (bool, models.Reac
 			err = database.C.Save(&reaction).Error
 			if err == nil {
 				_ = ModifyPosterVoteCount(op.Author, reaction.Attitude == models.AttitudePositive, 1)
+
+				if reaction.Attitude == models.AttitudePositive {
+					op.TotalUpvote++
+				} else {
+					op.TotalDownvote++
+				}
+				database.C.Save(&op)
 			}
 
 			return true, reaction, err
@@ -305,6 +312,13 @@ func ReactPost(user models.Account, reaction models.Reaction) (bool, models.Reac
 		err = database.C.Delete(&reaction).Error
 		if err == nil {
 			_ = ModifyPosterVoteCount(op.Author, reaction.Attitude == models.AttitudePositive, -1)
+
+			if reaction.Attitude == models.AttitudePositive {
+				op.TotalUpvote--
+			} else {
+				op.TotalDownvote--
+			}
+			database.C.Save(&op)
 		}
 
 		return false, reaction, err
