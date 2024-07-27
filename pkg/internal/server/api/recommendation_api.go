@@ -36,7 +36,7 @@ func listRecommendationFeatured(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
-	items, err := services.ListPost(tx, take, offset, "published_at DESC")
+	items, err := services.ListPost(tx, take, offset, "published_at DESC, (COALESCE(total_upvote, 0) - COALESCE(total_downvote, 0)) DESC")
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
