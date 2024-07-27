@@ -28,6 +28,7 @@ type Post struct {
 	RepostTo   *Post             `json:"repost_to" gorm:"foreignKey:RepostID"`
 	Realm      *Realm            `json:"realm"`
 
+	EditedAt *time.Time `json:"edited_at"`
 	PinnedAt *time.Time `json:"pinned_at"`
 
 	IsDraft        bool       `json:"is_draft"`

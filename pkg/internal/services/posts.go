@@ -226,6 +226,8 @@ func NewPost(user models.Account, item models.Post) (models.Post, error) {
 		}
 	}
 
+	item.EditedAt = lo.ToPtr(time.Now())
+
 	if err := database.C.Save(&item).Error; err != nil {
 		return item, err
 	}
