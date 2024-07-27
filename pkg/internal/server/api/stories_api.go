@@ -29,6 +29,9 @@ func createStory(c *fiber.Ctx) error {
 		Categories     []models.Category `json:"categories"`
 		PublishedAt    *time.Time        `json:"published_at"`
 		PublishedUntil *time.Time        `json:"published_until"`
+		VisibleUsers   []uint            `json:"visible_users_list"`
+		InvisibleUsers []uint            `json:"invisible_users_list"`
+		Visibility     *int8             `json:"visibility"`
 		IsDraft        bool              `json:"is_draft"`
 		RealmAlias     *string           `json:"realm"`
 		ReplyTo        *uint             `json:"reply_to"`
@@ -59,7 +62,15 @@ func createStory(c *fiber.Ctx) error {
 		PublishedAt:    data.PublishedAt,
 		PublishedUntil: data.PublishedUntil,
 		IsDraft:        data.IsDraft,
+		VisibleUsers:   data.VisibleUsers,
+		InvisibleUsers: data.InvisibleUsers,
 		AuthorID:       user.ID,
+	}
+
+	if data.Visibility != nil {
+		item.Visibility = *data.Visibility
+	} else {
+		item.Visibility = models.PostVisibilityAll
 	}
 
 	if data.ReplyTo != nil {
@@ -113,6 +124,9 @@ func editStory(c *fiber.Ctx) error {
 		Categories     []models.Category `json:"categories"`
 		PublishedAt    *time.Time        `json:"published_at"`
 		PublishedUntil *time.Time        `json:"published_until"`
+		VisibleUsers   []uint            `json:"visible_users_list"`
+		InvisibleUsers []uint            `json:"invisible_users_list"`
+		Visibility     *int8             `json:"visibility"`
 		IsDraft        bool              `json:"is_draft"`
 	}
 
@@ -151,6 +165,12 @@ func editStory(c *fiber.Ctx) error {
 	item.Categories = data.Categories
 	item.PublishedUntil = data.PublishedUntil
 	item.IsDraft = data.IsDraft
+	item.VisibleUsers = data.VisibleUsers
+	item.InvisibleUsers = data.InvisibleUsers
+
+	if data.Visibility != nil {
+		item.Visibility = *data.Visibility
+	}
 
 	if item, err := services.EditPost(item); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())

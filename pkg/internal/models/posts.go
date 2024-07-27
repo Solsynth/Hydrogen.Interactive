@@ -11,6 +11,16 @@ const (
 	PostTypeArticle = "article"
 )
 
+type PostVisibilityLevel = int8
+
+const (
+	PostVisibilityAll = PostVisibilityLevel(iota)
+	PostVisibilityFriends
+	PostVisibilityFiltered
+	PostVisibilitySelected
+	PostVisibilityNone
+)
+
 type Post struct {
 	BaseModel
 
@@ -28,8 +38,13 @@ type Post struct {
 	RepostTo   *Post             `json:"repost_to" gorm:"foreignKey:RepostID"`
 	Realm      *Realm            `json:"realm"`
 
+	VisibleUsers   datatypes.JSONSlice[uint] `json:"visible_users_list"`
+	InvisibleUsers datatypes.JSONSlice[uint] `json:"invisible_users_list"`
+	Visibility     PostVisibilityLevel       `json:"visibility"`
+
 	EditedAt *time.Time `json:"edited_at"`
 	PinnedAt *time.Time `json:"pinned_at"`
+	LockedAt *time.Time `json:"locked_at"`
 
 	IsDraft        bool       `json:"is_draft"`
 	PublishedAt    *time.Time `json:"published_at"`

@@ -13,6 +13,19 @@ import (
 	"gorm.io/gorm"
 )
 
+func FilterPostWithUserContext(tx *gorm.DB, user *models.Account) *gorm.DB {
+	if user == nil {
+		return tx.Where("visibility = ?", models.PostVisibilityAll)
+	}
+
+	tx = tx.Where("visibility != ?", models.PostVisibilityFriends) // TODO Blocked by dealer, need support get friend list
+	tx = tx.Where("visibility = ? AND ? = ANY (visible_users_list::jsonb[])", models.PostVisibilitySelected, user.ID)
+	tx = tx.Where("visibility = ? AND NOT ( ? = ANY (invisible_users_list::jsonb[]) )", models.PostVisibilitySelected, user.ID)
+	tx = tx.Where("visibility != ?", models.PostVisibilityNone)
+
+	return tx
+}
+
 func FilterPostWithCategory(tx *gorm.DB, alias string) *gorm.DB {
 	prefix := viper.GetString("database.prefix")
 	return tx.Joins(fmt.Sprintf("JOIN %spost_categories ON %sposts.id = %spost_categories.post_id", prefix, prefix, prefix)).
@@ -210,10 +223,6 @@ func EnsurePostCategoriesAndTags(item models.Post) (models.Post, error) {
 }
 
 func NewPost(user models.Account, item models.Post) (models.Post, error) {
-	if !item.IsDraft && item.PublishedAt == nil {
-		item.PublishedAt = lo.ToPtr(time.Now())
-	}
-
 	item, err := EnsurePostCategoriesAndTags(item)
 	if err != nil {
 		return item, err
@@ -226,7 +235,9 @@ func NewPost(user models.Account, item models.Post) (models.Post, error) {
 		}
 	}
 
-	item.EditedAt = lo.ToPtr(time.Now())
+	if !item.IsDraft && item.PublishedAt == nil {
+		item.PublishedAt = lo.ToPtr(time.Now())
+	}
 
 	if err := database.C.Save(&item).Error; err != nil {
 		return item, err
@@ -243,7 +254,7 @@ func NewPost(user models.Account, item models.Post) (models.Post, error) {
 				err = NotifyPosterAccount(
 					op.Author,
 					"Post got replied",
-					fmt.Sprintf("%s (%s) replied your post.", user.Nick, user.Name),
+					fmt.Sprintf("%s (%s) replied your post (#%d).", user.Nick, user.Name, op.ID),
 					lo.ToPtr(fmt.Sprintf("%s replied you", user.Nick)),
 				)
 				if err != nil {
@@ -257,6 +268,7 @@ func NewPost(user models.Account, item models.Post) (models.Post, error) {
 }
 
 func EditPost(item models.Post) (models.Post, error) {
+	item.EditedAt = lo.ToPtr(time.Now())
 	item, err := EnsurePostCategoriesAndTags(item)
 	if err != nil {
 		return item, err
