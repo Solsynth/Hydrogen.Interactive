@@ -1,11 +1,14 @@
 package services
 
 import (
-	"github.com/pemistahl/lingua-go"
 	"strings"
+
+	"github.com/pemistahl/lingua-go"
 )
 
 func DetectLanguage(content string) string {
+	return "unknown"
+
 	detector := lingua.NewLanguageDetectorBuilder().
 		FromLanguages(lingua.AllLanguages()...).
 		Build()
