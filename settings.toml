@@ -12,13 +12,6 @@ print_routes = false
 [dealer]
 addr = "127.0.0.1:7442"
 
-[mailer]
-name = "Alphabot <alphabot@smartsheep.studio>"
-smtp_host = "smtp.exmail.qq.com"
-smtp_port = 465
-username = "alphabot@smartsheep.studio"
-password = "gz937Zxxzfcd9SeH"
-
 [security]
 cookie_domain = "localhost"
 cookie_samesite = "Lax"

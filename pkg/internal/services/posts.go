@@ -223,12 +223,17 @@ func EnsurePostCategoriesAndTags(item models.Post) (models.Post, error) {
 }
 
 func NewPost(user models.Account, item models.Post) (models.Post, error) {
+	log.Debug().Any("body", item.Body).Msg("Posting a post...")
+	start := time.Now()
+
+	log.Debug().Any("tags", item.Tags).Any("categories", item.Categories).Msg("Preparing categories and tags...")
 	item, err := EnsurePostCategoriesAndTags(item)
 	if err != nil {
 		return item, err
 	}
 
 	if item.RealmID != nil {
+		log.Debug().Uint("id", *item.RealmID).Msg("Looking for post author realm...")
 		_, err := GetRealmMember(*item.RealmID, user.ExternalID)
 		if err != nil {
 			return item, fmt.Errorf("you aren't a part of that realm: %v", err)
@@ -239,6 +244,7 @@ func NewPost(user models.Account, item models.Post) (models.Post, error) {
 		item.PublishedAt = lo.ToPtr(time.Now())
 	}
 
+	log.Debug().Msg("Saving post record into database...")
 	if err := database.C.Save(&item).Error; err != nil {
 		return item, err
 	}
@@ -251,6 +257,7 @@ func NewPost(user models.Account, item models.Post) (models.Post, error) {
 			Preload("Author").
 			First(&op).Error; err == nil {
 			if op.Author.ID != user.ID {
+				log.Debug().Uint("user", op.AuthorID).Msg("Notifying the original poster their post got replied...")
 				err = NotifyPosterAccount(
 					op.Author,
 					"Post got replied",
@@ -264,6 +271,7 @@ func NewPost(user models.Account, item models.Post) (models.Post, error) {
 		}
 	}
 
+	log.Debug().Dur("elapsed", time.Since(start)).Msg("The post is posted.")
 	return item, nil
 }
 
