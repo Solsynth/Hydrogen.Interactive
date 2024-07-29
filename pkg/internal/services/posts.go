@@ -3,6 +3,7 @@ package services
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"time"
 
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/database"
@@ -10,6 +11,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/samber/lo"
 	"github.com/spf13/viper"
+	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )
 
@@ -18,16 +20,16 @@ func FilterPostWithUserContext(tx *gorm.DB, user *models.Account) *gorm.DB {
 		return tx.Where("visibility = ?", models.PostVisibilityAll)
 	}
 
-	// TODO Blocked by dealer, need support get friend list
-	tx = tx.Where(
-		"visibility != ? OR (visibility = ? AND visible_users @> '[?]'::jsonb) OR (visibility = ? AND NOT invisible_users @> '[?]'::jsonb) OR visibility != ?",
-		models.PostVisibilityFriends,
-		models.PostVisibilitySelected,
-		user.ID,
-		models.PostVisibilitySelected,
-		user.ID,
-		models.PostVisibilityNone,
+	const (
+		FriendsVisibility  = models.PostVisibilityFriends
+		SelectedVisibility = models.PostVisibilitySelected
+		NoneVisibility     = models.PostVisibilityNone
 	)
+
+	// TODO Blocked by dealer, need support get friend list
+	tx = tx.Where("visibility != ? OR visibility != ?", FriendsVisibility, NoneVisibility).
+		Or("visibility = ? AND ?", SelectedVisibility, datatypes.JSONQuery("visible_users").HasKey(strconv.Itoa(int(user.ID)))).
+		Or("visibility = ? AND NOT ?", SelectedVisibility, datatypes.JSONQuery("invisible_users").HasKey(strconv.Itoa(int(user.ID))))
 
 	return tx
 }

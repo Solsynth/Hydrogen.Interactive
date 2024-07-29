@@ -7,6 +7,7 @@ import (
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/models"
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/services"
 	"github.com/gofiber/fiber/v2"
+	"gorm.io/gorm"
 )
 
 func listRecommendationFeatured(c *fiber.Ctx) error {
@@ -67,6 +68,19 @@ func listRecommendationNews(c *fiber.Ctx) error {
 			tx = services.FilterPostWithRealm(tx, realm.ID)
 		}
 	}
+
+	fmt.Println(database.C.ToSQL(func(tx *gorm.DB) *gorm.DB {
+		tx = services.FilterPostDraft(tx)
+
+		if user, authenticated := c.Locals("user").(models.Account); authenticated {
+			tx = services.FilterPostWithUserContext(tx, &user)
+		} else {
+			tx = services.FilterPostWithUserContext(tx, nil)
+		}
+
+		services.CountPost(tx)
+		return tx
+	}))
 
 	countTx := tx
 	count, err := services.CountPost(countTx)
