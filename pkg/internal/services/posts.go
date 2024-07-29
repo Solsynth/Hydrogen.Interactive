@@ -18,10 +18,16 @@ func FilterPostWithUserContext(tx *gorm.DB, user *models.Account) *gorm.DB {
 		return tx.Where("visibility = ?", models.PostVisibilityAll)
 	}
 
-	tx = tx.Where("visibility != ?", models.PostVisibilityFriends) // TODO Blocked by dealer, need support get friend list
-	tx = tx.Where("visibility = ? AND visible_users @> '[?]'", models.PostVisibilitySelected, user.ID)
-	tx = tx.Where("visibility = ? AND NOT invisible_users @> '[?]'", models.PostVisibilitySelected, user.ID)
-	tx = tx.Where("visibility != ?", models.PostVisibilityNone)
+	// TODO Blocked by dealer, need support get friend list
+	tx = tx.Where(
+		"visibility != ? OR (visibility = ? AND visible_users @> '[?]'::jsonb) OR (visibility = ? AND NOT invisible_users @> '[?]'::jsonb) OR visibility != ?",
+		models.PostVisibilityFriends,
+		models.PostVisibilitySelected,
+		user.ID,
+		models.PostVisibilitySelected,
+		user.ID,
+		models.PostVisibilityNone,
+	)
 
 	return tx
 }
