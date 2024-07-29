@@ -240,10 +240,6 @@ func NewPost(user models.Account, item models.Post) (models.Post, error) {
 		}
 	}
 
-	if !item.IsDraft && item.PublishedAt == nil {
-		item.PublishedAt = lo.ToPtr(time.Now())
-	}
-
 	log.Debug().Msg("Saving post record into database...")
 	if err := database.C.Save(&item).Error; err != nil {
 		return item, err

@@ -65,6 +65,10 @@ func createArticle(c *fiber.Ctx) error {
 		AuthorID:       user.ID,
 	}
 
+	if item.PublishedAt == nil {
+		item.PublishedAt = lo.ToPtr(time.Now())
+	}
+
 	if data.Visibility != nil {
 		item.Visibility = *data.Visibility
 	} else {
