@@ -38,6 +38,13 @@ func listPost(c *fiber.Ctx) error {
 	realmId := c.QueryInt("realmId", 0)
 
 	tx := services.FilterPostDraft(database.C)
+
+	if user, authenticated := c.Locals("user").(models.Account); authenticated {
+		tx = services.FilterPostWithUserContext(tx, &user)
+	} else {
+		tx = services.FilterPostWithUserContext(tx, nil)
+	}
+
 	if realmId > 0 {
 		if realm, err := services.GetRealmWithExtID(uint(realmId)); err != nil {
 			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("realm was not found: %v", err))
