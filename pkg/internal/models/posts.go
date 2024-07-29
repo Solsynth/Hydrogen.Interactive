@@ -38,8 +38,8 @@ type Post struct {
 	RepostTo   *Post             `json:"repost_to" gorm:"foreignKey:RepostID"`
 	Realm      *Realm            `json:"realm"`
 
-	VisibleUsers   datatypes.JSONSlice[uint] `json:"visible_users_list"`
-	InvisibleUsers datatypes.JSONSlice[uint] `json:"invisible_users_list"`
+	VisibleUsers   datatypes.JSONSlice[uint] `json:"visible_users"`
+	InvisibleUsers datatypes.JSONSlice[uint] `json:"invisible_users"`
 	Visibility     PostVisibilityLevel       `json:"visibility"`
 
 	EditedAt *time.Time `json:"edited_at"`
