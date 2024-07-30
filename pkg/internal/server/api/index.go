@@ -42,8 +42,12 @@ func MapAPIs(app *fiber.App, baseURL string) {
 		}
 
 		api.Get("/categories", listCategories)
+		api.Get("/categories/:category", getCategory)
 		api.Post("/categories", newCategory)
 		api.Put("/categories/:categoryId", editCategory)
 		api.Delete("/categories/:categoryId", deleteCategory)
+
+		api.Get("/tags", listTags)
+		api.Get("/tags/:tag", getTag)
 	}
 }

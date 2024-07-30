@@ -8,6 +8,17 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+func getCategory(c *fiber.Ctx) error {
+	alias := c.Params("category")
+
+	category, err := services.GetCategory(alias)
+	if err != nil {
+		return fiber.NewError(fiber.StatusNotFound, err.Error())
+	}
+
+	return c.JSON(category)
+}
+
 func listCategories(c *fiber.Ctx) error {
 	categories, err := services.ListCategory()
 	if err != nil {
