@@ -280,7 +280,6 @@ func NewPost(user models.Account, item models.Post) (models.Post, error) {
 }
 
 func EditPost(item models.Post) (models.Post, error) {
-	item.EditedAt = lo.ToPtr(time.Now())
 	item, err := EnsurePostCategoriesAndTags(item)
 	if err != nil {
 		return item, err

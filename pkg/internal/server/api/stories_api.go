@@ -150,6 +150,10 @@ func editStory(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusForbidden, "post was locked")
 	}
 
+	if !item.IsDraft && !data.IsDraft {
+		item.EditedAt = lo.ToPtr(time.Now())
+	}
+
 	if item.IsDraft && !data.IsDraft && data.PublishedAt == nil {
 		item.PublishedAt = lo.ToPtr(time.Now())
 	} else {
