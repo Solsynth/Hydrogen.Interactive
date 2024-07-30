@@ -11,7 +11,6 @@ import (
 
 func ListCategory() ([]models.Category, error) {
 	var categories []models.Category
-
 	err := database.C.Find(&categories).Error
 
 	return categories, err

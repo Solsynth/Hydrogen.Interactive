@@ -7,8 +7,16 @@ import (
 
 func ListTags(take int, offset int) ([]models.Tag, error) {
 	var tags []models.Tag
-
 	err := database.C.Offset(offset).Limit(take).Find(&tags).Error
+
+	return tags, err
+}
+
+func SearchTags(take int, offset int, probe string) ([]models.Tag, error) {
+	probe = "%" + probe + "%"
+
+	var tags []models.Tag
+	err := database.C.Where("alias LIKE ?", probe).Offset(offset).Limit(take).Find(&tags).Error
 
 	return tags, err
 }
