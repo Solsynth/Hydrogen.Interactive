@@ -29,7 +29,8 @@ func FilterPostWithUserContext(tx *gorm.DB, user *models.Account) *gorm.DB {
 	// TODO Blocked by dealer, need support get friend list
 	tx = tx.Where("visibility != ? OR visibility != ?", FriendsVisibility, NoneVisibility).
 		Or("visibility = ? AND ?", SelectedVisibility, datatypes.JSONQuery("visible_users").HasKey(strconv.Itoa(int(user.ID)))).
-		Or("visibility = ? AND NOT ?", SelectedVisibility, datatypes.JSONQuery("invisible_users").HasKey(strconv.Itoa(int(user.ID))))
+		Or("visibility = ? AND NOT ?", SelectedVisibility, datatypes.JSONQuery("invisible_users").HasKey(strconv.Itoa(int(user.ID)))).
+		Or("author_id = ?", user.ID)
 
 	return tx
 }
