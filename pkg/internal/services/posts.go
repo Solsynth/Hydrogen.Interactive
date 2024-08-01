@@ -185,7 +185,7 @@ func ListPost(tx *gorm.DB, take int, offset int, order any, noReact ...bool) ([]
 		}
 
 		if err := database.C.Model(&models.Post{}).
-			Select("id as post_id, COUNT(id) as count").
+			Select("reply_id as post_id, COUNT(id) as count").
 			Where("reply_id IN (?)", idx).
 			Group("post_id").
 			Scan(&replies).Error; err != nil {
