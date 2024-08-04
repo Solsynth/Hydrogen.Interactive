@@ -143,6 +143,7 @@ func editArticle(c *fiber.Ctx) error {
 
 	body := models.PostArticleBody{
 		Title:       data.Title,
+		Description: data.Description,
 		Content:     data.Content,
 		Attachments: data.Attachments,
 	}
