@@ -135,7 +135,7 @@ func deletePost(c *fiber.Ctx) error {
 }
 
 func reactPost(c *fiber.Ctx) error {
-	if err := gap.H.EnsureAuthenticated(c); err != nil {
+	if err := gap.H.EnsureGrantedPerm(c, "CreateReactions", true); err != nil {
 		return err
 	}
 	user := c.Locals("user").(models.Account)
