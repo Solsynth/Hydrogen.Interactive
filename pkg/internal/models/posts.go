@@ -60,6 +60,7 @@ type Post struct {
 }
 
 type PostStoryBody struct {
+	Thumbnail   *uint   `json:"thumbnail"`
 	Title       *string `json:"title"`
 	Content     string  `json:"content"`
 	Location    *string `json:"location"`
@@ -67,6 +68,7 @@ type PostStoryBody struct {
 }
 
 type PostArticleBody struct {
+	Thumbnail   *uint   `json:"thumbnail"`
 	Title       string  `json:"title"`
 	Description *string `json:"description"`
 	Content     string  `json:"content"`

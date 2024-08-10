@@ -24,6 +24,7 @@ func createArticle(c *fiber.Ctx) error {
 		Title          string            `json:"title" validate:"required,max=1024"`
 		Description    *string           `json:"description"`
 		Content        string            `json:"content" validate:"required"`
+		Thumbnail      *uint             `json:"thumbnail"`
 		Attachments    []uint            `json:"attachments"`
 		Tags           []models.Tag      `json:"tags"`
 		Categories     []models.Category `json:"categories"`
@@ -41,6 +42,7 @@ func createArticle(c *fiber.Ctx) error {
 	}
 
 	body := models.PostArticleBody{
+		Thumbnail:   data.Thumbnail,
 		Title:       data.Title,
 		Description: data.Description,
 		Content:     data.Content,
@@ -104,6 +106,7 @@ func editArticle(c *fiber.Ctx) error {
 		Title          string            `json:"title" validate:"required,max=1024"`
 		Description    *string           `json:"description"`
 		Content        string            `json:"content" validate:"required"`
+		Thumbnail      *uint             `json:"thumbnail"`
 		Attachments    []uint            `json:"attachments"`
 		Tags           []models.Tag      `json:"tags"`
 		Categories     []models.Category `json:"categories"`
@@ -143,6 +146,7 @@ func editArticle(c *fiber.Ctx) error {
 	}
 
 	body := models.PostArticleBody{
+		Thumbnail:   data.Thumbnail,
 		Title:       data.Title,
 		Description: data.Description,
 		Content:     data.Content,

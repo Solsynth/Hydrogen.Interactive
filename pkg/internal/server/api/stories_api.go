@@ -24,6 +24,7 @@ func createStory(c *fiber.Ctx) error {
 		Title          *string           `json:"title"`
 		Content        string            `json:"content" validate:"required,max=4096"`
 		Location       *string           `json:"location"`
+		Thumbnail      *uint             `json:"thumbnail"`
 		Attachments    []uint            `json:"attachments"`
 		Tags           []models.Tag      `json:"tags"`
 		Categories     []models.Category `json:"categories"`
@@ -43,6 +44,7 @@ func createStory(c *fiber.Ctx) error {
 	}
 
 	body := models.PostStoryBody{
+		Thumbnail:   data.Thumbnail,
 		Title:       data.Title,
 		Content:     data.Content,
 		Location:    data.Location,
@@ -122,6 +124,7 @@ func editStory(c *fiber.Ctx) error {
 	var data struct {
 		Title          *string           `json:"title"`
 		Content        string            `json:"content" validate:"required,max=4096"`
+		Thumbnail      *uint             `json:"thumbnail"`
 		Location       *string           `json:"location"`
 		Attachments    []uint            `json:"attachments"`
 		Tags           []models.Tag      `json:"tags"`
@@ -162,6 +165,7 @@ func editStory(c *fiber.Ctx) error {
 	}
 
 	body := models.PostStoryBody{
+		Thumbnail:   data.Thumbnail,
 		Title:       data.Title,
 		Content:     data.Content,
 		Location:    data.Location,
