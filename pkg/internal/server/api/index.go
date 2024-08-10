@@ -32,6 +32,7 @@ func MapAPIs(app *fiber.App, baseURL string) {
 		posts := api.Group("/posts").Name("Posts API")
 		{
 			posts.Get("/", listPost)
+			posts.Get("/minimal", listPostMinimal)
 			posts.Get("/drafts", listDraftPost)
 			posts.Get("/:postId", getPost)
 			posts.Post("/:postId/react", reactPost)

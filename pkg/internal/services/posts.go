@@ -220,6 +220,22 @@ func ListPost(tx *gorm.DB, take int, offset int, order any, noReact ...bool) ([]
 	return items, nil
 }
 
+func ListPostMinimal(tx *gorm.DB, take int, offset int, order any) ([]*models.Post, error) {
+	if take > 500 {
+		take = 500
+	}
+
+	var items []*models.Post
+	if err := tx.
+		Limit(take).Offset(offset).
+		Order(order).
+		Find(&items).Error; err != nil {
+		return items, err
+	}
+
+	return items, nil
+}
+
 func EnsurePostCategoriesAndTags(item models.Post) (models.Post, error) {
 	var err error
 	for idx, category := range item.Categories {
