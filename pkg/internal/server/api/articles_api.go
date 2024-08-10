@@ -113,6 +113,7 @@ func editArticle(c *fiber.Ctx) error {
 		InvisibleUsers []uint            `json:"invisible_users_list"`
 		Visibility     *int8             `json:"visibility"`
 		IsDraft        bool              `json:"is_draft"`
+		RealmAlias     *string           `json:"realm"`
 	}
 
 	if err := exts.BindAndValidate(c, &data); err != nil {
@@ -163,6 +164,16 @@ func editArticle(c *fiber.Ctx) error {
 
 	if data.Visibility != nil {
 		item.Visibility = *data.Visibility
+	}
+
+	if data.RealmAlias != nil {
+		if realm, err := services.GetRealmWithAlias(*data.RealmAlias); err != nil {
+			return fiber.NewError(fiber.StatusBadRequest, err.Error())
+		} else if _, err = services.GetRealmMember(realm.ExternalID, user.ExternalID); err != nil {
+			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("unable to post in the realm, access denied: %v", err))
+		} else {
+			item.RealmID = &realm.ID
+		}
 	}
 
 	if item, err := services.EditPost(item); err != nil {
