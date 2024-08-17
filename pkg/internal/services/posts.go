@@ -271,6 +271,10 @@ func EnsurePostCategoriesAndTags(item models.Post) (models.Post, error) {
 }
 
 func NewPost(user models.Account, item models.Post) (models.Post, error) {
+	if item.Alias != nil && len(*item.Alias) == 0 {
+		item.Alias = nil
+	}
+
 	if item.Alias != nil {
 		re := regexp.MustCompile(`^[a-z0-9.-]+$`)
 		if !re.MatchString(*item.Alias) {
@@ -333,6 +337,10 @@ func NewPost(user models.Account, item models.Post) (models.Post, error) {
 }
 
 func EditPost(item models.Post) (models.Post, error) {
+	if item.Alias != nil && len(*item.Alias) == 0 {
+		item.Alias = nil
+	}
+
 	if item.Alias != nil {
 		re := regexp.MustCompile(`^[a-z0-9.-]+$`)
 		if !re.MatchString(*item.Alias) {
