@@ -116,6 +116,22 @@ func GetPost(tx *gorm.DB, id uint, ignoreLimitation ...bool) (models.Post, error
 	return item, nil
 }
 
+func GetPostByAlias(tx *gorm.DB, alias, area string, ignoreLimitation ...bool) (models.Post, error) {
+	if len(ignoreLimitation) == 0 || !ignoreLimitation[0] {
+		tx = FilterPostWithPublishedAt(tx, time.Now())
+	}
+
+	var item models.Post
+	if err := PreloadGeneral(tx).
+		Where("alias = ?", alias).
+		Where("area_alias = ?", area).
+		First(&item).Error; err != nil {
+		return item, err
+	}
+
+	return item, nil
+}
+
 func CountPost(tx *gorm.DB) (int64, error) {
 	var count int64
 	if err := tx.Model(&models.Post{}).Count(&count).Error; err != nil {
@@ -254,6 +270,12 @@ func EnsurePostCategoriesAndTags(item models.Post) (models.Post, error) {
 }
 
 func NewPost(user models.Account, item models.Post) (models.Post, error) {
+	if item.Realm != nil {
+		item.AreaAlias = &item.Realm.Alias
+	} else {
+		item.AreaAlias = &user.Name
+	}
+
 	log.Debug().Any("body", item.Body).Msg("Posting a post...")
 	start := time.Now()
 
@@ -303,6 +325,12 @@ func NewPost(user models.Account, item models.Post) (models.Post, error) {
 }
 
 func EditPost(item models.Post) (models.Post, error) {
+	if item.Realm != nil {
+		item.AreaAlias = &item.Realm.Alias
+	} else {
+		item.AreaAlias = &item.Author.Name
+	}
+
 	item, err := EnsurePostCategoriesAndTags(item)
 	if err != nil {
 		return item, err

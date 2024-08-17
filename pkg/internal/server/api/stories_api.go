@@ -105,6 +105,7 @@ func createStory(c *fiber.Ctx) error {
 			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("unable to post in the realm, access denied: %v", err))
 		} else {
 			item.RealmID = &realm.ID
+			item.Realm = &realm
 		}
 	}
 
@@ -188,6 +189,7 @@ func editStory(c *fiber.Ctx) error {
 	item.IsDraft = data.IsDraft
 	item.VisibleUsers = data.VisibleUsers
 	item.InvisibleUsers = data.InvisibleUsers
+	item.Author = user
 
 	if data.Visibility != nil {
 		item.Visibility = *data.Visibility
@@ -200,6 +202,7 @@ func editStory(c *fiber.Ctx) error {
 			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("unable to post in the realm, access denied: %v", err))
 		} else {
 			item.RealmID = &realm.ID
+			item.Realm = &realm
 		}
 	}
 

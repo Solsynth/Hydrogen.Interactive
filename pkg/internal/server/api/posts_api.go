@@ -2,6 +2,8 @@ package api
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
 
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/database"
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/gap"
@@ -13,9 +15,24 @@ import (
 )
 
 func getPost(c *fiber.Ctx) error {
-	id, _ := c.ParamsInt("postId")
+	id := c.Params("postId")
 
-	item, err := services.GetPost(services.FilterPostDraft(database.C), uint(id))
+	var item models.Post
+	var err error
+
+	tx := services.FilterPostDraft(database.C)
+	if numericId, paramErr := strconv.Atoi(id); paramErr == nil {
+		item, err = services.GetPost(tx, uint(numericId))
+	} else {
+		segments := strings.Split(id, ":")
+		if len(segments) != 2 {
+			return fiber.NewError(fiber.StatusBadRequest, "invalid post id, must be a number or a string with two segment divided by a colon")
+		}
+		area := segments[0]
+		alias := segments[1]
+		item, err = services.GetPostByAlias(tx, area, alias)
+	}
+
 	if err != nil {
 		return fiber.NewError(fiber.StatusNotFound, err.Error())
 	}
