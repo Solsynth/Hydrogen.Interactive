@@ -30,7 +30,7 @@ func getPost(c *fiber.Ctx) error {
 		}
 		area := segments[0]
 		alias := segments[1]
-		item, err = services.GetPostByAlias(tx, area, alias)
+		item, err = services.GetPostByAlias(tx, alias, area)
 	}
 
 	if err != nil {
