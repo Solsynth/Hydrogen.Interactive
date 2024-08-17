@@ -3,6 +3,7 @@ package services
 import (
 	"errors"
 	"fmt"
+	"regexp"
 	"strconv"
 	"time"
 
@@ -270,6 +271,13 @@ func EnsurePostCategoriesAndTags(item models.Post) (models.Post, error) {
 }
 
 func NewPost(user models.Account, item models.Post) (models.Post, error) {
+	if item.Alias != nil {
+		re := regexp.MustCompile(`^[a-z0-9.-]+$`)
+		if !re.MatchString(*item.Alias) {
+			return item, fmt.Errorf("invalid post alias, learn more about alias rule on our wiki")
+		}
+	}
+
 	if item.Realm != nil {
 		item.AreaAlias = &item.Realm.Alias
 	} else {
@@ -325,6 +333,13 @@ func NewPost(user models.Account, item models.Post) (models.Post, error) {
 }
 
 func EditPost(item models.Post) (models.Post, error) {
+	if item.Alias != nil {
+		re := regexp.MustCompile(`^[a-z0-9.-]+$`)
+		if !re.MatchString(*item.Alias) {
+			return item, fmt.Errorf("invalid post alias, learn more about alias rule on our wiki")
+		}
+	}
+
 	if item.Realm != nil {
 		item.AreaAlias = &item.Realm.Alias
 	} else {
