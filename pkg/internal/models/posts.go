@@ -27,6 +27,7 @@ type Post struct {
 	Type       string            `json:"type"`
 	Body       datatypes.JSONMap `json:"body"`
 	Language   string            `json:"language"`
+	Alias      *string           `json:"alias"`
 	Tags       []Tag             `json:"tags" gorm:"many2many:post_tags"`
 	Categories []Category        `json:"categories" gorm:"many2many:post_categories"`
 	Reactions  []Reaction        `json:"reactions"`

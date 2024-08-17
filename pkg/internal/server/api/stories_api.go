@@ -21,6 +21,7 @@ func createStory(c *fiber.Ctx) error {
 	user := c.Locals("user").(models.Account)
 
 	var data struct {
+		Alias          *string           `json:"alias"`
 		Title          *string           `json:"title"`
 		Content        string            `json:"content" validate:"required,max=4096"`
 		Location       *string           `json:"location"`
@@ -56,6 +57,7 @@ func createStory(c *fiber.Ctx) error {
 	_ = jsoniter.Unmarshal(rawBody, &bodyMapping)
 
 	item := models.Post{
+		Alias:          data.Alias,
 		Type:           models.PostTypeStory,
 		Body:           bodyMapping,
 		Language:       services.DetectLanguage(data.Content),
@@ -122,6 +124,7 @@ func editStory(c *fiber.Ctx) error {
 	user := c.Locals("user").(models.Account)
 
 	var data struct {
+		Alias          *string           `json:"alias"`
 		Title          *string           `json:"title"`
 		Content        string            `json:"content" validate:"required,max=4096"`
 		Thumbnail      *uint             `json:"thumbnail"`
@@ -176,6 +179,7 @@ func editStory(c *fiber.Ctx) error {
 	rawBody, _ := jsoniter.Marshal(body)
 	_ = jsoniter.Unmarshal(rawBody, &bodyMapping)
 
+	item.Alias = data.Alias
 	item.Body = bodyMapping
 	item.Language = services.DetectLanguage(data.Content)
 	item.Tags = data.Tags
