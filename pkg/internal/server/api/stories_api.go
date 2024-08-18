@@ -26,7 +26,7 @@ func createStory(c *fiber.Ctx) error {
 		Content        string            `json:"content" validate:"required,max=4096"`
 		Location       *string           `json:"location"`
 		Thumbnail      *uint             `json:"thumbnail"`
-		Attachments    []uint            `json:"attachments"`
+		Attachments    []string          `json:"attachments"`
 		Tags           []models.Tag      `json:"tags"`
 		Categories     []models.Category `json:"categories"`
 		PublishedAt    *time.Time        `json:"published_at"`
@@ -130,7 +130,7 @@ func editStory(c *fiber.Ctx) error {
 		Content        string            `json:"content" validate:"required,max=4096"`
 		Thumbnail      *uint             `json:"thumbnail"`
 		Location       *string           `json:"location"`
-		Attachments    []uint            `json:"attachments"`
+		Attachments    []string          `json:"attachments"`
 		Tags           []models.Tag      `json:"tags"`
 		Categories     []models.Category `json:"categories"`
 		PublishedAt    *time.Time        `json:"published_at"`
