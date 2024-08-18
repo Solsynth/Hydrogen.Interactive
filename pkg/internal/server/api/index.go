@@ -11,6 +11,8 @@ func MapAPIs(app *fiber.App, baseURL string) {
 		api.Get("/users/:account", getOthersInfo)
 		api.Get("/users/:account/pin", listOthersPinnedPost)
 
+		api.Get("/publishers/:name", getPublisher)
+
 		recommendations := api.Group("/recommendations").Name("Recommendations API")
 		{
 			recommendations.Get("/", listRecommendationNews)
