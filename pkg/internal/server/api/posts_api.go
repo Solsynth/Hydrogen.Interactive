@@ -52,7 +52,7 @@ func getPost(c *fiber.Ctx) error {
 func listPost(c *fiber.Ctx) error {
 	take := c.QueryInt("take", 0)
 	offset := c.QueryInt("offset", 0)
-	realmId := c.QueryInt("realmId", 0)
+	realm := c.Query("realm")
 
 	tx := services.FilterPostDraft(database.C)
 
@@ -62,8 +62,8 @@ func listPost(c *fiber.Ctx) error {
 		tx = services.FilterPostWithUserContext(tx, nil)
 	}
 
-	if realmId > 0 {
-		if realm, err := services.GetRealmWithExtID(uint(realmId)); err != nil {
+	if len(realm) > 0 {
+		if realm, err := services.GetRealmWithAlias(realm); err != nil {
 			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("realm was not found: %v", err))
 		} else {
 			tx = services.FilterPostWithRealm(tx, realm.ID)
@@ -105,7 +105,7 @@ func listPost(c *fiber.Ctx) error {
 func listPostMinimal(c *fiber.Ctx) error {
 	take := c.QueryInt("take", 0)
 	offset := c.QueryInt("offset", 0)
-	realmId := c.QueryInt("realmId", 0)
+	realm := c.Query("realm")
 
 	tx := services.FilterPostDraft(database.C)
 
@@ -115,8 +115,8 @@ func listPostMinimal(c *fiber.Ctx) error {
 		tx = services.FilterPostWithUserContext(tx, nil)
 	}
 
-	if realmId > 0 {
-		if realm, err := services.GetRealmWithExtID(uint(realmId)); err != nil {
+	if len(realm) > 0 {
+		if realm, err := services.GetRealmWithAlias(realm); err != nil {
 			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("realm was not found: %v", err))
 		} else {
 			tx = services.FilterPostWithRealm(tx, realm.ID)
