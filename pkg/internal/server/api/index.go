@@ -52,5 +52,7 @@ func MapAPIs(app *fiber.App, baseURL string) {
 
 		api.Get("/tags", listTags)
 		api.Get("/tags/:tag", getTag)
+
+		api.Get("/whats-new", getWhatsNew)
 	}
 }
