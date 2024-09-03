@@ -41,6 +41,34 @@ func ListAccountFriends(user models.Account) ([]models.Account, error) {
 	return accounts, nil
 }
 
+func ListAccountBlockedUsers(user models.Account) ([]models.Account, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	pc, err := gap.H.GetServiceGrpcConn(hyper.ServiceTypeAuthProvider)
+	if err != nil {
+		return nil, fmt.Errorf("failed to listing account blocked users: %v", err)
+	}
+	result, err := proto.NewAuthClient(pc).ListUserBlocklist(ctx, &proto.ListUserRelativeRequest{
+		UserId:    uint64(user.ID),
+		IsRelated: true,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to listing account blocked users: %v", err)
+	}
+
+	out := lo.Map(result.Data, func(item *proto.SimpleUserInfo, index int) uint {
+		return uint(item.Id)
+	})
+
+	var accounts []models.Account
+	if err = database.C.Where("id IN ?", out).Find(&accounts).Error; err != nil {
+		return nil, fmt.Errorf("failed to linking listed blocked users: %v", err)
+	}
+
+	return accounts, nil
+}
+
 func ModifyPosterVoteCount(user models.Account, isUpvote bool, delta int) error {
 	if isUpvote {
 		user.TotalUpvote += delta
