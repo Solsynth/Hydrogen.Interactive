@@ -7,7 +7,6 @@ import (
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/models"
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/services"
 	"github.com/gofiber/fiber/v2"
-	"github.com/samber/lo"
 )
 
 func getWhatsNew(c *fiber.Ctx) error {
@@ -26,13 +25,7 @@ func getWhatsNew(c *fiber.Ctx) error {
 	tx := services.FilterPostDraft(database.C)
 	tx = services.FilterPostWithUserContext(tx, &user)
 
-	friends, _ := services.ListAccountFriends(user)
-	friendList := lo.Map(friends, func(item models.Account, index int) uint {
-		return item.ID
-	})
-
 	tx = tx.Where("id > ?", pivot)
-	tx = tx.Where("author_id IN ?", friendList)
 
 	if len(realm) > 0 {
 		if realm, err := services.GetRealmWithAlias(realm); err != nil {
