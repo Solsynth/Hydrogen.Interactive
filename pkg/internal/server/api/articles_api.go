@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"git.solsynth.dev/hydrogen/dealer/pkg/hyper"
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/database"
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/gap"
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/models"
@@ -82,7 +83,7 @@ func createArticle(c *fiber.Ctx) error {
 	if data.RealmAlias != nil {
 		if realm, err := services.GetRealmWithAlias(*data.RealmAlias); err != nil {
 			return fiber.NewError(fiber.StatusBadRequest, err.Error())
-		} else if _, err = services.GetRealmMember(realm.ExternalID, user.ExternalID); err != nil {
+		} else if _, err = services.GetRealmMember(realm.ID, user.ID); err != nil {
 			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("unable to post in the realm, access denied: %v", err))
 		} else {
 			item.RealmID = &realm.ID
@@ -129,7 +130,7 @@ func editArticle(c *fiber.Ctx) error {
 
 	var item models.Post
 	if err := database.C.Where(models.Post{
-		BaseModel: models.BaseModel{ID: uint(id)},
+		BaseModel: hyper.BaseModel{ID: uint(id)},
 		AuthorID:  user.ID,
 	}).First(&item).Error; err != nil {
 		return fiber.NewError(fiber.StatusNotFound, err.Error())
@@ -179,7 +180,7 @@ func editArticle(c *fiber.Ctx) error {
 	if data.RealmAlias != nil {
 		if realm, err := services.GetRealmWithAlias(*data.RealmAlias); err != nil {
 			return fiber.NewError(fiber.StatusBadRequest, err.Error())
-		} else if _, err = services.GetRealmMember(realm.ExternalID, user.ExternalID); err != nil {
+		} else if _, err = services.GetRealmMember(realm.ID, user.ID); err != nil {
 			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("unable to post in the realm, access denied: %v", err))
 		} else {
 			item.RealmID = &realm.ID

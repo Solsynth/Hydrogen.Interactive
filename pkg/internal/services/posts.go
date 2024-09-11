@@ -310,7 +310,7 @@ func NewPost(user models.Account, item models.Post) (models.Post, error) {
 
 	if item.RealmID != nil {
 		log.Debug().Uint("id", *item.RealmID).Msg("Looking for post author realm...")
-		_, err := GetRealmMember(*item.RealmID, user.ExternalID)
+		_, err := GetRealmMember(*item.RealmID, user.ID)
 		if err != nil {
 			return item, fmt.Errorf("you aren't a part of that realm: %v", err)
 		}

@@ -1,6 +1,7 @@
 package api
 
 import (
+	"git.solsynth.dev/hydrogen/dealer/pkg/hyper"
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/database"
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/gap"
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/models"
@@ -16,7 +17,7 @@ func getUserinfo(c *fiber.Ctx) error {
 
 	var data models.Account
 	if err := database.C.
-		Where(&models.Account{BaseModel: models.BaseModel{ID: user.ID}}).
+		Where(&hyper.BaseModel{ID: user.ID}).
 		First(&data).Error; err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
@@ -29,7 +30,7 @@ func getOthersInfo(c *fiber.Ctx) error {
 
 	var data models.Account
 	if err := database.C.
-		Where(&models.Account{Name: account}).
+		Where(&hyper.BaseUser{Name: account}).
 		First(&data).Error; err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
@@ -42,7 +43,7 @@ func listOthersPinnedPost(c *fiber.Ctx) error {
 
 	var user models.Account
 	if err := database.C.
-		Where(&models.Account{Name: account}).
+		Where(&hyper.BaseUser{Name: account}).
 		First(&user).Error; err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}

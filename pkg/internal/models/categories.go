@@ -1,7 +1,9 @@
 package models
 
+import "git.solsynth.dev/hydrogen/dealer/pkg/hyper"
+
 type Tag struct {
-	BaseModel
+	hyper.BaseModel
 
 	Alias       string `json:"alias" gorm:"uniqueIndex" validate:"lowercase"`
 	Name        string `json:"name"`
@@ -10,7 +12,7 @@ type Tag struct {
 }
 
 type Category struct {
-	BaseModel
+	hyper.BaseModel
 
 	Alias       string `json:"alias" gorm:"uniqueIndex" validate:"lowercase,alphanum"`
 	Name        string `json:"name"`

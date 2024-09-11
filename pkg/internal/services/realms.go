@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
+
 	"git.solsynth.dev/hydrogen/dealer/pkg/hyper"
 	"git.solsynth.dev/hydrogen/dealer/pkg/proto"
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/database"
@@ -11,7 +13,6 @@ import (
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/models"
 	"github.com/samber/lo"
 	"gorm.io/gorm"
-	"reflect"
 )
 
 func GetRealmWithExtID(id uint) (models.Realm, error) {
@@ -54,7 +55,7 @@ func GetRealmMember(realmId uint, userId uint) (*proto.RealmMemberInfo, error) {
 		return nil, err
 	}
 	response, err := proto.NewRealmClient(pc).GetRealmMember(context.Background(), &proto.RealmMemberLookupRequest{
-		RealmId: uint64(realm.ExternalID),
+		RealmId: uint64(realm.ID),
 		UserId:  lo.ToPtr(uint64(userId)),
 	})
 	if err != nil {
@@ -69,17 +70,10 @@ func LinkRealm(info *proto.RealmInfo) (models.Realm, error) {
 	if info == nil {
 		return realm, fmt.Errorf("remote realm info was not found")
 	}
-	if err := database.C.Where(&models.Realm{
-		ExternalID: uint(info.Id),
-	}).First(&realm).Error; err != nil {
+	if err := database.C.Where("id = ?", info.Id).First(&realm).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			realm = models.Realm{
-				Alias:       info.Alias,
-				Name:        info.Name,
-				Description: info.Description,
-				IsPublic:    info.IsPublic,
-				IsCommunity: info.IsCommunity,
-				ExternalID:  uint(info.Id),
+				BaseRealm: hyper.LinkRealm(info),
 			}
 			return realm, database.C.Save(&realm).Error
 		}
@@ -90,6 +84,8 @@ func LinkRealm(info *proto.RealmInfo) (models.Realm, error) {
 	realm.Alias = info.Alias
 	realm.Name = info.Name
 	realm.Description = info.Description
+	realm.Avatar = info.Avatar
+	realm.Banner = info.Banner
 	realm.IsPublic = info.IsPublic
 	realm.IsCommunity = info.IsCommunity
 

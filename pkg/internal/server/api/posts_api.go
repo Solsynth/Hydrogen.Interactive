@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"git.solsynth.dev/hydrogen/dealer/pkg/hyper"
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/database"
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/gap"
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/models"
@@ -72,7 +73,7 @@ func listPost(c *fiber.Ctx) error {
 
 	if len(c.Query("author")) > 0 {
 		var author models.Account
-		if err := database.C.Where(&models.Account{Name: c.Query("author")}).First(&author).Error; err != nil {
+		if err := database.C.Where(&hyper.BaseUser{Name: c.Query("author")}).First(&author).Error; err != nil {
 			return fiber.NewError(fiber.StatusNotFound, err.Error())
 		}
 		tx = tx.Where("author_id = ?", author.ID)
@@ -125,7 +126,7 @@ func listPostMinimal(c *fiber.Ctx) error {
 
 	if len(c.Query("author")) > 0 {
 		var author models.Account
-		if err := database.C.Where(&models.Account{Name: c.Query("author")}).First(&author).Error; err != nil {
+		if err := database.C.Where(&hyper.BaseUser{Name: c.Query("author")}).First(&author).Error; err != nil {
 			return fiber.NewError(fiber.StatusNotFound, err.Error())
 		}
 		tx = tx.Where("author_id = ?", author.ID)
@@ -191,7 +192,7 @@ func deletePost(c *fiber.Ctx) error {
 
 	var item models.Post
 	if err := database.C.Where(models.Post{
-		BaseModel: models.BaseModel{ID: uint(id)},
+		BaseModel: hyper.BaseModel{ID: uint(id)},
 		AuthorID:  user.ID,
 	}).First(&item).Error; err != nil {
 		return fiber.NewError(fiber.StatusNotFound, err.Error())

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"strings"
 
+	"git.solsynth.dev/hydrogen/dealer/pkg/hyper"
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/database"
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/models"
 	"gorm.io/gorm"
@@ -27,7 +28,7 @@ func GetCategory(alias string) (models.Category, error) {
 func GetCategoryWithID(id uint) (models.Category, error) {
 	var category models.Category
 	if err := database.C.Where(models.Category{
-		BaseModel: models.BaseModel{ID: id},
+		BaseModel: hyper.BaseModel{ID: id},
 	}).First(&category).Error; err != nil {
 		return category, err
 	}

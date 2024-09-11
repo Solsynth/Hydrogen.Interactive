@@ -88,7 +88,7 @@ func NotifyPosterAccount(user models.Account, title, body string, subtitle *stri
 		return err
 	}
 	_, err = proto.NewNotifierClient(pc).NotifyUser(ctx, &proto.NotifyUserRequest{
-		UserId: uint64(user.ExternalID),
+		UserId: uint64(user.ID),
 		Notify: &proto.NotifyRequest{
 			Topic:       "interactive.feedback",
 			Title:       title,
@@ -101,7 +101,7 @@ func NotifyPosterAccount(user models.Account, title, body string, subtitle *stri
 	if err != nil {
 		log.Warn().Err(err).Msg("An error occurred when notify account...")
 	} else {
-		log.Debug().Uint("uid", user.ExternalID).Msg("Notified account.")
+		log.Debug().Uint("uid", user.ID).Msg("Notified account.")
 	}
 
 	return err

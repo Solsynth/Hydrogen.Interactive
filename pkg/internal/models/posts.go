@@ -3,6 +3,7 @@ package models
 import (
 	"time"
 
+	"git.solsynth.dev/hydrogen/dealer/pkg/hyper"
 	"gorm.io/datatypes"
 )
 
@@ -22,7 +23,7 @@ const (
 )
 
 type Post struct {
-	BaseModel
+	hyper.BaseModel
 
 	Type       string            `json:"type"`
 	Body       datatypes.JSONMap `json:"body"`

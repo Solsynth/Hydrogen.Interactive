@@ -2,7 +2,6 @@ package api
 
 import (
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/gap"
-	"git.solsynth.dev/hydrogen/interactive/pkg/internal/models"
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/server/exts"
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/services"
 	"github.com/gofiber/fiber/v2"
@@ -29,12 +28,8 @@ func listCategories(c *fiber.Ctx) error {
 }
 
 func newCategory(c *fiber.Ctx) error {
-	if err := gap.H.EnsureAuthenticated(c); err != nil {
+	if err := gap.H.EnsureGrantedPerm(c, "CreatePostCategories", true); err != nil {
 		return err
-	}
-	user := c.Locals("user").(models.Account)
-	if user.PowerLevel <= 55 {
-		return fiber.NewError(fiber.StatusForbidden, "require power level 55 to create categories")
 	}
 
 	var data struct {
@@ -56,12 +51,8 @@ func newCategory(c *fiber.Ctx) error {
 }
 
 func editCategory(c *fiber.Ctx) error {
-	if err := gap.H.EnsureAuthenticated(c); err != nil {
+	if err := gap.H.EnsureGrantedPerm(c, "CreatePostCategories", true); err != nil {
 		return err
-	}
-	user := c.Locals("user").(models.Account)
-	if user.PowerLevel <= 55 {
-		return fiber.NewError(fiber.StatusForbidden, "require power level 55 to edit categories")
 	}
 
 	id, _ := c.ParamsInt("categoryId", 0)
@@ -89,12 +80,8 @@ func editCategory(c *fiber.Ctx) error {
 }
 
 func deleteCategory(c *fiber.Ctx) error {
-	if err := gap.H.EnsureAuthenticated(c); err != nil {
+	if err := gap.H.EnsureGrantedPerm(c, "CreatePostCategories", true); err != nil {
 		return err
-	}
-	user := c.Locals("user").(models.Account)
-	if user.PowerLevel <= 55 {
-		return fiber.NewError(fiber.StatusForbidden, "require power level 55 to delete categories")
 	}
 
 	id, _ := c.ParamsInt("categoryId", 0)
