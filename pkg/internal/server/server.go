@@ -54,10 +54,11 @@ func NewServer() {
 		Output: log.Logger,
 	}))
 
+	tablePrefix := viper.GetString("database.prefix")
 	app.Use(gap.H.AuthMiddleware)
 	app.Use(hyper.LinkAccountMiddleware[models.Account](
 		database.C,
-		&models.Account{},
+		tablePrefix+"accounts",
 		func(u hyper.BaseUser) models.Account {
 			return models.Account{
 				BaseUser: u,
