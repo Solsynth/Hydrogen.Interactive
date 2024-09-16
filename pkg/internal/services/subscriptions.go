@@ -53,7 +53,6 @@ func SubscribeToUser(user models.Account, target models.Account) (models.Subscri
 		if !errors.Is(err, gorm.ErrRecordNotFound) {
 			return subscription, fmt.Errorf("subscription already exists")
 		}
-		return subscription, fmt.Errorf("unable to check subscription is exists or not: %v", err)
 	}
 
 	subscription = models.Subscription{
@@ -71,7 +70,6 @@ func SubscribeToTag(user models.Account, target models.Tag) (models.Subscription
 		if !errors.Is(err, gorm.ErrRecordNotFound) {
 			return subscription, fmt.Errorf("subscription already exists")
 		}
-		return subscription, fmt.Errorf("unable to check subscription is exists or not: %v", err)
 	}
 
 	subscription = models.Subscription{
@@ -89,7 +87,6 @@ func SubscribeToCategory(user models.Account, target models.Category) (models.Su
 		if !errors.Is(err, gorm.ErrRecordNotFound) {
 			return subscription, fmt.Errorf("subscription already exists")
 		}
-		return subscription, fmt.Errorf("unable to check subscription is exists or not: %v", err)
 	}
 
 	subscription = models.Subscription{
