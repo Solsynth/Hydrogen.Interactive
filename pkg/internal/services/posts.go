@@ -343,6 +343,27 @@ func NewPost(user models.Account, item models.Post) (models.Post, error) {
 		}
 	}
 
+	// Notify the subscriptions
+	if content, ok := item.Body["content"].(string); ok {
+		var title *string
+		title, _ = item.Body["title"].(*string)
+		go func() {
+			if err := NotifyUserSubscription(user, content, title); err != nil {
+				log.Error().Err(err).Msg("An error occurred when notifying subscriptions user by user...")
+			}
+			for _, tag := range item.Tags {
+				if err := NotifyTagSubscription(tag, user, content, title); err != nil {
+					log.Error().Err(err).Msg("An error occurred when notifying subscriptions user by tag...")
+				}
+			}
+			for _, category := range item.Categories {
+				if err := NotifyCategorySubscription(category, user, content, title); err != nil {
+					log.Error().Err(err).Msg("An error occurred when notifying subscriptions user by category...")
+				}
+			}
+		}()
+	}
+
 	log.Debug().Dur("elapsed", time.Since(start)).Msg("The post is posted.")
 	return item, nil
 }

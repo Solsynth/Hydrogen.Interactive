@@ -1,10 +1,15 @@
 package services
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"time"
 
+	"git.solsynth.dev/hydrogen/dealer/pkg/hyper"
+	"git.solsynth.dev/hydrogen/dealer/pkg/proto"
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/database"
+	"git.solsynth.dev/hydrogen/interactive/pkg/internal/gap"
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/models"
 	"gorm.io/gorm"
 )
@@ -132,5 +137,146 @@ func UnsubscribeFromCategory(user models.Account, target models.Category) error 
 	}
 
 	err := database.C.Delete(&subscription).Error
+	return err
+}
+
+func NotifyUserSubscription(poster models.Account, content string, title *string) error {
+	var subscriptions []models.Subscription
+	if err := database.C.Where("account_id = ?", poster.ID).Preload("Follower").Find(&subscriptions).Error; err != nil {
+		return fmt.Errorf("unable to get subscriptions: %v", err)
+	}
+
+	nTitle := fmt.Sprintf("New post from %s (%s)", poster.Nick, poster.Name)
+	nSubtitle := "From your subscription"
+
+	var body string
+	if len(content) > 80 {
+		body = content[:80]
+	} else {
+		body = content
+	}
+	if title != nil {
+		body = fmt.Sprintf("%s\n%s", *title, body)
+	}
+
+	userIDs := make([]uint64, 0, len(subscriptions))
+	for _, subscription := range subscriptions {
+		userIDs = append(userIDs, uint64(subscription.Follower.ID))
+	}
+
+	pc, err := gap.H.GetServiceGrpcConn(hyper.ServiceTypeAuthProvider)
+	if err != nil {
+		return err
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	_, err = proto.NewNotifierClient(pc).NotifyUserBatch(ctx, &proto.NotifyUserBatchRequest{
+		UserId: userIDs,
+		Notify: &proto.NotifyRequest{
+			Topic:       "interactive.subscription",
+			Title:       nTitle,
+			Subtitle:    &nSubtitle,
+			Body:        body,
+			IsRealtime:  false,
+			IsForcePush: true,
+		},
+	})
+
+	return err
+}
+
+func NotifyTagSubscription(poster models.Tag, og models.Account, content string, title *string) error {
+	var subscriptions []models.Subscription
+	if err := database.C.Where("tag_id = ?", poster.ID).Preload("Follower").Find(&subscriptions).Error; err != nil {
+		return fmt.Errorf("unable to get subscriptions: %v", err)
+	}
+
+	nTitle := fmt.Sprintf("New post in %s by %s (%s)", poster.Name, og.Nick, og.Name)
+	nSubtitle := "From your subscription"
+
+	var body string
+	if len(content) > 80 {
+		body = content[:80]
+	} else {
+		body = content
+	}
+	if title != nil {
+		body = fmt.Sprintf("%s\n%s", *title, body)
+	}
+
+	userIDs := make([]uint64, 0, len(subscriptions))
+	for _, subscription := range subscriptions {
+		userIDs = append(userIDs, uint64(subscription.Follower.ID))
+	}
+
+	pc, err := gap.H.GetServiceGrpcConn(hyper.ServiceTypeAuthProvider)
+	if err != nil {
+		return err
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	_, err = proto.NewNotifierClient(pc).NotifyUserBatch(ctx, &proto.NotifyUserBatchRequest{
+		UserId: userIDs,
+		Notify: &proto.NotifyRequest{
+			Topic:       "interactive.subscription",
+			Title:       nTitle,
+			Subtitle:    &nSubtitle,
+			Body:        body,
+			IsRealtime:  false,
+			IsForcePush: true,
+		},
+	})
+
+	return err
+}
+
+func NotifyCategorySubscription(poster models.Category, og models.Account, content string, title *string) error {
+	var subscriptions []models.Subscription
+	if err := database.C.Where("category_id = ?", poster.ID).Preload("Follower").Find(&subscriptions).Error; err != nil {
+		return fmt.Errorf("unable to get subscriptions: %v", err)
+	}
+
+	nTitle := fmt.Sprintf("New post in %s by %s (%s)", poster.Name, og.Nick, og.Name)
+	nSubtitle := "From your subscription"
+
+	var body string
+	if len(content) > 80 {
+		body = content[:80]
+	} else {
+		body = content
+	}
+	if title != nil {
+		body = fmt.Sprintf("%s\n%s", *title, body)
+	}
+
+	userIDs := make([]uint64, 0, len(subscriptions))
+	for _, subscription := range subscriptions {
+		userIDs = append(userIDs, uint64(subscription.Follower.ID))
+	}
+
+	pc, err := gap.H.GetServiceGrpcConn(hyper.ServiceTypeAuthProvider)
+	if err != nil {
+		return err
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	_, err = proto.NewNotifierClient(pc).NotifyUserBatch(ctx, &proto.NotifyUserBatchRequest{
+		UserId: userIDs,
+		Notify: &proto.NotifyRequest{
+			Topic:       "interactive.subscription",
+			Title:       nTitle,
+			Subtitle:    &nSubtitle,
+			Body:        body,
+			IsRealtime:  false,
+			IsForcePush: true,
+		},
+	})
+
 	return err
 }
