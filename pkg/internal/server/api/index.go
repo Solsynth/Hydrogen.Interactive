@@ -42,7 +42,7 @@ func MapAPIs(app *fiber.App, baseURL string) {
 			posts.Delete("/:postId", deletePost)
 
 			posts.Get("/:postId/replies", listPostReplies)
-			posts.Get("/:postId/featured", listPostFeaturedReply)
+			posts.Get("/:postId/replies/featured", listPostFeaturedReply)
 		}
 
 		api.Get("/categories", listCategories)
