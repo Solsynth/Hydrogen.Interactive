@@ -22,6 +22,13 @@ func getPost(c *fiber.Ctx) error {
 	var err error
 
 	tx := services.FilterPostDraft(database.C)
+
+	if user, authenticated := c.Locals("user").(models.Account); authenticated {
+		tx = services.FilterPostWithUserContext(tx, &user)
+	} else {
+		tx = services.FilterPostWithUserContext(tx, nil)
+	}
+
 	if numericId, paramErr := strconv.Atoi(id); paramErr == nil {
 		item, err = services.GetPost(tx, uint(numericId))
 	} else {
