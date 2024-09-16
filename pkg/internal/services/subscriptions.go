@@ -50,7 +50,7 @@ func GetSubscriptionOnCategory(user models.Account, target models.Category) (*mo
 func SubscribeToUser(user models.Account, target models.Account) (models.Subscription, error) {
 	var subscription models.Subscription
 	if err := database.C.Where("follower_id = ? AND account_id = ?", user.ID, target.ID).First(&subscription).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
 			return subscription, fmt.Errorf("subscription already exists")
 		}
 		return subscription, fmt.Errorf("unable to check subscription is exists or not: %v", err)
@@ -68,7 +68,7 @@ func SubscribeToUser(user models.Account, target models.Account) (models.Subscri
 func SubscribeToTag(user models.Account, target models.Tag) (models.Subscription, error) {
 	var subscription models.Subscription
 	if err := database.C.Where("follower_id = ? AND tag_id = ?", user.ID, target.ID).First(&subscription).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
 			return subscription, fmt.Errorf("subscription already exists")
 		}
 		return subscription, fmt.Errorf("unable to check subscription is exists or not: %v", err)
@@ -86,7 +86,7 @@ func SubscribeToTag(user models.Account, target models.Tag) (models.Subscription
 func SubscribeToCategory(user models.Account, target models.Category) (models.Subscription, error) {
 	var subscription models.Subscription
 	if err := database.C.Where("follower_id = ? AND category_id = ?", user.ID, target.ID).First(&subscription).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
 			return subscription, fmt.Errorf("subscription already exists")
 		}
 		return subscription, fmt.Errorf("unable to check subscription is exists or not: %v", err)
