@@ -23,7 +23,9 @@ func getSubscriptionOnUser(c *fiber.Ctx) error {
 
 	subscription, err := services.GetSubscriptionOnUser(user, otherUser)
 	if err != nil {
-		return fiber.NewError(fiber.StatusNotFound, fmt.Sprintf("unable to get subscription: %v", err))
+		return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("unable to get subscription: %v", err))
+	} else if subscription == nil {
+		return fiber.NewError(fiber.StatusNotFound, "subscription does not exist")
 	}
 
 	return c.JSON(subscription)
@@ -43,7 +45,9 @@ func getSubscriptionOnTag(c *fiber.Ctx) error {
 
 	subscription, err := services.GetSubscriptionOnTag(user, tag)
 	if err != nil {
-		return fiber.NewError(fiber.StatusNotFound, fmt.Sprintf("unable to get subscription: %v", err))
+		return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("unable to get subscription: %v", err))
+	} else if subscription == nil {
+		return fiber.NewError(fiber.StatusNotFound, "subscription does not exist")
 	}
 
 	return c.JSON(subscription)
@@ -63,7 +67,9 @@ func getSubscriptionOnCategory(c *fiber.Ctx) error {
 
 	subscription, err := services.GetSubscriptionOnCategory(user, category)
 	if err != nil {
-		return fiber.NewError(fiber.StatusNotFound, fmt.Sprintf("unable to get subscription: %v", err))
+		return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("unable to get subscription: %v", err))
+	} else if subscription == nil {
+		return fiber.NewError(fiber.StatusNotFound, "subscription does not exist")
 	}
 
 	return c.JSON(subscription)
