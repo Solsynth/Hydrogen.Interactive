@@ -3,6 +3,8 @@ package services
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"git.solsynth.dev/hydrogen/dealer/pkg/hyper"
 	"git.solsynth.dev/hydrogen/dealer/pkg/proto"
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/database"
@@ -10,8 +12,15 @@ import (
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/models"
 	"github.com/rs/zerolog/log"
 	"github.com/samber/lo"
-	"time"
 )
+
+func GetAccountWithID(id uint) (models.Account, error) {
+	var account models.Account
+	if err := database.C.Where("id = ?", id).First(&account).Error; err != nil {
+		return account, fmt.Errorf("unable to get account by id: %v", err)
+	}
+	return account, nil
+}
 
 func ListAccountFriends(user models.Account) ([]models.Account, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)

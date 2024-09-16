@@ -61,6 +61,16 @@ func DeleteCategory(category models.Category) error {
 	return database.C.Delete(category).Error
 }
 
+func GetTagWithID(id uint) (models.Tag, error) {
+	var tag models.Tag
+	if err := database.C.Where(models.Tag{
+		BaseModel: hyper.BaseModel{ID: id},
+	}).First(&tag).Error; err != nil {
+		return tag, err
+	}
+	return tag, nil
+}
+
 func GetTagOrCreate(alias, name string) (models.Tag, error) {
 	alias = strings.ToLower(alias)
 	var tag models.Tag

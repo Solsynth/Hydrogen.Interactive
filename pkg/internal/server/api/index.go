@@ -45,6 +45,19 @@ func MapAPIs(app *fiber.App, baseURL string) {
 			posts.Get("/:postId/replies/featured", listPostFeaturedReply)
 		}
 
+		subscriptions := api.Group("/subscriptions").Name("Subscriptions API")
+		{
+			subscriptions.Get("/users/:userId", getSubscriptionOnUser)
+			subscriptions.Get("/tags/:tagId", getSubscriptionOnTag)
+			subscriptions.Get("/categories/:categoryId", getSubscriptionOnCategory)
+			subscriptions.Post("/users/:userId", subscribeToUser)
+			subscriptions.Post("/tags/:tagId", subscribeToTag)
+			subscriptions.Post("/categories/:categoryId", subscribeToCategory)
+			subscriptions.Delete("/users/:userId", unsubscribeFromUser)
+			subscriptions.Delete("/tags/:tagId", unsubscribeFromTag)
+			subscriptions.Delete("/categories/:categoryId", unsubscribeFromCategory)
+		}
+
 		api.Get("/categories", listCategories)
 		api.Get("/categories/:category", getCategory)
 		api.Post("/categories", newCategory)
