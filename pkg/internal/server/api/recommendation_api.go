@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/database"
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/gap"
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/models"
@@ -29,6 +30,10 @@ func listRecommendationNews(c *fiber.Ctx) error {
 		} else {
 			tx = services.FilterPostWithRealm(tx, realm.ID)
 		}
+	}
+
+	if c.QueryBool("noReply", true) {
+		tx = services.FilterPostReply(tx)
 	}
 
 	countTx := tx
@@ -81,6 +86,10 @@ func listRecommendationFriends(c *fiber.Ctx) error {
 		}
 	}
 
+	if c.QueryBool("noReply", true) {
+		tx = services.FilterPostReply(tx)
+	}
+
 	countTx := tx
 	count, err := services.CountPost(countTx)
 	if err != nil {
@@ -122,6 +131,10 @@ func listRecommendationShuffle(c *fiber.Ctx) error {
 		} else {
 			tx = services.FilterPostWithRealm(tx, realm.ID)
 		}
+	}
+
+	if c.QueryBool("noReply", true) {
+		tx = services.FilterPostReply(tx)
 	}
 
 	countTx := tx

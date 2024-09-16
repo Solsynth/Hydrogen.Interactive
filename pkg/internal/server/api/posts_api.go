@@ -71,6 +71,10 @@ func listPost(c *fiber.Ctx) error {
 		}
 	}
 
+	if c.QueryBool("noReply", true) {
+		tx = services.FilterPostReply(tx)
+	}
+
 	if len(c.Query("author")) > 0 {
 		var author models.Account
 		if err := database.C.Where(&hyper.BaseUser{Name: c.Query("author")}).First(&author).Error; err != nil {
