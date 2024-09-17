@@ -310,9 +310,11 @@ func NewPost(user models.Account, item models.Post) (models.Post, error) {
 
 	if item.RealmID != nil {
 		log.Debug().Uint("id", *item.RealmID).Msg("Looking for post author realm...")
-		_, err := GetRealmMember(*item.RealmID, user.ID)
+		member, err := GetRealmMember(*item.RealmID, user.ID)
 		if err != nil {
 			return item, fmt.Errorf("you aren't a part of that realm: %v", err)
+		} else if !item.Realm.IsCommunity && member.PowerLevel < 25 {
+			return item, fmt.Errorf("you need has power level above 25 of a realm or in a community realm to post")
 		}
 	}
 
