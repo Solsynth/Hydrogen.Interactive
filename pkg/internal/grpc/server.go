@@ -1,6 +1,7 @@
 package grpc
 
 import (
+	"git.solsynth.dev/hydrogen/dealer/pkg/proto"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 	health "google.golang.org/grpc/health/grpc_health_v1"
@@ -9,6 +10,7 @@ import (
 )
 
 type Server struct {
+	proto.UnimplementedServiceDirectoryServer
 }
 
 var S *grpc.Server
@@ -17,6 +19,7 @@ func NewGRPC() {
 	S = grpc.NewServer()
 
 	health.RegisterHealthServer(S, &Server{})
+	proto.RegisterServiceDirectoryServer(S, &Server{})
 
 	reflection.Register(S)
 }
