@@ -29,11 +29,11 @@ func FilterPostWithUserContext(tx *gorm.DB, user *models.Account) *gorm.DB {
 	)
 
 	friends, _ := ListAccountFriends(*user)
-	friendAllowList := lo.Map(friends, func(item models.Account, index int) uint {
+	allowlist := lo.Map(friends, func(item models.Account, index int) uint {
 		return item.ID
 	})
 	blocked, _ := ListAccountBlockedUsers(*user)
-	blockedDisallowList := lo.Map(blocked, func(item models.Account, index int) uint {
+	blocklist := lo.Map(blocked, func(item models.Account, index int) uint {
 		return item.ID
 	})
 
@@ -41,8 +41,8 @@ func FilterPostWithUserContext(tx *gorm.DB, user *models.Account) *gorm.DB {
 		"(visibility != ? OR (visibility != ? AND author_id IN ? AND author_id NOT IN ?) OR (visibility = ? AND ?) OR (visibility = ? AND NOT ?) OR author_id = ?)",
 		NoneVisibility,
 		FriendsVisibility,
-		friendAllowList,
-		blockedDisallowList,
+		allowlist,
+		blocklist,
 		SelectedVisibility,
 		datatypes.JSONQuery("visible_users").HasKey(strconv.Itoa(int(user.ID))),
 		FilteredVisibility,
