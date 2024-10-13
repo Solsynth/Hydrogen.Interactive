@@ -476,7 +476,8 @@ const TruncatePostContentThreshold = 160
 func TruncatePostContent(post models.Post) models.Post {
 	if post.Body["content"] != nil {
 		if val, ok := post.Body["content"].(string); ok && len(val) >= TruncatePostContentThreshold {
-			post.Body["content"] = val[:TruncatePostContentThreshold] + "..."
+			length := TruncatePostContentThreshold
+			post.Body["content"] = string([]rune(val)[:length]) + "..."
 			post.Body["content_truncated"] = true
 		}
 	}
