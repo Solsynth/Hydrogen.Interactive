@@ -470,3 +470,16 @@ func PinPost(post models.Post) (bool, error) {
 	}
 	return post.PinnedAt != nil, nil
 }
+
+const TruncatePostContentThreshold = 160
+
+func TruncatePostContent(post models.Post) models.Post {
+	if post.Body["content"] != nil {
+		if val, ok := post.Body["content"].(string); ok && len(val) >= TruncatePostContentThreshold {
+			post.Body["content"] = val[:TruncatePostContentThreshold] + "..."
+			post.Body["content_truncated"] = true
+		}
+	}
+
+	return post
+}

@@ -52,6 +52,14 @@ func listRecommendationNews(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 
+	if c.QueryBool("truncate", true) {
+		for _, item := range items {
+			if item != nil {
+				item = lo.ToPtr(services.TruncatePostContent(*item))
+			}
+		}
+	}
+
 	return c.JSON(fiber.Map{
 		"count": count,
 		"data":  items,
@@ -106,6 +114,14 @@ func listRecommendationFriends(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 
+	if c.QueryBool("truncate", true) {
+		for _, item := range items {
+			if item != nil {
+				item = lo.ToPtr(services.TruncatePostContent(*item))
+			}
+		}
+	}
+
 	return c.JSON(fiber.Map{
 		"count": count,
 		"data":  items,
@@ -146,6 +162,14 @@ func listRecommendationShuffle(c *fiber.Ctx) error {
 	items, err := services.ListPost(tx, take, offset, "RANDOM()")
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
+	if c.QueryBool("truncate", true) {
+		for _, item := range items {
+			if item != nil {
+				item = lo.ToPtr(services.TruncatePostContent(*item))
+			}
+		}
 	}
 
 	return c.JSON(fiber.Map{

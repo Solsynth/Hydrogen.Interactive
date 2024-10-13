@@ -108,6 +108,14 @@ func listPost(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 
+	if c.QueryBool("truncate", true) {
+		for _, item := range items {
+			if item != nil {
+				item = lo.ToPtr(services.TruncatePostContent(*item))
+			}
+		}
+	}
+
 	return c.JSON(fiber.Map{
 		"count": count,
 		"data":  items,
@@ -161,6 +169,14 @@ func listPostMinimal(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 
+	if c.QueryBool("truncate", false) {
+		for _, item := range items {
+			if item != nil {
+				item = lo.ToPtr(services.TruncatePostContent(*item))
+			}
+		}
+	}
+
 	return c.JSON(fiber.Map{
 		"count": count,
 		"data":  items,
@@ -186,6 +202,14 @@ func listDraftPost(c *fiber.Ctx) error {
 	items, err := services.ListPost(tx, take, offset, "created_at DESC", true)
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
+	if c.QueryBool("truncate", true) {
+		for _, item := range items {
+			if item != nil {
+				item = lo.ToPtr(services.TruncatePostContent(*item))
+			}
+		}
 	}
 
 	return c.JSON(fiber.Map{
