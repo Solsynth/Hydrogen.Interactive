@@ -49,7 +49,11 @@ func BatchListPostReactions(tx *gorm.DB, indexField string) (map[uint]map[string
 		if _, ok := reactInfo[info.ID]; !ok {
 			reactInfo[info.ID] = make(map[string]int64)
 		}
-		reactInfo[info.ID][info.Symbol] = info.Count
+		if _, exists := reactInfo[info.ID][info.Symbol]; exists {
+			reactInfo[info.ID][info.Symbol] += info.Count
+		} else {
+			reactInfo[info.ID][info.Symbol] = info.Count
+		}
 	}
 
 	return reactInfo, nil
