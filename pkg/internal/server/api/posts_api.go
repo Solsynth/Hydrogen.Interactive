@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"gorm.io/gorm"
 	"strconv"
 	"strings"
 
@@ -14,6 +15,47 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/samber/lo"
 )
+
+func universalPostFilter(c *fiber.Ctx, tx *gorm.DB) (*gorm.DB, error) {
+	realm := c.Query("realm")
+
+	tx = services.FilterPostDraft(tx)
+
+	if user, authenticated := c.Locals("user").(models.Account); authenticated {
+		tx = services.FilterPostWithUserContext(tx, &user)
+	} else {
+		tx = services.FilterPostWithUserContext(tx, nil)
+	}
+
+	if len(realm) > 0 {
+		if realm, err := services.GetRealmWithAlias(realm); err != nil {
+			return tx, fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("realm was not found: %v", err))
+		} else {
+			tx = services.FilterPostWithRealm(tx, realm.ID)
+		}
+	}
+
+	if c.QueryBool("noReply", true) {
+		tx = services.FilterPostReply(tx)
+	}
+
+	if len(c.Query("author")) > 0 {
+		var author models.Account
+		if err := database.C.Where(&hyper.BaseUser{Name: c.Query("author")}).First(&author).Error; err != nil {
+			return tx, fiber.NewError(fiber.StatusNotFound, err.Error())
+		}
+		tx = tx.Where("author_id = ?", author.ID)
+	}
+
+	if len(c.Query("category")) > 0 {
+		tx = services.FilterPostWithCategory(tx, c.Query("category"))
+	}
+	if len(c.Query("tag")) > 0 {
+		tx = services.FilterPostWithTag(tx, c.Query("tag"))
+	}
+
+	return tx, nil
+}
 
 func getPost(c *fiber.Ctx) error {
 	id := c.Params("postId")
@@ -57,44 +99,58 @@ func getPost(c *fiber.Ctx) error {
 	return c.JSON(item)
 }
 
+func searchPost(c *fiber.Ctx) error {
+	take := c.QueryInt("take", 0)
+	offset := c.QueryInt("offset", 0)
+
+	tx := database.C
+
+	probe := c.Query("probe")
+	if len(probe) == 0 {
+		return fiber.NewError(fiber.StatusBadRequest, "probe is required")
+	}
+
+	tx = services.FilterPostWithFuzzySearch(tx, probe)
+
+	var err error
+	if tx, err = universalPostFilter(c, tx); err != nil {
+		return err
+	}
+
+	countTx := tx
+	count, err := services.CountPost(countTx)
+	if err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	}
+
+	items, err := services.ListPost(tx, take, offset, "published_at DESC")
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
+	if c.QueryBool("truncate", true) {
+		for _, item := range items {
+			if item != nil {
+				item = lo.ToPtr(services.TruncatePostContent(*item))
+			}
+		}
+	}
+
+	return c.JSON(fiber.Map{
+		"count": count,
+		"data":  items,
+	})
+}
+
 func listPost(c *fiber.Ctx) error {
 	take := c.QueryInt("take", 0)
 	offset := c.QueryInt("offset", 0)
-	realm := c.Query("realm")
 
-	tx := services.FilterPostDraft(database.C)
+	tx := database.C
 
-	if user, authenticated := c.Locals("user").(models.Account); authenticated {
-		tx = services.FilterPostWithUserContext(tx, &user)
-	} else {
-		tx = services.FilterPostWithUserContext(tx, nil)
-	}
-
-	if len(realm) > 0 {
-		if realm, err := services.GetRealmWithAlias(realm); err != nil {
-			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("realm was not found: %v", err))
-		} else {
-			tx = services.FilterPostWithRealm(tx, realm.ID)
-		}
-	}
-
-	if c.QueryBool("noReply", true) {
-		tx = services.FilterPostReply(tx)
-	}
-
-	if len(c.Query("author")) > 0 {
-		var author models.Account
-		if err := database.C.Where(&hyper.BaseUser{Name: c.Query("author")}).First(&author).Error; err != nil {
-			return fiber.NewError(fiber.StatusNotFound, err.Error())
-		}
-		tx = tx.Where("author_id = ?", author.ID)
-	}
-
-	if len(c.Query("category")) > 0 {
-		tx = services.FilterPostWithCategory(tx, c.Query("category"))
-	}
-	if len(c.Query("tag")) > 0 {
-		tx = services.FilterPostWithTag(tx, c.Query("tag"))
+	var err error
+	if tx, err = universalPostFilter(c, tx); err != nil {
+		return err
 	}
 
 	countTx := tx
@@ -125,37 +181,12 @@ func listPost(c *fiber.Ctx) error {
 func listPostMinimal(c *fiber.Ctx) error {
 	take := c.QueryInt("take", 0)
 	offset := c.QueryInt("offset", 0)
-	realm := c.Query("realm")
 
-	tx := services.FilterPostDraft(database.C)
+	tx := database.C
 
-	if user, authenticated := c.Locals("user").(models.Account); authenticated {
-		tx = services.FilterPostWithUserContext(tx, &user)
-	} else {
-		tx = services.FilterPostWithUserContext(tx, nil)
-	}
-
-	if len(realm) > 0 {
-		if realm, err := services.GetRealmWithAlias(realm); err != nil {
-			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("realm was not found: %v", err))
-		} else {
-			tx = services.FilterPostWithRealm(tx, realm.ID)
-		}
-	}
-
-	if len(c.Query("author")) > 0 {
-		var author models.Account
-		if err := database.C.Where(&hyper.BaseUser{Name: c.Query("author")}).First(&author).Error; err != nil {
-			return fiber.NewError(fiber.StatusNotFound, err.Error())
-		}
-		tx = tx.Where("author_id = ?", author.ID)
-	}
-
-	if len(c.Query("category")) > 0 {
-		tx = services.FilterPostWithCategory(tx, c.Query("category"))
-	}
-	if len(c.Query("tag")) > 0 {
-		tx = services.FilterPostWithTag(tx, c.Query("tag"))
+	var err error
+	if tx, err = universalPostFilter(c, tx); err != nil {
+		return err
 	}
 
 	countTx := tx

@@ -97,6 +97,11 @@ func FilterPostDraft(tx *gorm.DB) *gorm.DB {
 	return tx.Where("is_draft = ? OR is_draft IS NULL", false)
 }
 
+func FilterPostWithFuzzySearch(tx *gorm.DB, probe string) *gorm.DB {
+	probe = "%" + probe + "%"
+	return tx.Where("? AND body->>'content' ILIKE ?", gorm.Expr("body ? 'content'"), probe)
+}
+
 func PreloadGeneral(tx *gorm.DB) *gorm.DB {
 	return tx.
 		Preload("Tags").

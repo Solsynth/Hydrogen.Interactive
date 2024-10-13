@@ -1,8 +1,6 @@
 package api
 
 import (
-	"fmt"
-
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/database"
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/gap"
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/models"
@@ -14,26 +12,12 @@ import (
 func listRecommendationNews(c *fiber.Ctx) error {
 	take := c.QueryInt("take", 0)
 	offset := c.QueryInt("offset", 0)
-	realm := c.Query("realm")
 
-	tx := services.FilterPostDraft(database.C)
+	tx := database.C
 
-	if user, authenticated := c.Locals("user").(models.Account); authenticated {
-		tx = services.FilterPostWithUserContext(tx, &user)
-	} else {
-		tx = services.FilterPostWithUserContext(tx, nil)
-	}
-
-	if len(realm) > 0 {
-		if realm, err := services.GetRealmWithAlias(realm); err != nil {
-			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("realm was not found: %v", err))
-		} else {
-			tx = services.FilterPostWithRealm(tx, realm.ID)
-		}
-	}
-
-	if c.QueryBool("noReply", true) {
-		tx = services.FilterPostReply(tx)
+	var err error
+	if tx, err = universalPostFilter(c, tx); err != nil {
+		return err
 	}
 
 	countTx := tx
@@ -74,10 +58,13 @@ func listRecommendationFriends(c *fiber.Ctx) error {
 
 	take := c.QueryInt("take", 0)
 	offset := c.QueryInt("offset", 0)
-	realm := c.Query("realm")
 
-	tx := services.FilterPostDraft(database.C)
-	tx = services.FilterPostWithUserContext(tx, &user)
+	tx := database.C
+
+	var err error
+	if tx, err = universalPostFilter(c, tx); err != nil {
+		return err
+	}
 
 	friends, _ := services.ListAccountFriends(user)
 	friendList := lo.Map(friends, func(item models.Account, index int) uint {
@@ -85,18 +72,6 @@ func listRecommendationFriends(c *fiber.Ctx) error {
 	})
 
 	tx = tx.Where("author_id IN ?", friendList)
-
-	if len(realm) > 0 {
-		if realm, err := services.GetRealmWithAlias(realm); err != nil {
-			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("realm was not found: %v", err))
-		} else {
-			tx = services.FilterPostWithRealm(tx, realm.ID)
-		}
-	}
-
-	if c.QueryBool("noReply", true) {
-		tx = services.FilterPostReply(tx)
-	}
 
 	countTx := tx
 	count, err := services.CountPost(countTx)
@@ -131,26 +106,12 @@ func listRecommendationFriends(c *fiber.Ctx) error {
 func listRecommendationShuffle(c *fiber.Ctx) error {
 	take := c.QueryInt("take", 0)
 	offset := c.QueryInt("offset", 0)
-	realm := c.Query("realm")
 
-	tx := services.FilterPostDraft(database.C)
+	tx := database.C
 
-	if user, authenticated := c.Locals("user").(models.Account); authenticated {
-		tx = services.FilterPostWithUserContext(tx, &user)
-	} else {
-		tx = services.FilterPostWithUserContext(tx, nil)
-	}
-
-	if len(realm) > 0 {
-		if realm, err := services.GetRealmWithAlias(realm); err != nil {
-			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("realm was not found: %v", err))
-		} else {
-			tx = services.FilterPostWithRealm(tx, realm.ID)
-		}
-	}
-
-	if c.QueryBool("noReply", true) {
-		tx = services.FilterPostReply(tx)
+	var err error
+	if tx, err = universalPostFilter(c, tx); err != nil {
+		return err
 	}
 
 	countTx := tx

@@ -26,7 +26,7 @@ type Post struct {
 	hyper.BaseModel
 
 	Type       string            `json:"type"`
-	Body       datatypes.JSONMap `json:"body"`
+	Body       datatypes.JSONMap `json:"body" gorm:"index:,type:gin"`
 	Language   string            `json:"language"`
 	Alias      *string           `json:"alias"`
 	AreaAlias  *string           `json:"area_alias"`
