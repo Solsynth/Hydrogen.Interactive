@@ -49,7 +49,7 @@ func getPost(c *fiber.Ctx) error {
 		ReplyCount:    services.CountPostReply(item.ID),
 		ReactionCount: services.CountPostReactions(item.ID),
 	}
-	item.Metric.ReactionList, err = services.ListResourceReactions(database.C.Where("post_id = ?", item.ID))
+	item.Metric.ReactionList, err = services.ListPostReactions(database.C.Where("post_id = ?", item.ID))
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}

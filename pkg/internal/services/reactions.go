@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func ListResourceReactions(tx *gorm.DB) (map[string]int64, error) {
+func ListPostReactions(tx *gorm.DB) (map[string]int64, error) {
 	var reactions []struct {
 		Symbol string
 		Count  int64
@@ -30,7 +30,7 @@ func ListResourceReactions(tx *gorm.DB) (map[string]int64, error) {
 	}), nil
 }
 
-func BatchListResourceReactions(tx *gorm.DB, indexField string) (map[uint]map[string]int64, error) {
+func BatchListPostReactions(tx *gorm.DB, indexField string) (map[uint]map[string]int64, error) {
 	var reactions []struct {
 		ID     uint
 		Symbol string
@@ -39,7 +39,7 @@ func BatchListResourceReactions(tx *gorm.DB, indexField string) (map[uint]map[st
 
 	reactInfo := map[uint]map[string]int64{}
 	if err := tx.Model(&models.Reaction{}).
-		Select(fmt.Sprintf("%s as id, symbol, COUNT(id) as count", indexField)).
+		Select(fmt.Sprintf("%s as id, symbol, COUNT(*) as count", indexField)).
 		Group("id, symbol").
 		Scan(&reactions).Error; err != nil {
 		return reactInfo, err
