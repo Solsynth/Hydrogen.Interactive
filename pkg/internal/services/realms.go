@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-func GetRealmWithExtID(id uint) (models.Realm, error) {
+func GetRealmWithID(id uint) (models.Realm, error) {
 	var realm models.Realm
 	pc, err := gap.H.GetServiceGrpcConn(hyper.ServiceTypeAuthProvider)
 	if err != nil {

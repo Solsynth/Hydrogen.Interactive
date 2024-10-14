@@ -13,4 +13,6 @@ type Subscription struct {
 	Tag        Tag      `json:"tag,omitempty"`
 	CategoryID *uint    `json:"category_id,omitempty"`
 	Category   Category `json:"category,omitempty"`
+	RealmID    *uint    `json:"realm_id,omitempty"`
+	Realm      Realm    `json:"realm,omitempty"`
 }

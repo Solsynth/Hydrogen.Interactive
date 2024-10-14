@@ -51,12 +51,15 @@ func MapAPIs(app *fiber.App, baseURL string) {
 			subscriptions.Get("/users/:userId", getSubscriptionOnUser)
 			subscriptions.Get("/tags/:tagId", getSubscriptionOnTag)
 			subscriptions.Get("/categories/:categoryId", getSubscriptionOnCategory)
+			subscriptions.Get("/realms/:realmId", getSubscriptionOnRealm)
 			subscriptions.Post("/users/:userId", subscribeToUser)
 			subscriptions.Post("/tags/:tagId", subscribeToTag)
 			subscriptions.Post("/categories/:categoryId", subscribeToCategory)
+			subscriptions.Post("/realms/:realmId", subscribeToRealm)
 			subscriptions.Delete("/users/:userId", unsubscribeFromUser)
 			subscriptions.Delete("/tags/:tagId", unsubscribeFromTag)
 			subscriptions.Delete("/categories/:categoryId", unsubscribeFromCategory)
+			subscriptions.Delete("/realms/:realmId", unsubscribeFromRealm)
 		}
 
 		api.Get("/categories", listCategories)

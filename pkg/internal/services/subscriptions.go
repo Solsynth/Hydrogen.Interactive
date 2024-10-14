@@ -47,6 +47,17 @@ func GetSubscriptionOnCategory(user models.Account, target models.Category) (*mo
 	return &subscription, nil
 }
 
+func GetSubscriptionOnRealm(user models.Account, target models.Realm) (*models.Subscription, error) {
+	var subscription models.Subscription
+	if err := database.C.Where("follower_id = ? AND realm_id = ?", user.ID, target.ID).First(&subscription).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("unable to get subscription: %v", err)
+	}
+	return &subscription, nil
+}
+
 func SubscribeToUser(user models.Account, target models.Account) (models.Subscription, error) {
 	var subscription models.Subscription
 	if err := database.C.Where("follower_id = ? AND account_id = ?", user.ID, target.ID).First(&subscription).Error; err != nil {
@@ -98,6 +109,23 @@ func SubscribeToCategory(user models.Account, target models.Category) (models.Su
 	return subscription, err
 }
 
+func SubscribeToRealm(user models.Account, target models.Realm) (models.Subscription, error) {
+	var subscription models.Subscription
+	if err := database.C.Where("follower_id = ? AND realm_id = ?", user.ID, target.ID).First(&subscription).Error; err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			return subscription, fmt.Errorf("subscription already exists")
+		}
+	}
+
+	subscription = models.Subscription{
+		FollowerID: user.ID,
+		RealmID:    &target.ID,
+	}
+
+	err := database.C.Save(&subscription).Error
+	return subscription, err
+}
+
 func UnsubscribeFromUser(user models.Account, target models.Account) error {
 	var subscription models.Subscription
 	if err := database.C.Where("follower_id = ? AND account_id = ?", user.ID, target.ID).First(&subscription).Error; err != nil {
@@ -137,6 +165,19 @@ func UnsubscribeFromCategory(user models.Account, target models.Category) error 
 	return err
 }
 
+func UnsubscribeFromRealm(user models.Account, target models.Realm) error {
+	var subscription models.Subscription
+	if err := database.C.Where("follower_id = ? AND realm_id = ?", user.ID, target.ID).First(&subscription).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return fmt.Errorf("subscription does not exist")
+		}
+		return fmt.Errorf("unable to check subscription is exists or not: %v", err)
+	}
+
+	err := database.C.Delete(&subscription).Error
+	return err
+}
+
 func NotifyUserSubscription(poster models.Account, content string, title *string) error {
 	var subscriptions []models.Subscription
 	if err := database.C.Where("account_id = ?", poster.ID).Preload("Follower").Find(&subscriptions).Error; err != nil {
@@ -146,12 +187,7 @@ func NotifyUserSubscription(poster models.Account, content string, title *string
 	nTitle := fmt.Sprintf("New post from %s (%s)", poster.Nick, poster.Name)
 	nSubtitle := "From your subscription"
 
-	var body string
-	if len(content) > 80 {
-		body = content[:80]
-	} else {
-		body = content
-	}
+	body := TruncatePostContentShort(content)
 	if title != nil {
 		body = fmt.Sprintf("%s\n%s", *title, body)
 	}
@@ -193,12 +229,7 @@ func NotifyTagSubscription(poster models.Tag, og models.Account, content string,
 	nTitle := fmt.Sprintf("New post in %s by %s (%s)", poster.Name, og.Nick, og.Name)
 	nSubtitle := "From your subscription"
 
-	var body string
-	if len(content) > 80 {
-		body = content[:80]
-	} else {
-		body = content
-	}
+	body := TruncatePostContentShort(content)
 	if title != nil {
 		body = fmt.Sprintf("%s\n%s", *title, body)
 	}
@@ -240,12 +271,49 @@ func NotifyCategorySubscription(poster models.Category, og models.Account, conte
 	nTitle := fmt.Sprintf("New post in %s by %s (%s)", poster.Name, og.Nick, og.Name)
 	nSubtitle := "From your subscription"
 
-	var body string
-	if len(content) > 80 {
-		body = content[:80]
-	} else {
-		body = content
+	body := TruncatePostContentShort(content)
+	if title != nil {
+		body = fmt.Sprintf("%s\n%s", *title, body)
 	}
+
+	userIDs := make([]uint64, 0, len(subscriptions))
+	for _, subscription := range subscriptions {
+		userIDs = append(userIDs, uint64(subscription.Follower.ID))
+	}
+
+	pc, err := gap.H.GetServiceGrpcConn(hyper.ServiceTypeAuthProvider)
+	if err != nil {
+		return err
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	_, err = proto.NewNotifierClient(pc).NotifyUserBatch(ctx, &proto.NotifyUserBatchRequest{
+		UserId: userIDs,
+		Notify: &proto.NotifyRequest{
+			Topic:       "interactive.subscription",
+			Title:       nTitle,
+			Subtitle:    &nSubtitle,
+			Body:        body,
+			IsRealtime:  false,
+			IsForcePush: true,
+		},
+	})
+
+	return err
+}
+
+func NotifyRealmSubscription(poster models.Realm, og models.Account, content string, title *string) error {
+	var subscriptions []models.Subscription
+	if err := database.C.Where("realm_id = ?", poster.ID).Preload("Follower").Find(&subscriptions).Error; err != nil {
+		return fmt.Errorf("unable to get subscriptions: %v", err)
+	}
+
+	nTitle := fmt.Sprintf("New post in %s by %s (%s)", poster.Name, og.Nick, og.Name)
+	nSubtitle := "From your subscription"
+
+	body := TruncatePostContentShort(content)
 	if title != nil {
 		body = fmt.Sprintf("%s\n%s", *title, body)
 	}

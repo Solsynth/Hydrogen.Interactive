@@ -491,3 +491,14 @@ func TruncatePostContent(post models.Post) models.Post {
 
 	return post
 }
+
+const TruncatePostContentShortThreshold = 80
+
+func TruncatePostContentShort(content string) string {
+	length := TruncatePostContentShortThreshold
+	if len([]rune(content)) >= length {
+		return string([]rune(content)[:length]) + "..."
+	} else {
+		return content
+	}
+}

@@ -76,6 +76,28 @@ func getSubscriptionOnCategory(c *fiber.Ctx) error {
 	return c.JSON(subscription)
 }
 
+func getSubscriptionOnRealm(c *fiber.Ctx) error {
+	if err := gap.H.EnsureAuthenticated(c); err != nil {
+		return err
+	}
+	user := c.Locals("user").(models.Account)
+
+	realmId, err := c.ParamsInt("realmId", 0)
+	realm, err := services.GetRealmWithID(uint(realmId))
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("unable to get realm: %v", err))
+	}
+
+	subscription, err := services.GetSubscriptionOnRealm(user, realm)
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("unable to get subscription: %v", err))
+	} else if subscription == nil {
+		return fiber.NewError(fiber.StatusNotFound, "subscription does not exist")
+	}
+
+	return c.JSON(subscription)
+}
+
 func subscribeToUser(c *fiber.Ctx) error {
 	if err := gap.H.EnsureAuthenticated(c); err != nil {
 		return err
@@ -160,6 +182,34 @@ func subscribeToCategory(c *fiber.Ctx) error {
 	return c.JSON(subscription)
 }
 
+func subscribeToRealm(c *fiber.Ctx) error {
+	if err := gap.H.EnsureAuthenticated(c); err != nil {
+		return err
+	}
+	user := c.Locals("user").(models.Account)
+
+	realmId, err := c.ParamsInt("realmId", 0)
+	realm, err := services.GetRealmWithID(uint(realmId))
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("unable to get realm: %v", err))
+	}
+
+	subscription, err := services.SubscribeToRealm(user, realm)
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("unable to subscribe to realm: %v", err))
+	}
+
+	_ = gap.H.RecordAuditLog(
+		user.ID,
+		"posts.subscribe.realms",
+		strconv.Itoa(int(realm.ID)),
+		c.IP(),
+		c.Get(fiber.HeaderUserAgent),
+	)
+
+	return c.JSON(subscription)
+}
+
 func unsubscribeFromUser(c *fiber.Ctx) error {
 	if err := gap.H.EnsureAuthenticated(c); err != nil {
 		return err
@@ -237,6 +287,34 @@ func unsubscribeFromCategory(c *fiber.Ctx) error {
 		user.ID,
 		"posts.unsubscribe.categories",
 		strconv.Itoa(int(category.ID)),
+		c.IP(),
+		c.Get(fiber.HeaderUserAgent),
+	)
+
+	return c.SendStatus(fiber.StatusOK)
+}
+
+func unsubscribeFromRealm(c *fiber.Ctx) error {
+	if err := gap.H.EnsureAuthenticated(c); err != nil {
+		return err
+	}
+	user := c.Locals("user").(models.Account)
+
+	realmId, err := c.ParamsInt("realmId", 0)
+	realm, err := services.GetRealmWithID(uint(realmId))
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("unable to get realm: %v", err))
+	}
+
+	err = services.UnsubscribeFromRealm(user, realm)
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("unable to unsubscribe from realm: %v", err))
+	}
+
+	_ = gap.H.RecordAuditLog(
+		user.ID,
+		"posts.unsubscribe.realms",
+		strconv.Itoa(int(realm.ID)),
 		c.IP(),
 		c.Get(fiber.HeaderUserAgent),
 	)
