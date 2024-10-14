@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	"git.solsynth.dev/hydrogen/dealer/pkg/hyper"
@@ -94,6 +95,14 @@ func createArticle(c *fiber.Ctx) error {
 	item, err := services.NewPost(user, item)
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	} else {
+		_ = gap.H.RecordAuditLog(
+			user.ID,
+			"posts.new",
+			strconv.Itoa(int(item.ID)),
+			c.IP(),
+			c.Get(fiber.HeaderUserAgent),
+		)
 	}
 
 	return c.JSON(item)
@@ -188,9 +197,18 @@ func editArticle(c *fiber.Ctx) error {
 		}
 	}
 
-	if item, err := services.EditPost(item); err != nil {
+	var err error
+	if item, err = services.EditPost(item); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	} else {
-		return c.JSON(item)
+		_ = gap.H.RecordAuditLog(
+			user.ID,
+			"posts.edit",
+			strconv.Itoa(int(item.ID)),
+			c.IP(),
+			c.Get(fiber.HeaderUserAgent),
+		)
 	}
+
+	return c.JSON(item)
 }

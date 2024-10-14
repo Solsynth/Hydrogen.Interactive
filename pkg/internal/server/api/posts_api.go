@@ -266,6 +266,14 @@ func deletePost(c *fiber.Ctx) error {
 
 	if err := services.DeletePost(item); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	} else {
+		_ = gap.H.RecordAuditLog(
+			user.ID,
+			"posts.delete",
+			strconv.Itoa(int(item.ID)),
+			c.IP(),
+			c.Get(fiber.HeaderUserAgent),
+		)
 	}
 
 	return c.SendStatus(fiber.StatusOK)
@@ -302,6 +310,14 @@ func reactPost(c *fiber.Ctx) error {
 	if positive, reaction, err := services.ReactPost(user, reaction); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	} else {
+		_ = gap.H.RecordAuditLog(
+			user.ID,
+			"posts.react",
+			strconv.Itoa(int(res.ID)),
+			c.IP(),
+			c.Get(fiber.HeaderUserAgent),
+		)
+
 		return c.Status(lo.Ternary(positive, fiber.StatusCreated, fiber.StatusNoContent)).JSON(reaction)
 	}
 }
@@ -320,8 +336,24 @@ func pinPost(c *fiber.Ctx) error {
 	if status, err := services.PinPost(res); err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	} else if status {
+		_ = gap.H.RecordAuditLog(
+			user.ID,
+			"posts.pin",
+			strconv.Itoa(int(res.ID)),
+			c.IP(),
+			c.Get(fiber.HeaderUserAgent),
+		)
+
 		return c.SendStatus(fiber.StatusOK)
 	} else {
+		_ = gap.H.RecordAuditLog(
+			user.ID,
+			"posts.unpin",
+			strconv.Itoa(int(res.ID)),
+			c.IP(),
+			c.Get(fiber.HeaderUserAgent),
+		)
+
 		return c.SendStatus(fiber.StatusNoContent)
 	}
 }

@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"strconv"
 
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/gap"
 	"git.solsynth.dev/hydrogen/interactive/pkg/internal/models"
@@ -92,6 +93,14 @@ func subscribeToUser(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("unable to subscribe to user: %v", err))
 	}
 
+	_ = gap.H.RecordAuditLog(
+		user.ID,
+		"posts.subscribe.users",
+		strconv.Itoa(int(otherUser.ID)),
+		c.IP(),
+		c.Get(fiber.HeaderUserAgent),
+	)
+
 	return c.JSON(subscription)
 }
 
@@ -111,6 +120,14 @@ func subscribeToTag(c *fiber.Ctx) error {
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("unable to subscribe to tag: %v", err))
 	}
+
+	_ = gap.H.RecordAuditLog(
+		user.ID,
+		"posts.subscribe.tags",
+		strconv.Itoa(int(tag.ID)),
+		c.IP(),
+		c.Get(fiber.HeaderUserAgent),
+	)
 
 	return c.JSON(subscription)
 }
@@ -132,6 +149,14 @@ func subscribeToCategory(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("unable to subscribe to category: %v", err))
 	}
 
+	_ = gap.H.RecordAuditLog(
+		user.ID,
+		"posts.subscribe.categories",
+		strconv.Itoa(int(category.ID)),
+		c.IP(),
+		c.Get(fiber.HeaderUserAgent),
+	)
+
 	return c.JSON(subscription)
 }
 
@@ -151,6 +176,14 @@ func unsubscribeFromUser(c *fiber.Ctx) error {
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("unable to unsubscribe from user: %v", err))
 	}
+
+	_ = gap.H.RecordAuditLog(
+		user.ID,
+		"posts.unsubscribe.users",
+		strconv.Itoa(int(otherUser.ID)),
+		c.IP(),
+		c.Get(fiber.HeaderUserAgent),
+	)
 
 	return c.SendStatus(fiber.StatusOK)
 }
@@ -172,6 +205,14 @@ func unsubscribeFromTag(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("unable to unsubscribe from tag: %v", err))
 	}
 
+	_ = gap.H.RecordAuditLog(
+		user.ID,
+		"posts.unsubscribe.tags",
+		strconv.Itoa(int(tag.ID)),
+		c.IP(),
+		c.Get(fiber.HeaderUserAgent),
+	)
+
 	return c.SendStatus(fiber.StatusOK)
 }
 
@@ -191,6 +232,14 @@ func unsubscribeFromCategory(c *fiber.Ctx) error {
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("unable to unsubscribe from category: %v", err))
 	}
+
+	_ = gap.H.RecordAuditLog(
+		user.ID,
+		"posts.unsubscribe.categories",
+		strconv.Itoa(int(category.ID)),
+		c.IP(),
+		c.Get(fiber.HeaderUserAgent),
+	)
 
 	return c.SendStatus(fiber.StatusOK)
 }
