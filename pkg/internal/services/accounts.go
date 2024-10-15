@@ -88,7 +88,7 @@ func ModifyPosterVoteCount(user models.Account, isUpvote bool, delta int) error 
 	return database.C.Save(&user).Error
 }
 
-func NotifyPosterAccount(user models.Account, title, body string, subtitle *string) error {
+func NotifyPosterAccount(user models.Account, post models.Post, title, body string, subtitle *string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
@@ -99,10 +99,13 @@ func NotifyPosterAccount(user models.Account, title, body string, subtitle *stri
 	_, err = proto.NewNotifierClient(pc).NotifyUser(ctx, &proto.NotifyUserRequest{
 		UserId: uint64(user.ID),
 		Notify: &proto.NotifyRequest{
-			Topic:       "interactive.feedback",
-			Title:       title,
-			Subtitle:    subtitle,
-			Body:        body,
+			Topic:    "interactive.feedback",
+			Title:    title,
+			Subtitle: subtitle,
+			Body:     body,
+			Metadata: hyper.EncodeMap(map[string]any{
+				"related_post": post,
+			}),
 			IsRealtime:  false,
 			IsForcePush: true,
 		},

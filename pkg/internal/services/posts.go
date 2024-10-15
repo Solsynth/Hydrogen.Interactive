@@ -339,6 +339,7 @@ func NewPost(user models.Account, item models.Post) (models.Post, error) {
 				log.Debug().Uint("user", op.AuthorID).Msg("Notifying the original poster their post got replied...")
 				err = NotifyPosterAccount(
 					op.Author,
+					op,
 					"Post got replied",
 					fmt.Sprintf("%s (%s) replied your post (#%d).", user.Nick, user.Name, op.ID),
 					lo.ToPtr(fmt.Sprintf("%s replied you", user.Nick)),
@@ -421,6 +422,7 @@ func ReactPost(user models.Account, reaction models.Reaction) (bool, models.Reac
 			if op.Author.ID != user.ID {
 				err = NotifyPosterAccount(
 					op.Author,
+					op,
 					"Post got reacted",
 					fmt.Sprintf("%s (%s) reacted your post a %s.", user.Nick, user.Name, reaction.Symbol),
 					lo.ToPtr(fmt.Sprintf("%s reacted you", user.Nick)),

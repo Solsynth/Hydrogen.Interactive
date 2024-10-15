@@ -3,7 +3,7 @@ module git.solsynth.dev/hydrogen/interactive
 go 1.21.6
 
 require (
-	git.solsynth.dev/hydrogen/dealer v0.0.0-20241014131829-4de0c4c969ad
+	git.solsynth.dev/hydrogen/dealer v0.0.0-20241015165700-60e4bbfd9782
 	github.com/go-playground/validator/v10 v10.17.0
 	github.com/gofiber/fiber/v2 v2.52.4
 	github.com/json-iterator/go v1.1.12

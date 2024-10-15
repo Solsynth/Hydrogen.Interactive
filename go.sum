@@ -6,6 +6,8 @@ git.solsynth.dev/hydrogen/dealer v0.0.0-20240919131945-00c52eba6827 h1:1ACMPm2Ar
 git.solsynth.dev/hydrogen/dealer v0.0.0-20240919131945-00c52eba6827/go.mod h1:Q51JPkKnV0UoOT/IRmdBh5CyfSlp7s8BRGzgooYHqkI=
 git.solsynth.dev/hydrogen/dealer v0.0.0-20241014131829-4de0c4c969ad h1:QzK7mg+02jvdfjsXu89KMP3l/QoAMRyWgGDuNzUvTpg=
 git.solsynth.dev/hydrogen/dealer v0.0.0-20241014131829-4de0c4c969ad/go.mod h1:Q51JPkKnV0UoOT/IRmdBh5CyfSlp7s8BRGzgooYHqkI=
+git.solsynth.dev/hydrogen/dealer v0.0.0-20241015165700-60e4bbfd9782 h1:HUgt8RmDp5AKLlT/QGk4QXcO23OEMVpRYRjgLfOf45c=
+git.solsynth.dev/hydrogen/dealer v0.0.0-20241015165700-60e4bbfd9782/go.mod h1:Q51JPkKnV0UoOT/IRmdBh5CyfSlp7s8BRGzgooYHqkI=
 github.com/DataDog/datadog-go v3.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3tL4fMGNddJ+vMq1mwgfaqoQ=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
 github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
