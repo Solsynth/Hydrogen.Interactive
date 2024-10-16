@@ -99,7 +99,10 @@ func FilterPostDraft(tx *gorm.DB) *gorm.DB {
 
 func FilterPostWithFuzzySearch(tx *gorm.DB, probe string) *gorm.DB {
 	probe = "%" + probe + "%"
-	return tx.Where("? AND body->>'content' ILIKE ?", gorm.Expr("body ? 'content'"), probe)
+	return tx.
+		Where("? AND body->>'content' ILIKE ?", gorm.Expr("body ? 'content'"), probe).
+		Or("? AND body->>'title' ILIKE ?", gorm.Expr("body ? 'title'"), probe).
+		Or("? AND body->>'description' ILIKE ?", gorm.Expr("body ? 'description'"), probe)
 }
 
 func PreloadGeneral(tx *gorm.DB) *gorm.DB {
