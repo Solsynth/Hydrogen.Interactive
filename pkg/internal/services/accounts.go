@@ -104,7 +104,7 @@ func NotifyPosterAccount(user models.Account, post models.Post, title, body stri
 			Subtitle: subtitle,
 			Body:     body,
 			Metadata: hyper.EncodeMap(map[string]any{
-				"related_post": post,
+				"related_post": TruncatePostContent(post),
 			}),
 			IsRealtime:  false,
 			IsForcePush: true,
